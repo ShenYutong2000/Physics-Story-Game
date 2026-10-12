@@ -14,6 +14,8 @@ func _run() -> void:
 	var kath: CharacterBody2D = hall.get_node("Kath")
 	var sprite: AnimatedSprite2D = kath.get_node("AnimatedSprite2D")
 	var starting_x: float = kath.position.x
+	# Week 2 starts with a short line of dialogue before movement is unlocked.
+	hall._advance_dialogue()
 
 	if hall.get_node("Far").z_index >= hall.get_node("Mid").z_index \
 		or hall.get_node("Mid").z_index >= hall.get_node("Foreground").z_index:

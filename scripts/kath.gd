@@ -18,6 +18,7 @@ const WALK_SOURCE_HEIGHT: float = 484.0
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 var is_walking: bool = false
+var controls_enabled: bool = true
 
 
 func _ready() -> void:
@@ -26,6 +27,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not controls_enabled:
+		velocity = Vector2.ZERO
+		_set_animation(false)
+		return
 	var direction: float = Input.get_axis("move_left", "move_right")
 	var target_speed: float = direction * walk_speed
 	var rate: float = acceleration if direction != 0.0 else deceleration
