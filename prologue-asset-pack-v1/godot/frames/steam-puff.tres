@@ -1,0 +1,36 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/effects/steam-puff.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(231, 224, 250, 251)
+margin = Rect2(88, 182, 177, 190)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(775, 163, 346, 361)
+margin = Rect2(40, 72, 81, 80)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("1")
+region = Rect2(150, 715, 411, 425)
+margin = Rect2(8, 8, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("1")
+region = Rect2(843, 752, 260, 358)
+margin = Rect2(84, 75, 167, 83)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")},
+{"duration": 1.0, "texture": SubResource("Atlas_2")},
+{"duration": 1.0, "texture": SubResource("Atlas_3")}
+],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]

@@ -1,0 +1,48 @@
+[gd_resource type="SpriteFrames" load_steps=8 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/characters/kath-walk.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(103, 31, 283, 455)
+margin = Rect2(32, 10, 64, 18)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(598, 31, 273, 457)
+margin = Rect2(37, 8, 74, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("1")
+region = Rect2(1086, 31, 320, 453)
+margin = Rect2(14, 12, 27, 20)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("1")
+region = Rect2(86, 530, 306, 454)
+margin = Rect2(20, 11, 41, 19)
+
+[sub_resource type="AtlasTexture" id="Atlas_4"]
+atlas = ExtResource("1")
+region = Rect2(579, 529, 306, 455)
+margin = Rect2(20, 10, 41, 18)
+
+[sub_resource type="AtlasTexture" id="Atlas_5"]
+atlas = ExtResource("1")
+region = Rect2(1086, 529, 331, 451)
+margin = Rect2(8, 14, 16, 22)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")},
+{"duration": 1.0, "texture": SubResource("Atlas_2")},
+{"duration": 1.0, "texture": SubResource("Atlas_3")},
+{"duration": 1.0, "texture": SubResource("Atlas_4")},
+{"duration": 1.0, "texture": SubResource("Atlas_5")}
+],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]

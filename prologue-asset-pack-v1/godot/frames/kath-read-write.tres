@@ -1,0 +1,36 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/characters/kath-read-write.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(40, 78, 394, 751)
+margin = Rect2(8, 8, 16, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(496, 79, 369, 750)
+margin = Rect2(20, 9, 41, 17)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("1")
+region = Rect2(925, 78, 392, 751)
+margin = Rect2(9, 8, 18, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("1")
+region = Rect2(1377, 79, 375, 750)
+margin = Rect2(18, 9, 35, 17)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")},
+{"duration": 1.0, "texture": SubResource("Atlas_2")},
+{"duration": 1.0, "texture": SubResource("Atlas_3")}
+],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]

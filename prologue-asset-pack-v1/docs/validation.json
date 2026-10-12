@@ -1,0 +1,345 @@
+{
+  "selected_png_count": 55,
+  "wav_count": 16,
+  "atlas_resource_count": 17,
+  "checks": [
+    {
+      "id": "01-library-hall-clean",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f8c7488ab71d74ea8963263fe1f21cadf4a012d1a577d750c1e6a43eb62b6a96"
+    },
+    {
+      "id": "03-upper-stacks-clean",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f421f1f8269a83bb2b226947ac228f33cb8ccbffa350c3142af979bacc3cc3b9"
+    },
+    {
+      "id": "04-kath-room-clean",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "bd983b8806d9d2c96c888ab97543b3536682bf094ec40e6ccbb1bcfb87b6f640"
+    },
+    {
+      "id": "02-machine-room-clean",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "51336762dba00ab7433d6315d380bcec793878b4e3fdc160eb4bcb3342a5fa2f"
+    },
+    {
+      "id": "03-upper-stacks-front",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "971e0dd66201cad24ae0c5f30c68a3edf930f0920afc79308784e55626b2df25"
+    },
+    {
+      "id": "01-library-hall-front",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "ace7d214333227de96f6471fca4364341321ed60f33a4c8068e6d3f65452da8b"
+    },
+    {
+      "id": "02-machine-room-front",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "8bddc2c5926b46aeb87dbfe8d9b0fdf17f5842ee2f46b2c575985a38e81452b9"
+    },
+    {
+      "id": "05-service-road-clean-v2",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "62f44ef6097697a0bf62e5e9f762d52027aa2f31abc7fd35a88daff6adc2f6da"
+    },
+    {
+      "id": "04-kath-room-front",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "2d2cdd33af0abee497e31bf5c515f4bce796b5a7902b809b47b4e662054d8c28"
+    },
+    {
+      "id": "kath-idle",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "9e7c5b94794c5b90a1ec8cbb9db6bca0ed4a187e73350fc135c638888f6ed879"
+    },
+    {
+      "id": "05-service-road-front",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "6a80c9eb0cc2fd20f7d0b68ff19211fadc1557e428b1d51798241d870001a2eb"
+    },
+    {
+      "id": "castle-wing-upright",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "1d60281516daceb30cdc532d7779e6cccb28d472f047d95458c5002d07210825"
+    },
+    {
+      "id": "clock-housing",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "d7029a3516c287b157fdabf963eb9e4c2d49120ace1b2711e2186355cb3fe0b4"
+    },
+    {
+      "id": "clock-pendulum",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f68a6f2688757af6c5f3b2c7f837070b8eb290f73eab0358fd2d1e0e0061f4e6"
+    },
+    {
+      "id": "maintenance-sheet",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "465d5692537c6d7f8fbba3e1ab805f3a2f51a7240f9246bc0880d4e980aa2395"
+    },
+    {
+      "id": "clock-hand",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "57f0b367251adccd494f1735c4e80e3cedaa529b188c3da338a58414eaf0fc58"
+    },
+    {
+      "id": "archive-door",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "e8a89be3ee4d924b8a69d95e70027a71d18d3f6f0ac03873779157e6312b3eb1"
+    },
+    {
+      "id": "gauge-face",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "a5ac692934c7286dbd807c1d6891ea6b29ddf84f354f0e72733aeceda3b0b9b9"
+    },
+    {
+      "id": "lever-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "6f8239506b830374eb2a010f4d093e641c63a72d813e90be8e3931971a8b6a58"
+    },
+    {
+      "id": "gauge-needle",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "9e6e749ddd6b7abd4d964e2754c219c056e3204026b8be063ace72ebee0368ef"
+    },
+    {
+      "id": "status-lamp-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "7a3a6ba90e2bcfc2e8dd4d0cb8efc18e6c12e8f60003d93f912adc9403e7a669"
+    },
+    {
+      "id": "machine-route-diagram",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "73a7ffbaf0104713f68025a68b46da8df5f493170d273ab067af75fb316ae250"
+    },
+    {
+      "id": "cable-segment",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "0a09cbfa307b07704b7ccac07df9890fea44d55acce513c29b15174927c1cf2f"
+    },
+    {
+      "id": "stop-switch-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "63427e87439c412c1266c90f56ea0c60aa7797c13afb5330162e3dac7871de88"
+    },
+    {
+      "id": "rolling-ladder",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "38cb4357c46dd107d52a2905f7f5aa396988b3a8f3e7ff3406b365b9f27657f2"
+    },
+    {
+      "id": "leak-bucket",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "9a648c9914eba357ac55b29b9c2e41261e2425832986365ec673b432804adf55"
+    },
+    {
+      "id": "newton-note",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "ba54602d518eb30d492ae95be68ec15986583c40df3492bc32fee2b0b63ce8f0"
+    },
+    {
+      "id": "wooden-case-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "7ab60bca0706e25011460b3fd9f4aa6b0bdd8d96e04165fc4d3c1aa0763ba6a4"
+    },
+    {
+      "id": "satchel-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "57fe60dcfe37e8ae7f0f967b39fa52589c4a8b5239e25243913d97d37ef48e40"
+    },
+    {
+      "id": "desk-lamp-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "c9d2a66056a98f1e35038423e6e329d6c2dc0bf6dfe46dbded5454a253e0d007"
+    },
+    {
+      "id": "hanging-coat",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f306f67271f555d3dfb8a4547b1159d2e4fc186653d5ab29a2b5cf2ee8f8d6c3"
+    },
+    {
+      "id": "notebook-world",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "3c293424a6791ff5e54e29449d09ae26484d13a8664e96588397c75c096e85a7"
+    },
+    {
+      "id": "service-road-sign",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "cbcd84cd27d14d75a683a01bcf139330f2c9673f6efc36f67e206090c829e2d9"
+    },
+    {
+      "id": "kath-walk",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "dfa113300745a4c8321b8e0204d0532ad33cd7c3f7d1157eb393808470a37a95"
+    },
+    {
+      "id": "service-gate-states",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "14a412201bb804e454ecc4a1066fc185239a6885ee4bac40c4390e106770b397"
+    },
+    {
+      "id": "kath-read-write",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "a0f63788979da1641a39cdc3c21181a487dde997320707c292f875666e8532c2"
+    },
+    {
+      "id": "wick-perch",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "db98ccc7fb86a8716b878449d08813f33124771281655647841dbfd53268eec1"
+    },
+    {
+      "id": "kath-climb",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "075eb2d1cd08a3b52d5ffa07a3425b4ac5f66a6c5b5032f27a9044256df6ede3"
+    },
+    {
+      "id": "kath-interact",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "b87c078b24ca9cdb27b90552ad6f4063a1925009c6474e955902448009b0a7c4"
+    },
+    {
+      "id": "dialogue-panel",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "654352d122fcbcd0455a323bde2552b637bb5862272906ca3f7b7f067619cf8f"
+    },
+    {
+      "id": "wick-flight-v2",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "84e23fa11a9f1343d0ce0f6b740b0c261eba5519fda64c4f9008300b30f966f5"
+    },
+    {
+      "id": "notebook-panel",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "8c6dff4cf913367272516e586939e46d8b08c57a44e4bad2e3d38022c4eda302"
+    },
+    {
+      "id": "keeper-idle-talk",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f9c13dae10dd0c6cfc4323c9bb4e4a4cbdbff776f9560db615ead5855bd6d546"
+    },
+    {
+      "id": "01-library-hall-mid",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "1e6ae1dbdc5f5adc41dde9e7bf174c50572c359f0d6bf93d5ad246bec6b6dacc"
+    },
+    {
+      "id": "03-upper-stacks-mid",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "a07648098ea8056064b8606ae446fc1c2153ce1fd17bf33b44b8890abc623794"
+    },
+    {
+      "id": "02-machine-room-mid",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "aeac11f09259bcc32d7f0ff0f5b267f54c86b79ca2278c297183bac6f4545086"
+    },
+    {
+      "id": "04-kath-room-mid",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "dcc5d2a88160a5f045ecd806b957d71ba15395a8a02b374b6c695aa944da4c55"
+    },
+    {
+      "id": "05-service-road-far",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "7e2a3a78d72c3613a23688d01275b984c5229af144cacc72a4e396dba71c78b2"
+    },
+    {
+      "id": "archive-dawn-city",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "14609bdfa62d775bae48fde05f67049f83249487310410c0251fb176fe6614b6"
+    },
+    {
+      "id": "archive-night-city",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "8ed333c02f2a972bfc23e76f951f227cc0684f91bb5a9d200746142eb50e592f"
+    },
+    {
+      "id": "05-service-road-mid",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "8939c6ee283650f96ceef64dd611f65352a1d26a824e428dd750c038fe95b3d3"
+    },
+    {
+      "id": "water-ripple",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "9a3317bbe29900430b583a0c45e5854d009e4a1c8668b6d36445221de9b8e109"
+    },
+    {
+      "id": "rain-drop",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "82aaeb92f8ec7bef76c84ebe95d9150517639503cbdc00f4ba22ea735b113913"
+    },
+    {
+      "id": "valley-fog",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "c66c2738f6de9dffa9cc146d81fa850d6af5c40c2d17e494c0d08c779c59194d"
+    },
+    {
+      "id": "steam-puff",
+      "decoded": true,
+      "size_valid": true,
+      "sha256": "f92de3458f15985c0df12b5cf29687f5cbe45257f8a2b469b2c2998a66cff7f9"
+    }
+  ],
+  "preview_js_syntax": "passed node --check",
+  "browser_visual_qa": "not completed: browser launch / localhost access unavailable",
+  "godot_runtime_qa": "not run: engine unavailable",
+  "stage": "prototype",
+  "warnings": [
+    "Generated animation poses need manual consistency polish.",
+    "Scene props, occlusion and collision need in-engine placement and testing."
+  ]
+}

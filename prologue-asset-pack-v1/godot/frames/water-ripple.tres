@@ -1,0 +1,36 @@
+[gd_resource type="SpriteFrames" load_steps=6 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/effects/water-ripple.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(177, 287, 178, 139)
+margin = Rect2(132, 8, 263, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(679, 347, 272, 77)
+margin = Rect2(84, 70, 169, 78)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("1")
+region = Rect2(1156, 345, 407, 81)
+margin = Rect2(17, 66, 34, 74)
+
+[sub_resource type="AtlasTexture" id="Atlas_3"]
+atlas = ExtResource("1")
+region = Rect2(1695, 338, 425, 87)
+margin = Rect2(8, 60, 16, 68)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")},
+{"duration": 1.0, "texture": SubResource("Atlas_2")},
+{"duration": 1.0, "texture": SubResource("Atlas_3")}
+],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]

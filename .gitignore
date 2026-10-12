@@ -1,0 +1,12 @@
+# Godot-generated editor/import cache
+.godot/
+.godot-local/
+
+# Local builds and exports
+build/
+exports/
+*.pck
+
+# Local editor files
+.DS_Store
+Thumbs.db

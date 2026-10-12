@@ -1,0 +1,24 @@
+[gd_resource type="SpriteFrames" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/service-gate-states.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(42, 177, 790, 527)
+margin = Rect2(16, 8, 31, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(924, 177, 805, 527)
+margin = Rect2(8, 8, 16, 16)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")}
+],
+"loop": false,
+"name": &"default",
+"speed": 4.0
+}]

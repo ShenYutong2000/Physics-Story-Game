@@ -1,0 +1,666 @@
+{
+  "tool": "built-in image_gen",
+  "style": "Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.",
+  "jobs": [
+    {
+      "id": "01-library-hall-clean",
+      "file": "backgrounds/01-library-hall-clean.png",
+      "category": "background",
+      "prompt": "Use case: style-transfer. Asset type: production clean background for scene 01 LIBRARY HALL, 16:9 landscape.\nInput image 1 is the existing scene layout/reference. Redesign it in this precise game style: Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nKeep the same left arched city window, central/right tall shelves, right staircase, wood and brass archive architecture, long reading table and bookbinding bench at back. Make the composition much flatter and simpler, charming large shapes and readable silhouettes, true horizontal side-view game stage. Floor walking line at 80 percent image height, bottom 20 percent unobstructed wood/stone foreground floor. Warm lamps, indigo rainy evening.\nThis is the CLEAN BASE below sprites: remove the freestanding floor clock completely (restore shelves/wall behind); remove all readable papers and tabletop open notebooks; remove rolling ladder; remove the near-camera corner book piles and all dark foreground silhouettes; remove all people and animals. Left doorway remains a dark open rectangular/arched aperture for a separate door sprite. Static small books and lamps at the BACK can stay. Leave an empty clock-width space between left table and shelving. No user interface. Create one full-bleed background, not a board or collage.",
+      "transparent": false
+    },
+    {
+      "id": "03-upper-stacks-clean",
+      "source": "03-upper-library-stacks.png",
+      "description": "Same topmost archive room: giant arched window left, two levels of tall bookcases right, roof window above right, walkway and side stair. CLEAN PLATE: REMOVE rolling ladder completely, remove wooden case and all loose papers from high shelf, remove bucket, dripping water and puddles, remove near-camera corner books and foreground silhouettes. Reconstruct the hidden shelves and floor cleanly. Retain a visibly damaged roof seam above the right bookshelf as the leak source. Clear walkway at 78 percent height, upper shelf ledge at 26 percent height, suitable space for separately placed ladder.",
+      "file": "backgrounds/03-upper-stacks-clean.png",
+      "category": "background",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Asset type: production clean 16:9 wide game background. Input image 1 is this scene's layout/reference; input image 2 is the approved finished art style master, match it closely. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nSame topmost archive room: giant arched window left, two levels of tall bookcases right, roof window above right, walkway and side stair. CLEAN PLATE: REMOVE rolling ladder completely, remove wooden case and all loose papers from high shelf, remove bucket, dripping water and puddles, remove near-camera corner books and foreground silhouettes. Reconstruct the hidden shelves and floor cleanly. Retain a visibly damaged roof seam above the right bookshelf as the leak source. Clear walkway at 78 percent height, upper shelf ledge at 26 percent height, suitable space for separately placed ladder.\nOne full-bleed scene only. No text, no characters, no collage. Preserve recognizable source architecture while reducing tiny decorative details into flat silhouettes."
+    },
+    {
+      "id": "04-kath-room-clean",
+      "source": "04-nell-living-nook.png",
+      "description": "Same small archive apprentice bedroom: bed left-middle, desktop right-middle, large window right showing city in pale lavender dawn, open entrance far left. CLEAN PLATE: remove satchel and any packed travelling bag, hanging coat at left, open notebook, desk lamp, and near-camera book piles/plant silhouettes. Keep bedside trunks, bed, wall charts with no readable words, desktop, lamp hanging at back, radiator/copper pipes. Unbroken empty walk strip at 81 percent height. Original room cozy and modest within ornate library architecture.",
+      "file": "backgrounds/04-kath-room-clean.png",
+      "category": "background",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Asset type: production clean 16:9 wide game background. Input image 1 is this scene's layout/reference; input image 2 is the approved finished art style master, match it closely. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nSame small archive apprentice bedroom: bed left-middle, desktop right-middle, large window right showing city in pale lavender dawn, open entrance far left. CLEAN PLATE: remove satchel and any packed travelling bag, hanging coat at left, open notebook, desk lamp, and near-camera book piles/plant silhouettes. Keep bedside trunks, bed, wall charts with no readable words, desktop, lamp hanging at back, radiator/copper pipes. Unbroken empty walk strip at 81 percent height. Original room cozy and modest within ornate library architecture.\nOne full-bleed scene only. No text, no characters, no collage. Preserve recognizable source architecture while reducing tiny decorative details into flat silhouettes."
+    },
+    {
+      "id": "02-machine-room-clean",
+      "source": "02-library-machine-room.png",
+      "description": "Same steampunk library machine room arrangement: stairs at left, large navy/brass engine left, console wall middle right, tall right window onto distant castle. Preserve window and walking deck. CLEAN PLATE: console mounting backboard should be visibly blank with enough space for gauge and 2 separate numbered handles added later. Remove ALL gauges and needles, handles, clocks, visible loose cable, maintenance papers, foreground near-camera railing/book piles, all steam clouds. Keep fixed casing, pipes, consoles and background handwheels only. The window has a distant upright fixed tower and a mechanically mounted rotating castle wing visible. Walking feet line 80 percent height, unbroken floor beneath.",
+      "file": "backgrounds/02-machine-room-clean.png",
+      "category": "background",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Asset type: production clean 16:9 wide game background. Input image 1 is this scene's layout/reference; input image 2 is the approved finished art style master, match it closely. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nSame steampunk library machine room arrangement: stairs at left, large navy/brass engine left, console wall middle right, tall right window onto distant castle. Preserve window and walking deck. CLEAN PLATE: console mounting backboard should be visibly blank with enough space for gauge and 2 separate numbered handles added later. Remove ALL gauges and needles, handles, clocks, visible loose cable, maintenance papers, foreground near-camera railing/book piles, all steam clouds. Keep fixed casing, pipes, consoles and background handwheels only. The window has a distant upright fixed tower and a mechanically mounted rotating castle wing visible. Walking feet line 80 percent height, unbroken floor beneath.\nOne full-bleed scene only. No text, no characters, no collage. Preserve recognizable source architecture while reducing tiny decorative details into flat silhouettes."
+    },
+    {
+      "id": "05-service-road-clean",
+      "source": "05-service-road.png",
+      "description": "Same path from Archive toward castle, dawn lavender/coral sky, distant mountains and misty valley, side-on cobbled walking path across bottom 22 percent, archive doorway far left. CLEAN PLATE: remove all near-camera leaves, grass silhouettes and foreground fences. Remove close hanging road sign and gate. Retain distant background lamps, rear railing and path. IMPORTANT: distant castle at upper right must have a FIXED UPRIGHT CENTRAL TOWER next to a huge mechanically supported brass rotation ring containing a clearly UPSIDE DOWN WING, roof turrets point down inside ring and massive bearings support it; no flying or magical castle. For this base paint that whole far castle silhouette as a separate-looking clear shape against sky for later replacement, but render it present in the image. No characters.",
+      "file": "backgrounds/05-service-road-clean.png",
+      "category": "background",
+      "transparent": false,
+      "prompt": "Use case: style-transfer. Asset type: production clean 16:9 wide game background. Input image 1 is this scene's layout/reference; input image 2 is the approved finished art style master, match it closely. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nSame path from Archive toward castle, dawn lavender/coral sky, distant mountains and misty valley, side-on cobbled walking path across bottom 22 percent, archive doorway far left. CLEAN PLATE: remove all near-camera leaves, grass silhouettes and foreground fences. Remove close hanging road sign and gate. Retain distant background lamps, rear railing and path. IMPORTANT: distant castle at upper right must have a FIXED UPRIGHT CENTRAL TOWER next to a huge mechanically supported brass rotation ring containing a clearly UPSIDE DOWN WING, roof turrets point down inside ring and massive bearings support it; no flying or magical castle. For this base paint that whole far castle silhouette as a separate-looking clear shape against sky for later replacement, but render it present in the image. No characters.\nOne full-bleed scene only. No text, no characters, no collage. Preserve recognizable source architecture while reducing tiny decorative details into flat silhouettes."
+    },
+    {
+      "id": "03-upper-stacks-front",
+      "file": "foregrounds/03-upper-stacks-front.png",
+      "category": "foreground",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\03-upper-stacks-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Asset type: TRANSPARENT foreground occlusion overlay for 2D game, one 16:9 full-canvas image. Input is style and size reference ONLY; do not reproduce the background. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nPaint only: Near-camera navy books stacked in bottom corners with a low brass balustrade fragment far left, all within bottom 23 percent. Center 72 percent width remains transparent. No bookcase or wall.\nEverything outside these silhouettes is real alpha transparency, including the broad empty center and upper region. No checkerboard painted into image, no ground plane, no text, no characters. Keep the same original canvas framing."
+    },
+    {
+      "id": "01-library-hall-front",
+      "file": "foregrounds/01-library-hall-front.png",
+      "category": "foreground",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Asset type: TRANSPARENT foreground occlusion overlay for 2D game, one 16:9 full-canvas image. Input is style and size reference ONLY; do not reproduce the background. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nPaint only: Dark navy stacks of books in the bottom left and bottom right corners, tiny brass armillary silhouette near lower left. All objects confined to bottom 22 percent; center 70 percent width completely clear except a few very low book corners. No floor or back wall.\nEverything outside these silhouettes is real alpha transparency, including the broad empty center and upper region. No checkerboard painted into image, no ground plane, no text, no characters. Keep the same original canvas framing."
+    },
+    {
+      "id": "02-machine-room-front",
+      "file": "foregrounds/02-machine-room-front.png",
+      "category": "foreground",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\02-machine-room-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Asset type: TRANSPARENT foreground occlusion overlay for 2D game, one 16:9 full-canvas image. Input is style and size reference ONLY; do not reproduce the background. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nPaint only: Dark navy near-camera safety railing runs along ONLY bottom 12 percent; a gear edge in bottom right and pipe flange in bottom left, never reaching above bottom 23 percent. Center room must remain entirely transparent. No floor or machine backdrop.\nEverything outside these silhouettes is real alpha transparency, including the broad empty center and upper region. No checkerboard painted into image, no ground plane, no text, no characters. Keep the same original canvas framing."
+    },
+    {
+      "id": "05-service-road-clean-v2",
+      "file": "backgrounds/05-service-road-clean-v2.png",
+      "category": "background",
+      "transparent": false,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\05-service-road-clean.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Edit target is this game scene. Remove ONLY the entire castle wing inside the circular brass ring at upper right: remove every building, roof and hanging turret INSIDE that ring. Replace its pixels with the distant blue-lavender mountains and dawn sky. Keep the big brass ring, bearing axles, its spokes/support brackets, the upright fixed tower to its left, road, palette, framing and absolutely everything else unchanged. The ring must be empty, ready for a separate rotatable wing sprite. One full scene, no characters, no text."
+    },
+    {
+      "id": "04-kath-room-front",
+      "file": "foregrounds/04-kath-room-front.png",
+      "category": "foreground",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\04-kath-room-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Asset type: TRANSPARENT foreground occlusion overlay for 2D game, one 16:9 full-canvas image. Input is style and size reference ONLY; do not reproduce the background. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nPaint only: Near-camera low indigo books and a small dark teal houseplant at bottom left, small trunk corner bottom right, all confined to bottom 20 percent. Center 70 percent stays transparent. No bed, floor, walls or desk.\nEverything outside these silhouettes is real alpha transparency, including the broad empty center and upper region. No checkerboard painted into image, no ground plane, no text, no characters. Keep the same original canvas framing."
+    },
+    {
+      "id": "kath-idle",
+      "file": "characters/kath-idle.png",
+      "category": "character",
+      "transparent": true,
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\nell-three-view-a595c8fb.png",
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: identity-preserve. Asset type: transparent 2D game idle animation sprite strip for KATH. Image 1 is the character identity reference, image 2 is the flat environmental style reference. Simplify her to large flat shapes with a small amount of paper texture, match the original gentle face, pale ivory skin, black high ponytail, brass goggles on head, cream short sleeve blouse, muted teal waistcoat with three brass fasteners, calf-length indigo/burgundy striped skirt, short dark boots, small brown satchel on hip. NO name badge, NO medal, NO chest clock. Large round dark eyes, feminine young apprentice, same head/body ratio as reference. Exactly FOUR full body side view sprites, all facing RIGHT, in one horizontal row of four identical equal-width cells. Each body same height and x center in its cell, feet at 90 percent canvas height, head at 12 percent. Frames: neutral standing; very slight breathing; blink; neutral standing. No movement between cells, no floor, no shadows, no labels, no borders, actual transparent background. Make every body fit within its cell with broad transparent margins; never overlap frames."
+    },
+    {
+      "id": "05-service-road-front",
+      "file": "foregrounds/05-service-road-front.png",
+      "category": "foreground",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\05-service-road-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Asset type: TRANSPARENT foreground occlusion overlay for 2D game, one 16:9 full-canvas image. Input is style and size reference ONLY; do not reproduce the background. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nPaint only: Dark ink and teal leafy branches hang from top left occupying at most 12 percent width and 20 percent height, sparse grasses in lower left and lower right corners occupying bottom 14 percent. No central foliage, no path, no castle, no sky. Soft simple silhouettes and clean alpha.\nEverything outside these silhouettes is real alpha transparency, including the broad empty center and upper region. No checkerboard painted into image, no ground plane, no text, no characters. Keep the same original canvas framing."
+    },
+    {
+      "id": "castle-wing-upright",
+      "file": "props/castle-wing-upright.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\05-service-road-clean-v2.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: single transparent game sprite, a mechanically rotatable castle wing. Reference is style only. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers. One compact UPRIGHT castle wing: three slate blue pointed roof turrets point UP, all windows upright, wide straight brass foundation beam UNDER the buildings, simple stone facade and gold windows. A bearing hub on left and right of the foundation, clear supported structure. It will be rotated 180 degrees inside the background's empty brass ring by the game. Do NOT draw a ring, tower, landscape, sky, shadows or extra inverted building. Center whole wing within square canvas with 12 percent padding all around, straight-on elevation, no perspective tilt. Real alpha outside object."
+    },
+    {
+      "id": "clock-housing",
+      "file": "props/clock-housing.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne tall narrow navy wooden floor clock with brass trim and a cream circular dial in its upper third. Empty dial with twelve simple tick marks and a center dot, ABSOLUTELY NO HANDS. A deep dark tall rectangular opening below dial to receive a separate pendulum; nothing inside it. Footed base, flat side-on view.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "clock-pendulum",
+      "file": "props/clock-pendulum.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne thin straight vertical brass pendulum rod with a small pivot eye at top and a round golden bob at bottom. Centered long vertical object, simple flat shading, no clock housing.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "maintenance-sheet",
+      "file": "props/maintenance-sheet.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne rectangular ivory maintenance checklist paper clipped at top by a small brass clip, frontal flat view. Five faint horizontal ruling lines and five empty square checkboxes down left edge, otherwise BLANK paper for game-rendered English text. Worn corners and tiny blue ink smudge, NO letters.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "clock-hand",
+      "file": "props/clock-hand.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne elegant dark navy clock hand, pointing straight UP, circular brass pivot at the lower end. Isolated long narrow hand. No clock face, no second hand. Will be reused at two sizes for hour/minute hands.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "archive-door",
+      "file": "props/archive-door.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne CLOSED tall arched navy wooden archive door with brass hinges, handle on right and small upper arched cobalt glass panel. Isolated door leaf only, no doorway masonry, simple shapes. Entire outline visible; no cast shadow.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "gauge-face",
+      "file": "props/gauge-face.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne round brass mechanical tension gauge face viewed exactly head-on. Ivory dial, dark indigo tick marks, colored RED DANGER ARC from 1 o'clock to 3 o'clock. Clear center dot. NO NEEDLE, NO NUMBERS, NO LETTERS. Complete gauge outer rim and two small mounting lugs.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "lever-states",
+      "file": "props/lever-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nA two-frame state sprite strip of ONE SAME brass machine control lever, TWO equal side-by-side cells. Left cell: handle leans 35 degrees left. Right cell: same handle leans 35 degrees right. Identical heavy navy/brass base aligned at same baseline and same size in both cells, burgundy grip. No labels. Each complete lever fits its cell with generous transparent gaps.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding.",
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2
+    },
+    {
+      "id": "gauge-needle",
+      "file": "props/gauge-needle.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne single long tapered dark-red instrument needle, horizontal and pointing RIGHT, with round brass pivot hub at left end. No dial, no other object. Square transparent canvas with generous margins.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "status-lamp-states",
+      "file": "props/status-lamp-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nA three-frame state sprite strip of ONE SAME small round caged indicator lamp, THREE equal side-by-side cells. Left OFF with dark glass; middle warm AMBER ON; right RED ON. Same brass circular base and position per cell, glow stays inside each cell, exact frontal view. No lettering.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding.",
+      "grid": [
+        3,
+        1
+      ],
+      "frames": 3
+    },
+    {
+      "id": "machine-route-diagram",
+      "file": "props/machine-route-diagram.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne ivory engineering sheet mounted in a simple brass rectangular frame. A small line drawing of library at LEFT connected by one mechanical cable route to an upright fixed tower and a large circular pivot holding a castle wing at RIGHT. Tiny circles along route represent bearings, one thin arrow. Minimal legible technical sketch, NOT a classroom graph, NO letters or words. Full frame visible on transparent background.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "cable-segment",
+      "file": "props/cable-segment.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne thick braided dark navy steel cable stretched horizontally with modest downward bow, small brass bolted anchor plate at each end. No poles or background. Leave clear alpha padding above/below. Flat game prop, easy to see and animate as one object.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "stop-switch-states",
+      "file": "props/stop-switch-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nA two-frame sprite strip of one brass and navy guarded machine cut-off switch. TWO equal side-by-side cells, same base position and size. Left handle UP exposing a dull amber indicator, right handle DOWN exposing a red indicator. Rectangular base with blank label plate. No writing or symbols.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding.",
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2
+    },
+    {
+      "id": "rolling-ladder",
+      "file": "props/rolling-ladder.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne tall narrow wooden archive rolling ladder with brass side rails, exactly eight clearly separated usable wooden rungs, two small wheels at bottom and tiny rail hooks at top. Front elevation with slight lean to right, complete isolated ladder, no shelf or floor. Indigo wood and warm brass.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "leak-bucket",
+      "file": "props/leak-bucket.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne small dull blue-grey metal bucket with brass handle in frontal slight top view. Thin blue water surface visible inside, a tiny dent and warm reflected rim. Isolated on transparent canvas, no water pouring, no floor.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "newton-note",
+      "file": "props/newton-note.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne torn page of old ivory handwritten notebook paper, frontal close-up. Uneven torn left edge and two tiny binding holes. Only legible text centered in dark handwritten ink must be EXACTLY: F = ma. Below is a small hand-drawn arrow and one crossed-out short line, no additional letters, no graphs, no cart. Large readable formula, worn paper but clear. Complete paper on transparency.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding."
+    },
+    {
+      "id": "wooden-case-states",
+      "file": "props/wooden-case-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nTHREE equal side-by-side cells, each shows the SAME small rectangular walnut archival case with brass hinges at same scale. LEFT: shut lid. CENTER: lid open 100 degrees and a single folded ivory page lying inside. RIGHT: identical open lid with EMPTY interior after the page is taken. Base stays at same baseline. Complete isolated cases with generous cell margins and NO labels.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding.",
+      "grid": [
+        3,
+        1
+      ],
+      "frames": 3
+    },
+    {
+      "id": "satchel-states",
+      "file": "props/satchel-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nTWO equal side-by-side state cells of the SAME brown leather travel satchel with brass buckles. LEFT: top flap open, empty dark interior. RIGHT: packed closed satchel with tightly rolled blue-grey blanket secured on top. Same bag body dimensions and baseline, no dangling physics trinkets, no text, generous alpha gap.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero.",
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2
+    },
+    {
+      "id": "desk-lamp-states",
+      "file": "props/desk-lamp-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nTWO equal side-by-side state cells of the SAME small brass dome-shaded desk lamp. LEFT OFF, ivory shade dim and dark bulb. RIGHT ON, amber glowing under shade, small soft transparent halo confined to right cell. Identical lamp position, scale and baseline, no table.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero.",
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2
+    },
+    {
+      "id": "hanging-coat",
+      "file": "props/hanging-coat.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne empty long navy apprentice coat hanging naturally from a brass wall hook, warm ochre lining, simple collar, sleeve shape readable, no badge, no symbols. Frontal flat elevation, no person, complete coat on transparent background.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero."
+    },
+    {
+      "id": "notebook-world",
+      "file": "props/notebook-world.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne small open cream notebook with burgundy cloth cover seen at shallow angle suitable to lie on a desk in side-view game; two blank pages, one simple dark pencil resting on right page. No readable writing. Complete isolated book with alpha.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero."
+    },
+    {
+      "id": "service-road-sign",
+      "file": "props/service-road-sign.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nOne brass-tipped wooden signpost with a single wide navy arrow plank pointing RIGHT. The plank center is completely BLANK for English text added by the game. A tiny brass mechanical cog on the post. Entire sign including post bottom visible on alpha, no ground.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero."
+    },
+    {
+      "id": "wick-flight",
+      "file": "characters/wick-flight.png",
+      "category": "character",
+      "transparent": true,
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\wick-character-design-v1.png",
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png"
+      ],
+      "prompt": "Use case: identity-preserve. Create exactly FOUR equal side-by-side full-body sprites of WICK the little lantern moth, as a wingbeat animation strip. Image1 is identity; image2 is flat game style. Preserve cream fluffy body, big black eyes, feathery antennae and cream wings with muted teal and coral markings; tiny brass collar charm allowed. Simplify pattern to readable flat shapes, no watercolor scribble. Same body scale and center in each cell. Wings: high raised, half open, low spread, half open. Body faces slightly right in every frame. Actual transparent background, no scenery, no glow outside body, no labels or grid lines. All wings inside cells with generous gaps."
+    },
+    {
+      "id": "kath-walk",
+      "action": "Exactly SIX frames in a 3 column by 2 row uniform grid, reading left-to-right then next row, all facing RIGHT. One complete walk cycle: right contact, right passing, right high point, left contact, left passing, left high point. Clear alternating boot positions, arms swing gently, ponytail follows slightly. Same size across cells, feet baseline at 90 percent of EACH cell height. Wide transparent margins between frames, all body parts wholly inside cell.",
+      "grid": [
+        3,
+        2
+      ],
+      "frames": 6,
+      "file": "characters/kath-walk.png",
+      "category": "character",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png"
+      ],
+      "prompt": "Use case: identity-preserve. Asset type: transparent 2D character animation strip. Input image is the APPROVED Kath idle sheet. Keep her identical face, proportions, clothes, colors, black ponytail, brass goggles, teal waistcoat, cream blouse, burgundy/indigo striped skirt, dark boots and brown satchel. NO badge or chest clock. Flat simplified cut-paper game art, same line weight and shading, no background, floor, shadow or text.\nExactly SIX frames in a 3 column by 2 row uniform grid, reading left-to-right then next row, all facing RIGHT. One complete walk cycle: right contact, right passing, right high point, left contact, left passing, left high point. Clear alternating boot positions, arms swing gently, ponytail follows slightly. Same size across cells, feet baseline at 90 percent of EACH cell height. Wide transparent margins between frames, all body parts wholly inside cell."
+    },
+    {
+      "id": "service-gate-states",
+      "file": "props/service-gate-states.png",
+      "category": "prop",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Asset type: isolated transparent 2D game prop. Reference image is visual style ONLY. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers.\nTWO equal side-by-side cells of SAME waist-high navy iron/brass maintenance wicket gate. Left closed and right swung open away to side. Fixed posts same position within both cells. Clear walk-through opening in open state. Flat side-view staging, no stone landscape or text.\nReadable at small scale, frontal or very shallow side elevation suitable for a horizontal game. Only the described object, no environment, no floor, no cast shadow, no text or labels except explicitly requested. Genuine alpha transparency around the complete object, generous padding. CRITICAL: no glow, no bloom, no blurred colored aura around solid objects; every non-object pixel must be alpha zero.",
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2
+    },
+    {
+      "id": "kath-read-write",
+      "action": "Exactly FOUR frames in one horizontal row of equal cells, facing RIGHT. Sequence: hold a small cream page and study it; tilt head thoughtfully reading; hold a small open notebook in left hand and begin writing with pencil in right; continue writing. Same figure scale, identical feet position and baseline at 90 percent canvas height. Complete full bodies within cells.",
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "file": "characters/kath-read-write.png",
+      "category": "character",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png"
+      ],
+      "prompt": "Use case: identity-preserve. Asset type: transparent 2D character animation strip. Input image is the APPROVED Kath idle sheet. Keep her identical face, proportions, clothes, colors, black ponytail, brass goggles, teal waistcoat, cream blouse, burgundy/indigo striped skirt, dark boots and brown satchel. NO badge or chest clock. Flat simplified cut-paper game art, same line weight and shading, no background, floor, shadow or text.\nExactly FOUR frames in one horizontal row of equal cells, facing RIGHT. Sequence: hold a small cream page and study it; tilt head thoughtfully reading; hold a small open notebook in left hand and begin writing with pencil in right; continue writing. Same figure scale, identical feet position and baseline at 90 percent canvas height. Complete full bodies within cells."
+    },
+    {
+      "id": "wick-perch",
+      "file": "characters/wick-perch.png",
+      "category": "character",
+      "transparent": true,
+      "grid": [
+        2,
+        1
+      ],
+      "frames": 2,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\wick-flight.png"
+      ],
+      "prompt": "Use case: identity-preserve. Make a transparent two-frame state strip of this EXACT cream lantern moth WICK. SAME cream fluffy body, dark oval eyes, feathery antennae, muted teal/coral wing markings and small brass charm. TWO equal side-by-side cells with wide transparent padding. Left: perched on an invisible ledge, folded relaxed wings and curious open eyes. Right: same pose and scale with eyes closed as a gentle blink, antennae slightly tilted. Full body including tiny feet visible, no ledge, no background, no shadow, no text. Match flat original game art."
+    },
+    {
+      "id": "kath-climb",
+      "action": "Exactly FOUR frames in one horizontal row of equal cells, BACK THREE-QUARTER view facing an imaginary ladder to the RIGHT. Four phases of alternating hand reach and boot lift climbing. Long ponytail and skirt remain physically coherent. No ladder drawn; arms and bent boots stay inside their cell. Same scale and center position, loopable climb sequence.",
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "file": "characters/kath-climb.png",
+      "category": "character",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png"
+      ],
+      "prompt": "Use case: identity-preserve. Asset type: transparent 2D character animation strip. Input image is the APPROVED Kath idle sheet. Keep her identical face, proportions, clothes, colors, black ponytail, brass goggles, teal waistcoat, cream blouse, burgundy/indigo striped skirt, dark boots and brown satchel. NO badge or chest clock. Flat simplified cut-paper game art, same line weight and shading, no background, floor, shadow or text.\nExactly FOUR frames in one horizontal row of equal cells, BACK THREE-QUARTER view facing an imaginary ladder to the RIGHT. Four phases of alternating hand reach and boot lift climbing. Long ponytail and skirt remain physically coherent. No ladder drawn; arms and bent boots stay inside their cell. Same scale and center position, loopable climb sequence."
+    },
+    {
+      "id": "kath-interact",
+      "action": "Exactly FOUR frames in one horizontal row of equal cells, facing RIGHT. Sequence: stand attentively; extend right forearm forward at chest height; lean slightly and grip an invisible handle; return arm. No separate handle is drawn. Same figure scale, identical feet position and baseline at 90 percent canvas height. Full bodies inside cells.",
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "file": "characters/kath-interact.png",
+      "category": "character",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png"
+      ],
+      "prompt": "Use case: identity-preserve. Asset type: transparent 2D character animation strip. Input image is the APPROVED Kath idle sheet. Keep her identical face, proportions, clothes, colors, black ponytail, brass goggles, teal waistcoat, cream blouse, burgundy/indigo striped skirt, dark boots and brown satchel. NO badge or chest clock. Flat simplified cut-paper game art, same line weight and shading, no background, floor, shadow or text.\nExactly FOUR frames in one horizontal row of equal cells, facing RIGHT. Sequence: stand attentively; extend right forearm forward at chest height; lean slightly and grip an invisible handle; return arm. No separate handle is drawn. Same figure scale, identical feet position and baseline at 90 percent canvas height. Full bodies inside cells."
+    },
+    {
+      "id": "dialogue-panel",
+      "file": "ui/dialogue-panel.png",
+      "category": "ui",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Single game dialogue panel UI sprite on transparent canvas. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers. One very WIDE low rectangular dark indigo panel, ivory thin inner outline, restrained brass corners, a tiny blank name tab on upper left. Large EMPTY dark center reserved for readable dialogue text. No words, no portrait circle, no buttons, no gears hanging outside, no huge decorations. Panel width 90 percent of image, height 65 percent, overall canvas aspect 3:1 landscape. Crisp flat UI edges, actual transparent padding outside."
+    },
+    {
+      "id": "wick-flight-v2",
+      "file": "characters/wick-flight-v2.png",
+      "category": "character",
+      "transparent": true,
+      "grid": [
+        2,
+        2
+      ],
+      "frames": 4,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\wick-flight.png"
+      ],
+      "prompt": "Use case: identity-preserve. Re-layout and improve this same WICK wingbeat animation to a TWO BY TWO equally spaced grid, FOUR frames total on square canvas. Keep original character and colors. Each moth's body stays centered in its cell. Wings raised, half open, fully spread, half open. Restrict EACH complete moth including wings and antennae to inner 65 percent of its cell width and 75 percent height; ample completely transparent gaps on all sides. No wing can touch neighboring cell or outer canvas edge. Same body dimensions in all cells. No labels, no grids, no shadow, no background. Genuine alpha."
+    },
+    {
+      "id": "notebook-panel",
+      "file": "ui/notebook-panel.png",
+      "category": "ui",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Single open notebook UI sprite on transparent canvas. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers. Wide open burgundy cloth-bound notebook viewed EXACTLY TOP DOWN, two large completely BLANK ivory pages with nearly straight edges, very subtle grain, narrow brass corner protectors and a thin burgundy page ribbon outside bottom center. Pages take 85 percent of area and provide rectangular text areas. No pencil, no writing, no icons, no perspective foreshortening. One complete book on alpha, landscape 3:2."
+    },
+    {
+      "id": "keeper-idle-talk",
+      "file": "characters/keeper-idle-talk.png",
+      "category": "character",
+      "transparent": true,
+      "grid": [
+        3,
+        1
+      ],
+      "frames": 3,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\characters\\kath-idle.png",
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. Transparent NPC sprite sheet for elderly human archive keeper, original character in SAME flat game style as Kath in reference1 and archive palette reference2. Kind but tired elderly man, short silver hair, round brass spectacles, long burgundy waistcoat over cream sleeves, indigo trousers, worn dark shoes, slim frame with slightly stooped posture. Three equal horizontal cells showing SAME full-body character facing LEFT: neutral hands resting; one hand lifts mildly in conversation; lips open and hand relaxed. Same scale, feet at 90 percent height, whole person within inner 70 percent of each cell. No text, floor, props, or background. Softened simple silhouette."
+    },
+    {
+      "id": "01-library-hall-mid",
+      "file": "mid/01-library-hall-mid.png",
+      "category": "mid",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Edit target: supplied CLEAN scene. Produce an exact aligned 16:9 MIDDLE SCENERY LAYER. Remove the distant sky, city, rain and landscape visible THROUGH the large left arched window and far-left side stained glass pane. Keep the narrow dark window mullions/bars and entire stone window frame. Make each glass pane interior genuine alpha-transparent. All other pixels should keep exact same composition, position, dimensions, palette and lighting. Keep opaque walls, books, furniture and entire walking floor in their original positions. This is NOT an object board or scene redesign. Do not insert black or white into window holes; those pixels must be actual zero-alpha. No extra objects or characters."
+    },
+    {
+      "id": "03-upper-stacks-mid",
+      "file": "mid/03-upper-stacks-mid.png",
+      "category": "mid",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\03-upper-stacks-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Edit target: supplied CLEAN scene. Produce an exact aligned 16:9 MIDDLE SCENERY LAYER. Make the glass panes of all windows and skylights TRANSPARENT, including the large left arched window, bottom-row distant arch openings, and right upper roof window. Remove distant city, rain, sky only within openings; retain all mullions, railings, stone archways and indoor architecture. All other pixels should keep exact same composition, position, dimensions, palette and lighting. Keep opaque walls, books, furniture and entire walking floor in their original positions. This is NOT an object board or scene redesign. Do not insert black or white into window holes; those pixels must be actual zero-alpha. No extra objects or characters."
+    },
+    {
+      "id": "02-machine-room-mid",
+      "file": "mid/02-machine-room-mid.png",
+      "category": "mid",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\02-machine-room-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Edit target: supplied CLEAN scene. Produce an exact aligned 16:9 MIDDLE SCENERY LAYER. Make every glass pane interior in the right tall window and small upper window genuine transparent: remove visible far city, castle, rain and sky, KEEP every window bar and frame. All other pixels should keep exact same composition, position, dimensions, palette and lighting. Keep opaque walls, books, furniture and entire walking floor in their original positions. This is NOT an object board or scene redesign. Do not insert black or white into window holes; those pixels must be actual zero-alpha. No extra objects or characters."
+    },
+    {
+      "id": "04-kath-room-mid",
+      "file": "mid/04-kath-room-mid.png",
+      "category": "mid",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\04-kath-room-clean.png"
+      ],
+      "prompt": "Use case: background-extraction. Edit target: supplied CLEAN scene. Produce an exact aligned 16:9 MIDDLE SCENERY LAYER. Make the large right window's glass pane interiors TRANSPARENT. Remove distant city, sky and dawn only through that window. Keep thin mullions and the small brass ornament, drapes and window frame, all other room pixels. All other pixels should keep exact same composition, position, dimensions, palette and lighting. Keep opaque walls, books, furniture and entire walking floor in their original positions. This is NOT an object board or scene redesign. Do not insert black or white into window holes; those pixels must be actual zero-alpha. No extra objects or characters."
+    },
+    {
+      "id": "05-service-road-far",
+      "file": "far/05-service-road-far.png",
+      "category": "far",
+      "transparent": false,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\05-service-road-clean-v2.png"
+      ],
+      "prompt": "Use case: precise-object-edit. Make distant landscape layer from this exact 16:9 scene. Keep all existing mountains, sky, valley city, upright fixed castle tower and EMPTY brass rotation ring at top right at EXACT same positions. Remove archive building on far left, all foreground cobbled road in bottom third, all close lamp posts and wires crossing scene, all near stone railing/posts. Reconstruct distant tree-covered valley and hills behind removed road and archive, continuously filling canvas to bottom. Keep far castle's own access bridge/road because they belong to castle. No new objects, no castle wing inside ring, no people. Preserve flat palette and composition."
+    },
+    {
+      "id": "archive-dawn-city",
+      "file": "far/archive-dawn-city.png",
+      "category": "far",
+      "transparent": false,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\04-kath-room-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. 16:9 landscape distance background for bedroom window. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers. Only the view OUTSIDE: layered periwinkle and indigo steampunk city towers and arched aqueduct in pale lavender/coral dawn. Warm small windows, low gentle mist, cream sunrise. No interior, window frame, curtains, floor, roads or near objects. No characters or text. Original wide city skyline fills canvas with gentle dawn sky in upper half."
+    },
+    {
+      "id": "archive-night-city",
+      "file": "far/archive-night-city.png",
+      "category": "far",
+      "transparent": false,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Use case: stylized-concept. 16:9 full landscape BACKGROUND DISTANCE PLATE for archive windows. Original 2D side-on narrative adventure game art with the broad flat graphic readability and cozy melancholy associated with Night in the Woods, adapted to an original ornate steampunk archive world. Simplified cut-paper silhouettes, sparse fine grain, restrained two-tone shading, crisp readable shapes, NO rendered 3D, NO photorealism, NO painterly micro-detail. Palette midnight ink #19213B, indigo #343A63, dusty periwinkle #74759C, faded teal #4D8584, parchment #E7D6AF, brass #B78C4C, warm lamp amber #EFBC69, burgundy #77424F. Real pipes, gears and lamps, no magic or supernatural effects. No watermarks, no decorative text, no humans or animals in environmental layers. Only an indigo/periwinkle steampunk city at rainy evening: repeating varied towers, some chimneys, gold tiny windows, long arched aqueduct, lavender clouds. Flat side elevation silhouettes recede in 3 layers. No window frame, no indoor architecture, no foreground floor or props, no characters, no text. Fill whole canvas; skyline readable across all x positions. Distant city should feel calm with a hint of mystery."
+    },
+    {
+      "id": "05-service-road-mid",
+      "file": "mid/05-service-road-mid.png",
+      "category": "mid",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\05-service-road-clean-v2.png"
+      ],
+      "prompt": "Use case: background-extraction. Extract this exact scene's NEAR ARCHITECTURE as aligned 16:9 alpha middle layer. KEEP far-left archive doorway/building and pipes; KEEP cobbled foreground walking path across bottom; KEEP near lamp posts with their wires; KEEP stone/iron railing bordering the path. Remove EVERYTHING ELSE to true alpha: all sky, clouds, mountains, distant cities, distant trees, valley mist, and the whole distant castle including tower, empty ring, hill and its approach bridge. Retain only near street elements in their exact source positions, canvas size unchanged. No new art or objects; no matte background."
+    },
+    {
+      "id": "water-ripple",
+      "file": "effects/water-ripple.png",
+      "category": "effect",
+      "transparent": true,
+      "grid": [
+        4,
+        1
+      ],
+      "frames": 4,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Transparent FOUR-frame horizontal sprite strip of a small pale cyan/lavender water ripple seen in shallow side perspective for a 2D storybook game. Equal cells with same center baseline. Frame1 tiny impact splash; frame2 small elliptical ring; frame3 wider thinner ellipse; frame4 widest faint broken ellipse. Flat clean simple strokes, no water plane, no background, no text, no shadows. Each ripple stays within 70 percent cell width with empty alpha padding."
+    },
+    {
+      "id": "rain-drop",
+      "file": "effects/rain-drop.png",
+      "category": "effect",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Single small pale periwinkle water droplet sprite on genuine transparent background. Flat 2D storybook game shape, vertically elongated falling water drop, one restrained cream highlight, no glow, no face, no scene, no text. Centered with large empty alpha padding. This is a particle texture."
+    },
+    {
+      "id": "valley-fog",
+      "file": "effects/valley-fog.png",
+      "category": "effect",
+      "transparent": true,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "One wide horizontal low-contrast band of soft layered lavender/periwinkle valley mist on actual transparent background, 3:1 canvas, gentle flat paper-cut lobes with soft alpha edges and broad transparent gaps, intended to drift slowly over a 2D steampunk landscape. No skyline, no objects, no stars, no text, no rectangular background. Fog confined to middle third height with transparent top and bottom."
+    },
+    {
+      "id": "steam-puff",
+      "file": "effects/steam-puff.png",
+      "category": "effect",
+      "transparent": true,
+      "grid": [
+        2,
+        2
+      ],
+      "frames": 4,
+      "refs": [
+        "C:\\Users\\Lenovo\\Documents\\Codex\\2026-09-21\\wo\\outputs\\prologue-asset-pack-v1\\backgrounds\\01-library-hall-clean.png"
+      ],
+      "prompt": "Transparent TWO BY TWO equal-cell four-frame sprite sheet of a single whimsical pale lavender STEAM puff dissipating, physical steam from a machine. Flat rounded cut-paper lobes with subtle grain, matching night archive palette. Frames progress compact puff, medium puff, expanded puff, fading broken puff. Centered in each equal cell, generous empty alpha gaps. No pipe, no background, no magic sparkles or text."
+    }
+  ]
+}

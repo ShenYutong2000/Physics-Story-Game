@@ -1,0 +1,120 @@
+《世界的注脚》序章素材包 v1.0
+======================================
+范围：五个序章场景；统一靛蓝、灰紫、旧黄铜与琥珀灯光的二维绘本蒸汽朋克风格。
+用途：12 月展示的序章原型美术。此包不是可运行的完整游戏，也不包含完整剧情脚本、碰撞、存档与谜题代码。
+
+一、先打开什么
+解压完整文件夹，双击 index.html 可查看本地素材目录、场景组合、动作与状态。
+manifest.json 是图片尺寸和切片的来源；scenes.js / docs/scene-layouts.json 是示例放置坐标。
+PNG 原图没有被程序裁切、重绘或降分辨率。带透明区域的图像保留原始 alpha。
+
+二、正式选用素材
+55 张 PNG：
+- backgrounds：5 张不含人物的完整静态背景，适合快速搭建与对照。
+- far：3 张远景。雨夜城市由场景 1–3 复用；晨光城市用于场景 4；山谷与支承环用于场景 5。
+- mid：5 张保留室内或道路主体的中景，窗外 / 远处区域透明或半透明。
+- foregrounds：5 张前景遮挡。
+- props：23 张道具图，其中包含多状态图集。
+- characters：8 张角色动作图集。
+- effects：4 张效果图。
+- ui：2 张空白对话框 / 笔记页。
+另附 16 个 22.05 kHz / 16-bit / mono WAV：4 个环境循环、12 个动作音效。
+音频为原创程序合成草稿，供演示和节奏验证；未配音、未作曲。
+
+三、场景与交互素材
+01 Library Hall / 万象馆大厅：
+完整背景、夜景、透明中景、前景。
+archive-door；clock-housing；clock-hand；clock-pendulum；maintenance-sheet。
+钟壳 / 指针 / 钟摆分别放置。清单文字由引擎叠加。
+可复用 notebook-world 作为记录册，dialogue-panel 显示观察台词。
+角色：Kath、Wick、keeper。
+音效：环境雨声、脚步、滴答、翻页。
+先日常巡查，再通过异常仪表引导至机械室；不添加无后果的“三下轻响”。
+
+02 Machine Room / 机械维护室：
+完整背景、夜景、透明中景、前景。
+gauge-face + gauge-needle；lever-states 复制 4 组；
+status-lamp-states；stop-switch-states；cable-segment；machine-route-diagram。
+手柄 rest / pulled；灯 off / amber / red；停机按钮 released / pressed。
+从观察仪表到操作第二、第四手柄的因果关系需由游戏事件脚本实现。
+示例网页只展示状态与指针变化，不模拟真实蒸汽压力，也不是已经完成的谜题。
+
+03 Upper Stacks / 顶层书库：
+完整背景、夜景、透明中景、前景。
+rolling-ladder；wooden-case-states（closed / open_with_note / open_empty）；
+newton-note（F = ma）；leak-bucket；rain-drop；water-ripple。
+旧匣与笔记独立，能先打开、再拾取。梯子可作为独立物体移动，但未配置碰撞和攀爬脚本。
+滴水沿屏幕真正下方运动；屋顶渗水应有声源与可见落点。
+
+04 Kath’s Room / Kath 的房间：
+完整背景、晨光远景、透明中景、前景。
+satchel-states（empty / packed）；notebook-world；hanging-coat；desk-lamp-states（off / on）。
+收拾行装，阅读残页，形成出发目标。背包、台灯可以切换状态。
+可复用 newton-note 与 notebook-panel。
+
+05 Service Road / 维修路：
+完整背景、山谷远景、透明道路中景、前景。
+service-road-sign；service-gate-states（closed / open）；castle-wing-upright；valley-fog。
+远景里塔楼和圆环固定。旋转翼独立，预览旋转 180 度显示倒悬。
+旋转轴参考为旋转翼源图 (627,1047)，不是图像几何中心；需与环的轴承位置一起调节。
+这是视觉概念结构，游戏中的支撑、碰撞与救援路线仍需关卡设计。
+路牌留白，在引擎里写英文方向；无魔法漂浮效果。
+
+四、图层搭建
+A. 快速方式：backgrounds + 独立道具 + 角色 + foregrounds + UI。
+B. 视差方式：far + mid + 独立道具 + 角色 + foregrounds + UI。
+不要同时叠加完整 background 与同一幅 mid，否则会出现重复背景。
+中景里的地面、交互道具和角色必须采用一致的场景坐标与镜头位移。
+窗外远景可以轻微视差；前景遮挡只宜轻微移动，防止遮住关键交互点。
+窗洞含半透明玻璃；实际 alpha 已检查，不是黑色实底。
+场景原生画布为 1672 × 941，不是 1920 × 1080。统一等比例缩放；不要拉伸变形。
+当前每景约一屏。长卷轴关卡需要扩展画面，素材不保证横向无缝平铺。
+墙面中的装饰书、灯、管线等已合并；需单独互动的对象应使用 props，而不是把它当成可拆开的 PSD 图层。
+
+五、切片与动画
+不要盲目用等分网格：各张生成图尺寸不同，局部手臂 / 翅膀可能越过理论格线。
+manifest.json 中 region 是 [x,y,width,height]，以原图左上角为原点。
+canvas 是每组动作统一的显示画布。offset 是切片在画布上的摆放位置，pivot 是脚底参考。
+示例预览按这些数据读取原图，没有破坏原图。
+角色动作：
+Kath idle 4 帧、walk 6 帧、interact 4 帧、read-write 4 帧、climb 4 帧；
+Wick flight 4 帧、perch 2 帧；keeper idle-talk 3 帧。
+左右行走可水平翻转，但不应翻转带文字的纸页。
+读写图集的第 1–2 帧为阅读、第 3–4 帧为书写；不要把全部四帧当一个正式循环。
+keeper 的帧也应按状态选择，而非持续切换。
+Wick 的振翅重心需专门对齐；当前底部对齐仅是预览默认设置。
+
+六、Godot 4 导入
+将本文件夹整体复制到 Godot 项目根目录，文件夹名必须为 prologue-asset-pack-v1。
+资源路径即 res://prologue-asset-pack-v1/...
+godot/frames 内有 17 份 SpriteFrames .tres，使用 AtlasTexture 的实际区域和 margin。
+将对应资源拖给 AnimatedSprite2D 的 Sprite Frames 字段。
+每份资源当前仅含 default 动画；道具状态不要自动播放，手动设置 frame。
+建议 Kath 显示高度约 232 场景像素；按 232 / manifest.canvas[1] 设置缩放。
+不同图集画布不同，切换动作时须同步调整缩放，并对齐脚底。
+SpriteFrames 资源文件已经生成，但本环境没有运行 Godot，未完成引擎导入与实际播放验证。
+Godot 的纹理使用线性过滤更适合当前绘本素材；实际缩放效果请在目标分辨率检查。
+本包不包含 CollisionShape2D、Area2D、相机、输入与状态机。示例坐标不是碰撞数据。
+
+七、UI 与文字
+dialogue-panel、notebook-panel 为留白底图。文本由引擎渲染，便于英文修改与本地化。
+维护清单、路线说明与路牌也用文本节点叠加。F = ma 保留在故事残页上。
+本包不附带商业字体；原型可先用引擎自带字体。
+提示符（E、箭头、选择框）可由引擎常规控件绘制，不必为每种文字新画 PNG。
+
+八、已验证与待完善
+已验证：55 张选用 PNG 可解码；尺寸记录；预期透明素材含 alpha；17 组切片区域在图片范围内；
+生成图片已逐张查看；55 张 PNG 及 16 WAV 在清单内按名称整理。
+未完成：Godot 实机导入、最终像素级遮挡校准、完整动态交互与角色逐帧精修。
+生成动画帧存在轻微体型、服装边缘、手部形状和脚位变化；缩放/对齐无法完全替代手工清稿。
+前景和中景是在同一参考场景上分别生成，属于可组合素材，边缘并非原始分层绘画的一一还原。
+浏览器预览在此执行环境未成功启动，交互页面需在本机打开验证。
+素材风格、视觉内容与原图尺寸已检查；不能据此宣称已达到 Steam 商业成品标准。
+
+九、来源与保存
+全部 55 张 PNG 使用内置 image_gen 生成，完整提示词在 docs/prompts.json。
+参考为本项目已建立的角色、场景与配色；不包含直接抽取的《林中之夜》原作素材。
+程序只读取图片建立元数据；未使用程序重绘或抠图。
+生成源图和项目原有场景均保留。压缩包不包含淘汰版 road / wick，也不包含重复批次日志。
+主角文件统一使用 Kath；历史原图里的 Nell 名称只作为已有参考文件名保留。
+

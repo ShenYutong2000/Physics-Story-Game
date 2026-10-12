@@ -1,0 +1,30 @@
+[gd_resource type="SpriteFrames" load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/characters/keeper-idle-talk.png" id="1"]
+
+[sub_resource type="AtlasTexture" id="Atlas_0"]
+atlas = ExtResource("1")
+region = Rect2(190, 62, 282, 783)
+margin = Rect2(13, 8, 26, 16)
+
+[sub_resource type="AtlasTexture" id="Atlas_1"]
+atlas = ExtResource("1")
+region = Rect2(738, 73, 292, 772)
+margin = Rect2(8, 19, 16, 27)
+
+[sub_resource type="AtlasTexture" id="Atlas_2"]
+atlas = ExtResource("1")
+region = Rect2(1297, 76, 288, 770)
+margin = Rect2(10, 21, 20, 29)
+
+[resource]
+animations = [{
+"frames": [
+{"duration": 1.0, "texture": SubResource("Atlas_0")},
+{"duration": 1.0, "texture": SubResource("Atlas_1")},
+{"duration": 1.0, "texture": SubResource("Atlas_2")}
+],
+"loop": true,
+"name": &"default",
+"speed": 4.0
+}]
