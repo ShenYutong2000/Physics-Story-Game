@@ -1,11 +1,19 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=13 format=3]
 
+[ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/mid/01-library-hall-mid.png" id="2_mid"]
 [ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/foregrounds/01-library-hall-front.png" id="4_front"]
+[ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="5_hotspot"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/archive-door.png" id="6_door"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/clock-housing.png" id="7_clock"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/maintenance-sheet.png" id="8_sheet"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="9_wick"]
+[ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="10_ui"]
 
 [node name="LibraryHall" type="Node2D"]
+script = ExtResource("0_hall")
 
 [node name="Far" type="Sprite2D" parent="."]
 z_index = -20
@@ -17,10 +25,56 @@ z_index = -10
 texture = ExtResource("2_mid")
 centered = false
 
+[node name="ArchiveDoor" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(52, 740)
+z_index = -5
+interaction_id = &"archive-door"
+display_name = "Archive door"
+approach_x = 120.0
+reach_radius = 120.0
+content_key = &"door"
+
+[node name="Sprite2D" parent="ArchiveDoor" index="0"]
+position = Vector2(0, -217)
+scale = Vector2(0.321, 0.321)
+texture = ExtResource("6_door")
+
+[node name="OldClock" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(967, 739)
+z_index = -5
+interaction_id = &"clock-housing"
+display_name = "Old clock"
+approach_x = 967.0
+reach_radius = 145.0
+content_key = &"clock"
+
+[node name="Sprite2D" parent="OldClock" index="0"]
+position = Vector2(0, -183)
+scale = Vector2(0.258, 0.258)
+texture = ExtResource("7_clock")
+
+[node name="MaintenanceSheet" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1212, 575)
+z_index = -5
+interaction_id = &"maintenance-sheet"
+display_name = "Maintenance sheet"
+approach_x = 1212.0
+reach_radius = 145.0
+content_key = &"sheet"
+
+[node name="Sprite2D" parent="MaintenanceSheet" index="0"]
+position = Vector2(0, -35)
+scale = Vector2(0.071, 0.071)
+texture = ExtResource("8_sheet")
+
 [node name="Kath" parent="." instance=ExtResource("3_kath")]
 position = Vector2(760, 778)
+
+[node name="Wick" parent="." instance=ExtResource("9_wick")]
 
 [node name="Foreground" type="Sprite2D" parent="."]
 z_index = 10
 texture = ExtResource("4_front")
 centered = false
+
+[node name="HallUI" parent="." instance=ExtResource("10_ui")]
