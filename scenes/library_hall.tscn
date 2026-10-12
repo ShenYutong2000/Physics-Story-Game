@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/mid/01-library-hall-mid.png" id="2_mid"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/foregrounds/01-library-hall-front.png" id="4_front"]
+
+[node name="LibraryHall" type="Node2D"]
+
+[node name="Far" type="Sprite2D" parent="."]
+z_index = -20
+texture = ExtResource("1_far")
+centered = false
+
+[node name="Mid" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("2_mid")
+centered = false
+
+[node name="Kath" parent="." instance=ExtResource("3_kath")]
+position = Vector2(760, 778)
+
+[node name="Foreground" type="Sprite2D" parent="."]
+z_index = 10
+texture = ExtResource("4_front")
+centered = false

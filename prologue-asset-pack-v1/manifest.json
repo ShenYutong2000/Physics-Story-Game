@@ -1,0 +1,1995 @@
+{
+  "title": "Footnotes to the World — Prologue Asset Pack",
+  "version": "1.0",
+  "language": "en",
+  "asset_stage": "prototype visual assets; generated animation poses require in-engine polish",
+  "base_scene_canvas": [
+    1672,
+    941
+  ],
+  "source_images_modified": false,
+  "coordinate_system": "pixels, origin top left, regions x y width height",
+  "assets": [
+    {
+      "id": "01-library-hall-clean",
+      "file": "backgrounds/01-library-hall-clean.png",
+      "category": "backgrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "03-upper-stacks-clean",
+      "file": "backgrounds/03-upper-stacks-clean.png",
+      "category": "backgrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "04-kath-room-clean",
+      "file": "backgrounds/04-kath-room-clean.png",
+      "category": "backgrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "02-machine-room-clean",
+      "file": "backgrounds/02-machine-room-clean.png",
+      "category": "backgrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "03-upper-stacks-front",
+      "file": "foregrounds/03-upper-stacks-front.png",
+      "category": "foregrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.885,
+      "bounds": [
+        0,
+        570,
+        1672,
+        371
+      ]
+    },
+    {
+      "id": "01-library-hall-front",
+      "file": "foregrounds/01-library-hall-front.png",
+      "category": "foregrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9016,
+      "bounds": [
+        11,
+        635,
+        1652,
+        277
+      ]
+    },
+    {
+      "id": "02-machine-room-front",
+      "file": "foregrounds/02-machine-room-front.png",
+      "category": "foregrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8612,
+      "bounds": [
+        0,
+        612,
+        1672,
+        329
+      ]
+    },
+    {
+      "id": "05-service-road-clean-v2",
+      "file": "backgrounds/05-service-road-clean-v2.png",
+      "category": "backgrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "04-kath-room-front",
+      "file": "foregrounds/04-kath-room-front.png",
+      "category": "foregrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8936,
+      "bounds": [
+        0,
+        624,
+        1672,
+        301
+      ]
+    },
+    {
+      "id": "kath-idle",
+      "file": "characters/kath-idle.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5881,
+      "bounds": [
+        75,
+        82,
+        1608,
+        747
+      ],
+      "grid": [
+        4,
+        1
+      ],
+      "canvas": [
+        350,
+        762
+      ],
+      "frames": [
+        {
+          "name": "idle_1",
+          "region": [
+            75,
+            83,
+            329,
+            745
+          ],
+          "offset": [
+            10,
+            9
+          ],
+          "pivot": [
+            175,
+            754
+          ]
+        },
+        {
+          "name": "idle_2",
+          "region": [
+            510,
+            83,
+            330,
+            745
+          ],
+          "offset": [
+            10,
+            9
+          ],
+          "pivot": [
+            175,
+            754
+          ]
+        },
+        {
+          "name": "blink",
+          "region": [
+            941,
+            83,
+            334,
+            746
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            175,
+            754
+          ]
+        },
+        {
+          "name": "idle_3",
+          "region": [
+            1351,
+            82,
+            332,
+            746
+          ],
+          "offset": [
+            9,
+            8
+          ],
+          "pivot": [
+            175,
+            754
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "05-service-road-front",
+      "file": "foregrounds/05-service-road-front.png",
+      "category": "foregrounds",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9215,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "castle-wing-upright",
+      "file": "props/castle-wing-upright.png",
+      "category": "props",
+      "width": 1254,
+      "height": 1254,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5957,
+      "bounds": [
+        41,
+        59,
+        1172,
+        1079
+      ]
+    },
+    {
+      "id": "clock-housing",
+      "file": "props/clock-housing.png",
+      "category": "props",
+      "width": 1024,
+      "height": 1536,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6995,
+      "bounds": [
+        288,
+        34,
+        448,
+        1441
+      ]
+    },
+    {
+      "id": "clock-pendulum",
+      "file": "props/clock-pendulum.png",
+      "category": "props",
+      "width": 1024,
+      "height": 1536,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9408,
+      "bounds": [
+        393,
+        53,
+        237,
+        1405
+      ]
+    },
+    {
+      "id": "maintenance-sheet",
+      "file": "props/maintenance-sheet.png",
+      "category": "props",
+      "width": 1402,
+      "height": 1122,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6102,
+      "bounds": [
+        344,
+        73,
+        714,
+        978
+      ]
+    },
+    {
+      "id": "clock-hand",
+      "file": "props/clock-hand.png",
+      "category": "props",
+      "width": 948,
+      "height": 1659,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9311,
+      "bounds": [
+        382,
+        108,
+        184,
+        1390
+      ]
+    },
+    {
+      "id": "archive-door",
+      "file": "props/archive-door.png",
+      "category": "props",
+      "width": 1024,
+      "height": 1536,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.4982,
+      "bounds": [
+        202,
+        75,
+        626,
+        1370
+      ]
+    },
+    {
+      "id": "gauge-face",
+      "file": "props/gauge-face.png",
+      "category": "props",
+      "width": 1427,
+      "height": 1102,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5608,
+      "bounds": [
+        155,
+        78,
+        1116,
+        925
+      ]
+    },
+    {
+      "id": "lever-states",
+      "file": "props/lever-states.png",
+      "category": "props",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7515,
+      "bounds": [
+        107,
+        108,
+        1459,
+        722
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        650,
+        738
+      ],
+      "frames": [
+        {
+          "name": "rest",
+          "region": [
+            107,
+            108,
+            633,
+            722
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            325,
+            730
+          ]
+        },
+        {
+          "name": "pulled",
+          "region": [
+            932,
+            108,
+            634,
+            722
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            325,
+            730
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "gauge-needle",
+      "file": "props/gauge-needle.png",
+      "category": "props",
+      "width": 1254,
+      "height": 1254,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9532,
+      "bounds": [
+        95,
+        547,
+        1064,
+        172
+      ]
+    },
+    {
+      "id": "status-lamp-states",
+      "file": "props/status-lamp-states.png",
+      "category": "props",
+      "width": 1870,
+      "height": 841,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6054,
+      "bounds": [
+        102,
+        64,
+        1666,
+        681
+      ],
+      "grid": [
+        3,
+        1
+      ],
+      "canvas": [
+        490,
+        697
+      ],
+      "frames": [
+        {
+          "name": "off",
+          "region": [
+            102,
+            64,
+            474,
+            681
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            245,
+            689
+          ]
+        },
+        {
+          "name": "amber",
+          "region": [
+            698,
+            64,
+            474,
+            681
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            245,
+            689
+          ]
+        },
+        {
+          "name": "red",
+          "region": [
+            1294,
+            64,
+            474,
+            681
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            245,
+            689
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "machine-route-diagram",
+      "file": "props/machine-route-diagram.png",
+      "category": "props",
+      "width": 1536,
+      "height": 1024,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.4953,
+      "bounds": [
+        39,
+        188,
+        1459,
+        604
+      ]
+    },
+    {
+      "id": "cable-segment",
+      "file": "props/cable-segment.png",
+      "category": "props",
+      "width": 2172,
+      "height": 724,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8755,
+      "bounds": [
+        31,
+        160,
+        2109,
+        423
+      ]
+    },
+    {
+      "id": "stop-switch-states",
+      "file": "props/stop-switch-states.png",
+      "category": "props",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6673,
+      "bounds": [
+        221,
+        32,
+        1318,
+        827
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        602,
+        843
+      ],
+      "frames": [
+        {
+          "name": "released",
+          "region": [
+            221,
+            32,
+            585,
+            827
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            301,
+            835
+          ]
+        },
+        {
+          "name": "pressed",
+          "region": [
+            953,
+            307,
+            586,
+            552
+          ],
+          "offset": [
+            8,
+            283
+          ],
+          "pivot": [
+            301,
+            835
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "rolling-ladder",
+      "file": "props/rolling-ladder.png",
+      "category": "props",
+      "width": 1024,
+      "height": 1536,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8602,
+      "bounds": [
+        291,
+        31,
+        518,
+        1443
+      ]
+    },
+    {
+      "id": "leak-bucket",
+      "file": "props/leak-bucket.png",
+      "category": "props",
+      "width": 1346,
+      "height": 1168,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6946,
+      "bounds": [
+        254,
+        229,
+        838,
+        776
+      ]
+    },
+    {
+      "id": "newton-note",
+      "file": "props/newton-note.png",
+      "category": "props",
+      "width": 1347,
+      "height": 1167,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6188,
+      "bounds": [
+        339,
+        111,
+        706,
+        960
+      ]
+    },
+    {
+      "id": "wooden-case-states",
+      "file": "props/wooden-case-states.png",
+      "category": "props",
+      "width": 2048,
+      "height": 768,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5373,
+      "bounds": [
+        54,
+        113,
+        1955,
+        536
+      ],
+      "grid": [
+        3,
+        1
+      ],
+      "canvas": [
+        614,
+        551
+      ],
+      "frames": [
+        {
+          "name": "closed",
+          "region": [
+            54,
+            368,
+            597,
+            281
+          ],
+          "offset": [
+            8,
+            262
+          ],
+          "pivot": [
+            307,
+            543
+          ]
+        },
+        {
+          "name": "open_with_note",
+          "region": [
+            726,
+            113,
+            598,
+            535
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            307,
+            543
+          ]
+        },
+        {
+          "name": "open_empty",
+          "region": [
+            1411,
+            113,
+            598,
+            535
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            307,
+            543
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "satchel-states",
+      "file": "props/satchel-states.png",
+      "category": "props",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5136,
+      "bounds": [
+        46,
+        98,
+        1686,
+        669
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        847,
+        684
+      ],
+      "frames": [
+        {
+          "name": "empty",
+          "region": [
+            46,
+            98,
+            831,
+            668
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            424,
+            676
+          ]
+        },
+        {
+          "name": "packed",
+          "region": [
+            909,
+            205,
+            823,
+            561
+          ],
+          "offset": [
+            12,
+            115
+          ],
+          "pivot": [
+            424,
+            676
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "desk-lamp-states",
+      "file": "props/desk-lamp-states.png",
+      "category": "props",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7693,
+      "bounds": [
+        206,
+        40,
+        1395,
+        803
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        578,
+        819
+      ],
+      "frames": [
+        {
+          "name": "off",
+          "region": [
+            207,
+            40,
+            561,
+            803
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            289,
+            811
+          ]
+        },
+        {
+          "name": "on",
+          "region": [
+            1039,
+            40,
+            562,
+            803
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            289,
+            811
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "hanging-coat",
+      "file": "props/hanging-coat.png",
+      "category": "props",
+      "width": 1024,
+      "height": 1536,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6433,
+      "bounds": [
+        161,
+        83,
+        699,
+        1359
+      ]
+    },
+    {
+      "id": "notebook-world",
+      "file": "props/notebook-world.png",
+      "category": "props",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6226,
+      "bounds": [
+        256,
+        165,
+        1194,
+        647
+      ]
+    },
+    {
+      "id": "service-road-sign",
+      "file": "props/service-road-sign.png",
+      "category": "props",
+      "width": 1536,
+      "height": 1024,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8177,
+      "bounds": [
+        287,
+        17,
+        1018,
+        977
+      ]
+    },
+    {
+      "id": "kath-walk",
+      "file": "characters/kath-walk.png",
+      "category": "characters",
+      "width": 1536,
+      "height": 1024,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7181,
+      "bounds": [
+        86,
+        31,
+        1331,
+        953
+      ],
+      "grid": [
+        3,
+        2
+      ],
+      "canvas": [
+        347,
+        473
+      ],
+      "frames": [
+        {
+          "name": "contact_right",
+          "region": [
+            103,
+            31,
+            283,
+            455
+          ],
+          "offset": [
+            32,
+            10
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        },
+        {
+          "name": "down_right",
+          "region": [
+            598,
+            31,
+            273,
+            457
+          ],
+          "offset": [
+            37,
+            8
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        },
+        {
+          "name": "passing_right",
+          "region": [
+            1086,
+            31,
+            320,
+            453
+          ],
+          "offset": [
+            14,
+            12
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        },
+        {
+          "name": "contact_left",
+          "region": [
+            86,
+            530,
+            306,
+            454
+          ],
+          "offset": [
+            20,
+            11
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        },
+        {
+          "name": "down_left",
+          "region": [
+            579,
+            529,
+            306,
+            455
+          ],
+          "offset": [
+            20,
+            10
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        },
+        {
+          "name": "passing_left",
+          "region": [
+            1086,
+            529,
+            331,
+            451
+          ],
+          "offset": [
+            8,
+            14
+          ],
+          "pivot": [
+            174,
+            465
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 8,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "service-gate-states",
+      "file": "props/service-gate-states.png",
+      "category": "props",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7312,
+      "bounds": [
+        42,
+        177,
+        1687,
+        527
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        821,
+        543
+      ],
+      "frames": [
+        {
+          "name": "closed",
+          "region": [
+            42,
+            177,
+            790,
+            527
+          ],
+          "offset": [
+            16,
+            8
+          ],
+          "pivot": [
+            410,
+            535
+          ]
+        },
+        {
+          "name": "open",
+          "region": [
+            924,
+            177,
+            805,
+            527
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            410,
+            535
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "kath-read-write",
+      "file": "characters/kath-read-write.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5446,
+      "bounds": [
+        40,
+        78,
+        1712,
+        752
+      ],
+      "grid": [
+        4,
+        1
+      ],
+      "canvas": [
+        410,
+        767
+      ],
+      "frames": [
+        {
+          "name": "read_1",
+          "region": [
+            40,
+            78,
+            394,
+            751
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            205,
+            759
+          ]
+        },
+        {
+          "name": "read_2",
+          "region": [
+            496,
+            79,
+            369,
+            750
+          ],
+          "offset": [
+            20,
+            9
+          ],
+          "pivot": [
+            205,
+            759
+          ]
+        },
+        {
+          "name": "write_1",
+          "region": [
+            925,
+            78,
+            392,
+            751
+          ],
+          "offset": [
+            9,
+            8
+          ],
+          "pivot": [
+            205,
+            759
+          ]
+        },
+        {
+          "name": "write_2",
+          "region": [
+            1377,
+            79,
+            375,
+            750
+          ],
+          "offset": [
+            18,
+            9
+          ],
+          "pivot": [
+            205,
+            759
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "wick-perch",
+      "file": "characters/wick-perch.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6981,
+      "bounds": [
+        244,
+        48,
+        1333,
+        737
+      ],
+      "grid": [
+        2,
+        1
+      ],
+      "canvas": [
+        574,
+        753
+      ],
+      "frames": [
+        {
+          "name": "eyes_open",
+          "region": [
+            244,
+            48,
+            558,
+            737
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            287,
+            745
+          ]
+        },
+        {
+          "name": "blink",
+          "region": [
+            1038,
+            116,
+            539,
+            669
+          ],
+          "offset": [
+            18,
+            76
+          ],
+          "pivot": [
+            287,
+            745
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "kath-climb",
+      "file": "characters/kath-climb.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5468,
+      "bounds": [
+        41,
+        80,
+        1713,
+        737
+      ],
+      "grid": [
+        4,
+        1
+      ],
+      "canvas": [
+        435,
+        753
+      ],
+      "frames": [
+        {
+          "name": "climb_1",
+          "region": [
+            41,
+            80,
+            414,
+            737
+          ],
+          "offset": [
+            10,
+            8
+          ],
+          "pivot": [
+            218,
+            745
+          ]
+        },
+        {
+          "name": "climb_2",
+          "region": [
+            473,
+            80,
+            409,
+            737
+          ],
+          "offset": [
+            13,
+            8
+          ],
+          "pivot": [
+            218,
+            745
+          ]
+        },
+        {
+          "name": "climb_3",
+          "region": [
+            915,
+            80,
+            419,
+            737
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            218,
+            745
+          ]
+        },
+        {
+          "name": "climb_4",
+          "region": [
+            1349,
+            80,
+            405,
+            737
+          ],
+          "offset": [
+            15,
+            8
+          ],
+          "pivot": [
+            218,
+            745
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 6,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "kath-interact",
+      "file": "characters/kath-interact.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.5688,
+      "bounds": [
+        69,
+        79,
+        1637,
+        750
+      ],
+      "grid": [
+        4,
+        1
+      ],
+      "canvas": [
+        418,
+        766
+      ],
+      "frames": [
+        {
+          "name": "stand",
+          "region": [
+            70,
+            79,
+            336,
+            750
+          ],
+          "offset": [
+            41,
+            8
+          ],
+          "pivot": [
+            209,
+            758
+          ]
+        },
+        {
+          "name": "reach",
+          "region": [
+            498,
+            80,
+            402,
+            749
+          ],
+          "offset": [
+            8,
+            9
+          ],
+          "pivot": [
+            209,
+            758
+          ]
+        },
+        {
+          "name": "grip",
+          "region": [
+            947,
+            100,
+            395,
+            729
+          ],
+          "offset": [
+            12,
+            29
+          ],
+          "pivot": [
+            209,
+            758
+          ]
+        },
+        {
+          "name": "return",
+          "region": [
+            1368,
+            80,
+            338,
+            749
+          ],
+          "offset": [
+            40,
+            9
+          ],
+          "pivot": [
+            209,
+            758
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "dialogue-panel",
+      "file": "ui/dialogue-panel.png",
+      "category": "ui",
+      "width": 2172,
+      "height": 724,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.4342,
+      "bounds": [
+        47,
+        111,
+        2078,
+        474
+      ]
+    },
+    {
+      "id": "wick-flight-v2",
+      "file": "characters/wick-flight-v2.png",
+      "category": "characters",
+      "width": 1254,
+      "height": 1254,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7139,
+      "bounds": [
+        88,
+        83,
+        1032,
+        1069
+      ],
+      "grid": [
+        2,
+        2
+      ],
+      "canvas": [
+        565,
+        509
+      ],
+      "frames": [
+        {
+          "name": "up",
+          "region": [
+            190,
+            83,
+            300,
+            493
+          ],
+          "offset": [
+            132,
+            8
+          ],
+          "pivot": [
+            282,
+            501
+          ]
+        },
+        {
+          "name": "half_down",
+          "region": [
+            700,
+            130,
+            394,
+            451
+          ],
+          "offset": [
+            86,
+            50
+          ],
+          "pivot": [
+            282,
+            501
+          ]
+        },
+        {
+          "name": "down",
+          "region": [
+            88,
+            705,
+            549,
+            444
+          ],
+          "offset": [
+            8,
+            57
+          ],
+          "pivot": [
+            282,
+            501
+          ]
+        },
+        {
+          "name": "half_up",
+          "region": [
+            755,
+            702,
+            365,
+            450
+          ],
+          "offset": [
+            100,
+            51
+          ],
+          "pivot": [
+            282,
+            501
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 6,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "notebook-panel",
+      "file": "ui/notebook-panel.png",
+      "category": "ui",
+      "width": 1536,
+      "height": 1024,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.2504,
+      "bounds": [
+        27,
+        51,
+        1484,
+        931
+      ]
+    },
+    {
+      "id": "keeper-idle-talk",
+      "file": "characters/keeper-idle-talk.png",
+      "category": "characters",
+      "width": 1774,
+      "height": 887,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.7657,
+      "bounds": [
+        190,
+        62,
+        1395,
+        784
+      ],
+      "grid": [
+        3,
+        1
+      ],
+      "canvas": [
+        308,
+        799
+      ],
+      "frames": [
+        {
+          "name": "idle",
+          "region": [
+            190,
+            62,
+            282,
+            783
+          ],
+          "offset": [
+            13,
+            8
+          ],
+          "pivot": [
+            154,
+            791
+          ]
+        },
+        {
+          "name": "talk",
+          "region": [
+            738,
+            73,
+            292,
+            772
+          ],
+          "offset": [
+            8,
+            19
+          ],
+          "pivot": [
+            154,
+            791
+          ]
+        },
+        {
+          "name": "blink",
+          "region": [
+            1297,
+            76,
+            288,
+            770
+          ],
+          "offset": [
+            10,
+            21
+          ],
+          "pivot": [
+            154,
+            791
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "01-library-hall-mid",
+      "file": "mid/01-library-hall-mid.png",
+      "category": "mid",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.0058,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "03-upper-stacks-mid",
+      "file": "mid/03-upper-stacks-mid.png",
+      "category": "mid",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.1358,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "02-machine-room-mid",
+      "file": "mid/02-machine-room-mid.png",
+      "category": "mid",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.0804,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "04-kath-room-mid",
+      "file": "mid/04-kath-room-mid.png",
+      "category": "mid",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.1053,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "05-service-road-far",
+      "file": "far/05-service-road-far.png",
+      "category": "far",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "archive-dawn-city",
+      "file": "far/archive-dawn-city.png",
+      "category": "far",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "archive-night-city",
+      "file": "far/archive-night-city.png",
+      "category": "far",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": false,
+      "transparent_pixel_fraction": 0.0,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "05-service-road-mid",
+      "file": "mid/05-service-road-mid.png",
+      "category": "mid",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6386,
+      "bounds": [
+        0,
+        0,
+        1672,
+        941
+      ]
+    },
+    {
+      "id": "water-ripple",
+      "file": "effects/water-ripple.png",
+      "category": "effects",
+      "width": 2172,
+      "height": 724,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9787,
+      "bounds": [
+        177,
+        0,
+        1943,
+        724
+      ],
+      "grid": [
+        4,
+        1
+      ],
+      "canvas": [
+        441,
+        155
+      ],
+      "frames": [
+        {
+          "name": "splash",
+          "region": [
+            177,
+            287,
+            178,
+            139
+          ],
+          "offset": [
+            132,
+            8
+          ],
+          "pivot": [
+            220,
+            147
+          ]
+        },
+        {
+          "name": "ring_small",
+          "region": [
+            679,
+            347,
+            272,
+            77
+          ],
+          "offset": [
+            84,
+            70
+          ],
+          "pivot": [
+            220,
+            147
+          ]
+        },
+        {
+          "name": "ring_large",
+          "region": [
+            1156,
+            345,
+            407,
+            81
+          ],
+          "offset": [
+            17,
+            66
+          ],
+          "pivot": [
+            220,
+            147
+          ]
+        },
+        {
+          "name": "fade",
+          "region": [
+            1695,
+            338,
+            425,
+            87
+          ],
+          "offset": [
+            8,
+            60
+          ],
+          "pivot": [
+            220,
+            147
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    },
+    {
+      "id": "rain-drop",
+      "file": "effects/rain-drop.png",
+      "category": "effects",
+      "width": 1672,
+      "height": 941,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.9857,
+      "bounds": [
+        773,
+        327,
+        126,
+        287
+      ]
+    },
+    {
+      "id": "valley-fog",
+      "file": "effects/valley-fog.png",
+      "category": "effects",
+      "width": 2172,
+      "height": 724,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.6696,
+      "bounds": [
+        0,
+        227,
+        2172,
+        306
+      ]
+    },
+    {
+      "id": "steam-puff",
+      "file": "effects/steam-puff.png",
+      "category": "effects",
+      "width": 1278,
+      "height": 1230,
+      "has_alpha": true,
+      "transparent_pixel_fraction": 0.8426,
+      "bounds": [
+        149,
+        163,
+        972,
+        977
+      ],
+      "grid": [
+        2,
+        2
+      ],
+      "canvas": [
+        427,
+        441
+      ],
+      "frames": [
+        {
+          "name": "small",
+          "region": [
+            231,
+            224,
+            250,
+            251
+          ],
+          "offset": [
+            88,
+            182
+          ],
+          "pivot": [
+            214,
+            433
+          ]
+        },
+        {
+          "name": "medium",
+          "region": [
+            775,
+            163,
+            346,
+            361
+          ],
+          "offset": [
+            40,
+            72
+          ],
+          "pivot": [
+            214,
+            433
+          ]
+        },
+        {
+          "name": "large",
+          "region": [
+            150,
+            715,
+            411,
+            425
+          ],
+          "offset": [
+            8,
+            8
+          ],
+          "pivot": [
+            214,
+            433
+          ]
+        },
+        {
+          "name": "dissipate",
+          "region": [
+            843,
+            752,
+            260,
+            358
+          ],
+          "offset": [
+            84,
+            75
+          ],
+          "pivot": [
+            214,
+            433
+          ]
+        }
+      ],
+      "frame_order": "row_major",
+      "suggested_fps": 4,
+      "animation_note": "Frame alignment is metadata only. Generated pose proportions may still need manual cleanup."
+    }
+  ]
+}

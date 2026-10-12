@@ -1,0 +1,130 @@
+[
+  {
+    "id": "amb-library",
+    "file": "audio/amb-library.wav",
+    "duration": 9.5,
+    "loop": true,
+    "description": "Muffled rain and quiet archive ventilation.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "amb-machine",
+    "file": "audio/amb-machine.wav",
+    "duration": 9.5,
+    "loop": true,
+    "description": "Low machinery hum.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "amb-room",
+    "file": "audio/amb-room.wav",
+    "duration": 9.5,
+    "loop": true,
+    "description": "Soft room air and distant pipes.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "amb-road",
+    "file": "audio/amb-road.wav",
+    "duration": 9.5,
+    "loop": true,
+    "description": "Wind over the service road.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "step-wood",
+    "file": "audio/step-wood.wav",
+    "duration": 0.16,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "step-stone",
+    "file": "audio/step-stone.wav",
+    "duration": 0.13,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "lever-click",
+    "file": "audio/lever-click.wav",
+    "duration": 0.17,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "clock-tick",
+    "file": "audio/clock-tick.wav",
+    "duration": 0.05,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "case-open",
+    "file": "audio/case-open.wav",
+    "duration": 0.3,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "gate-latch",
+    "file": "audio/gate-latch.wav",
+    "duration": 0.19,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "stop-switch",
+    "file": "audio/stop-switch.wav",
+    "duration": 0.12,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "ladder-step",
+    "file": "audio/ladder-step.wav",
+    "duration": 0.14,
+    "loop": false,
+    "description": "Short mechanical / contact cue.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "page-turn",
+    "file": "audio/page-turn.wav",
+    "duration": 0.5,
+    "loop": false,
+    "description": "Paper movement texture.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "water-drop",
+    "file": "audio/water-drop.wav",
+    "duration": 0.4,
+    "loop": false,
+    "description": "Stylized water drip.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "pencil-write",
+    "file": "audio/pencil-write.wav",
+    "duration": 0.7,
+    "loop": false,
+    "description": "Pencil scratch.",
+    "source": "original procedural synthesis, prototype"
+  },
+  {
+    "id": "wick-flutter",
+    "file": "audio/wick-flutter.wav",
+    "duration": 0.35,
+    "loop": false,
+    "description": "Soft flutter cue.",
+    "source": "original procedural synthesis, prototype"
+  }
+]
