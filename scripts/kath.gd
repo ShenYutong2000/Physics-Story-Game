@@ -3,7 +3,8 @@ extends CharacterBody2D
 
 const IDLE_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-idle.tres")
 const WALK_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-walk.tres")
-const DISPLAY_HEIGHT: float = 232.0
+# Canonical rendered height for Kath in every scene that instances scenes/kath.tscn.
+const DISPLAY_HEIGHT: float = 232.0 * 1.3
 const IDLE_SOURCE_HEIGHT: float = 771.0
 const WALK_SOURCE_HEIGHT: float = 484.0
 
