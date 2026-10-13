@@ -8,6 +8,11 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	if not root.has_node("PrologueState"):
+		var test_state := Node.new()
+		test_state.name = "PrologueState"
+		test_state.set_script(load("res://scripts/prologue_state.gd"))
+		root.add_child(test_state)
 	var hall: Node2D = HALL.instantiate()
 	root.add_child(hall)
 	await process_frame
@@ -74,6 +79,9 @@ func _run() -> void:
 		return
 
 	print("WEEK1_SMOKE_OK: scene, resources, input, movement, facing, bounds")
+	hall.queue_free()
+	root.get_node("PrologueState").queue_free()
+	await process_frame
 	quit(0)
 
 

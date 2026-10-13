@@ -8,6 +8,11 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	if not root.has_node("PrologueState"):
+		var test_state := Node.new()
+		test_state.name = "PrologueState"
+		test_state.set_script(load("res://scripts/prologue_state.gd"))
+		root.add_child(test_state)
 	var hall: Node2D = HALL.instantiate()
 	root.add_child(hall)
 	await process_frame
@@ -116,6 +121,7 @@ func _run() -> void:
 		_fail("Three inspections did not trigger the final line exactly once.")
 		return
 	hall._advance_dialogue()
+	kath.position.x = 967.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
 	hall._advance_dialogue()
 	hall._advance_dialogue()
@@ -138,6 +144,9 @@ func _run() -> void:
 		_fail("A held E reopened an inspection after closing a modal.")
 		return
 	print("WEEK2_SMOKE_OK: reach, nearest, modals, notes, Wick, completion, pause")
+	hall.queue_free()
+	root.get_node("PrologueState").queue_free()
+	await process_frame
 	quit(0)
 
 

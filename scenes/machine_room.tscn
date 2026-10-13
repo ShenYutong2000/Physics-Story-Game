@@ -1,0 +1,146 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/machine_room.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="2_far"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/mid/02-machine-room-mid.png" id="3_mid"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="4_kath"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/foregrounds/02-machine-room-front.png" id="5_front"]
+[ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="6_hotspot"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/gauge-face.png" id="7_gauge"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/gauge-needle.png" id="8_needle"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/machine-route-diagram.png" id="9_route"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="10_wick"]
+[ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="11_ui"]
+[ext_resource type="SpriteFrames" path="res://prologue-asset-pack-v1/godot/frames/lever-states.tres" id="12_lever"]
+[ext_resource type="SpriteFrames" path="res://prologue-asset-pack-v1/godot/frames/status-lamp-states.tres" id="13_lamp"]
+[ext_resource type="SpriteFrames" path="res://prologue-asset-pack-v1/godot/frames/stop-switch-states.tres" id="14_stop"]
+
+[node name="MachineRoom" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Far" type="Sprite2D" parent="."]
+z_index = -20
+texture = ExtResource("2_far")
+centered = false
+
+[node name="Mid" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("3_mid")
+centered = false
+
+[node name="RouteDiagram" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(861, 773)
+z_index = -5
+interaction_id = &"service-route"
+display_name = "Route diagram"
+approach_x = 861.0
+reach_radius = 135.0
+content_key = &"route"
+
+[node name="Diagram" type="Sprite2D" parent="RouteDiagram"]
+position = Vector2(0, -398)
+scale = Vector2(0.2, 0.2)
+texture = ExtResource("9_route")
+
+[node name="Gauge" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(1136, 773)
+z_index = -5
+interaction_id = &"machine-reading"
+display_name = "Gauge"
+approach_x = 1136.0
+reach_radius = 145.0
+content_key = &"gauge"
+
+[node name="Face" type="Sprite2D" parent="Gauge"]
+position = Vector2(0, -490)
+scale = Vector2(0.132, 0.132)
+texture = ExtResource("7_gauge")
+
+[node name="Needle" type="Sprite2D" parent="Gauge"]
+position = Vector2(0, -490)
+rotation = -1.22
+scale = Vector2(0.132, 0.132)
+texture = ExtResource("8_needle")
+offset = Vector2(447, -8)
+
+[node name="LeverOne" type="AnimatedSprite2D" parent="."]
+position = Vector2(1007, 421)
+z_index = -5
+sprite_frames = ExtResource("12_lever")
+frame = 0
+offset = Vector2(0, -34)
+scale = Vector2(0.09, 0.09)
+
+[node name="LeverTwo" type="AnimatedSprite2D" parent="."]
+position = Vector2(1082, 421)
+z_index = -5
+sprite_frames = ExtResource("12_lever")
+frame = 0
+offset = Vector2(0, -34)
+scale = Vector2(0.09, 0.09)
+
+[node name="LeverThree" type="AnimatedSprite2D" parent="."]
+position = Vector2(1157, 421)
+z_index = -5
+sprite_frames = ExtResource("12_lever")
+frame = 0
+offset = Vector2(0, -34)
+scale = Vector2(0.09, 0.09)
+
+[node name="LeverFour" type="AnimatedSprite2D" parent="."]
+position = Vector2(1232, 421)
+z_index = -5
+sprite_frames = ExtResource("12_lever")
+frame = 0
+offset = Vector2(0, -34)
+scale = Vector2(0.09, 0.09)
+
+[node name="StatusLampOne" type="AnimatedSprite2D" parent="."]
+position = Vector2(1046, 227)
+z_index = -5
+sprite_frames = ExtResource("13_lamp")
+frame = 1
+offset = Vector2(0, -17)
+scale = Vector2(0.05, 0.05)
+
+[node name="StatusLampTwo" type="AnimatedSprite2D" parent="."]
+position = Vector2(1192, 227)
+z_index = -5
+sprite_frames = ExtResource("13_lamp")
+frame = 1
+offset = Vector2(0, -17)
+scale = Vector2(0.05, 0.05)
+
+[node name="EmergencyStop" type="AnimatedSprite2D" parent="."]
+position = Vector2(1338, 567)
+z_index = -5
+sprite_frames = ExtResource("14_stop")
+frame = 0
+offset = Vector2(0, -44)
+scale = Vector2(0.105, 0.105)
+
+[node name="ReturnToHall" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(120, 773)
+z_index = -5
+interaction_id = &"return-hall"
+display_name = "Library Hall"
+approach_x = 120.0
+reach_radius = 110.0
+content_key = &"return"
+destination_scene = "res://scenes/library_hall.tscn"
+spawn_tag = "from-machine-room"
+
+[node name="Kath" parent="." instance=ExtResource("4_kath")]
+position = Vector2(250, 773)
+floor_y = 773.0
+left_limit = 56.0
+right_limit = 1616.0
+
+[node name="Wick" parent="." instance=ExtResource("10_wick")]
+
+[node name="Foreground" type="Sprite2D" parent="."]
+z_index = 10
+texture = ExtResource("5_front")
+centered = false
+
+[node name="HallUI" parent="." instance=ExtResource("11_ui")]

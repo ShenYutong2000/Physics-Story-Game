@@ -33,6 +33,8 @@ display_name = "Archive door"
 approach_x = 120.0
 reach_radius = 120.0
 content_key = &"door"
+destination_scene = "res://scenes/machine_room.tscn"
+spawn_tag = "from-hall"
 
 [node name="Sprite2D" parent="ArchiveDoor" index="0"]
 position = Vector2(0, -217)
@@ -66,6 +68,17 @@ content_key = &"sheet"
 position = Vector2(0, -35)
 scale = Vector2(0.071, 0.071)
 texture = ExtResource("8_sheet")
+
+[node name="UpperStacksEntry" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1530, 778)
+z_index = -5
+interaction_id = &"upper-stacks-entry"
+display_name = "Upper Stacks"
+approach_x = 1530.0
+reach_radius = 120.0
+content_key = &"upper-stacks"
+destination_scene = "res://scenes/upper_stacks.tscn"
+spawn_tag = "from-hall"
 
 [node name="Kath" parent="." instance=ExtResource("3_kath")]
 position = Vector2(760, 778)
