@@ -5,6 +5,8 @@ const NOTEBOOK_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/ui/not
 const SHEET_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/maintenance-sheet.png")
 const GAUGE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/gauge-face.png")
 const NEWTON_NOTE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/newton-note.png")
+const CASTLE_WING_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/castle-wing-upright.png")
+const SERVICE_ROAD_FAR: Texture2D = preload("res://prologue-asset-pack-v1/far/05-service-road-far.png")
 const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"maintenance-sheet"]
 const INK := Color("2b304c")
 const CREAM := Color("fff4db")
@@ -28,6 +30,11 @@ var journal_scroll: ScrollContainer
 var journal_entries: RichTextLabel
 var torn_page: Control
 var torn_page_instruction: Label
+var notebook_comparison: Control
+var emergency_console: Control
+var emergency_status: Label
+var emergency_selection: Label
+var castle_rotation: Control
 var pause_menu: Control
 var hint_deadline: int = 0
 
@@ -212,6 +219,81 @@ func _ready() -> void:
 	torn_page_instruction = _label(page_panel, Rect2(584, 605, 520, 43), "ENTER  KEEP PAGE     ·     ESC  CLOSE", 20, INK)
 	torn_page.visible = false
 
+	notebook_comparison = Control.new()
+	notebook_comparison.name = "NotebookComparison"
+	notebook_comparison.size = Vector2(1672, 941)
+	notebook_comparison.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(notebook_comparison)
+	_dim(notebook_comparison)
+	var comparison_panel := Panel.new()
+	comparison_panel.position = Vector2(236, 112)
+	comparison_panel.size = Vector2(1200, 718)
+	comparison_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var comparison_style := StyleBoxFlat.new()
+	comparison_style.bg_color = Color("f7edda")
+	comparison_style.border_color = INK
+	comparison_style.set_border_width_all(5)
+	comparison_style.set_corner_radius_all(18)
+	comparison_panel.add_theme_stylebox_override("panel", comparison_style)
+	notebook_comparison.add_child(comparison_panel)
+	_label(comparison_panel, Rect2(62, 30, 1076, 52), "TWO PAGES · ONE MISSING LEAF", 30, INK)
+	_texture(comparison_panel, NEWTON_NOTE_TEXTURE, Rect2(62, 104, 435, 490))
+	_texture(comparison_panel, NOTEBOOK_TEXTURE, Rect2(560, 104, 575, 490))
+	_label(comparison_panel, Rect2(587, 178, 500, 300), "The torn edge fits the empty place in my notebook.\n\nA route entry remains beneath it: OBSERVATORY CASTLE — return visit pending.\n\nThe handwriting is mine. I still don't know what F = ma means.", 24, INK)
+	_label(comparison_panel, Rect2(300, 620, 600, 45), "ENTER  RECORD MATCH     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	notebook_comparison.visible = false
+
+	emergency_console = Control.new()
+	emergency_console.name = "EmergencyConsole"
+	emergency_console.size = Vector2(1672, 941)
+	emergency_console.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(emergency_console)
+	_dim(emergency_console)
+	var emergency_panel := Panel.new()
+	emergency_panel.position = Vector2(336, 180)
+	emergency_panel.size = Vector2(1000, 580)
+	emergency_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var emergency_style := StyleBoxFlat.new()
+	emergency_style.bg_color = Color("f7edda")
+	emergency_style.border_color = INK
+	emergency_style.set_border_width_all(5)
+	emergency_style.set_corner_radius_all(18)
+	emergency_panel.add_theme_stylebox_override("panel", emergency_style)
+	emergency_console.add_child(emergency_panel)
+	_label(emergency_panel, Rect2(70, 38, 860, 55), "EMERGENCY LINE CONTROL", 31, INK)
+	_label(emergency_panel, Rect2(70, 105, 860, 92), "Maintenance card: open return lever 2 and isolate lever 4. If the needle keeps rising, stop the local drive.", 25, INK)
+	emergency_selection = _label(emergency_panel, Rect2(100, 238, 800, 70), "‹  LEVER 2 · RETURN  ›", 31, INK)
+	emergency_selection.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	emergency_status = _label(emergency_panel, Rect2(90, 340, 820, 90), "Lever 2: pending     ·     Lever 4: pending     ·     Drive: running", 24, INK)
+	emergency_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(emergency_panel, Rect2(100, 470, 800, 44), "← / →  SELECT     ·     E  OPERATE     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	emergency_console.visible = false
+
+	castle_rotation = Control.new()
+	castle_rotation.name = "CastleRotation"
+	castle_rotation.size = Vector2(1672, 941)
+	castle_rotation.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(castle_rotation)
+	var rotation_backdrop := TextureRect.new()
+	rotation_backdrop.texture = SERVICE_ROAD_FAR
+	rotation_backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	rotation_backdrop.stretch_mode = TextureRect.STRETCH_SCALE
+	rotation_backdrop.size = Vector2(1672, 941)
+	rotation_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	castle_rotation.add_child(rotation_backdrop)
+	var rotation_pivot := Node2D.new()
+	rotation_pivot.name = "CastleWingPivot"
+	rotation_pivot.position = Vector2(1370, 180)
+	castle_rotation.add_child(rotation_pivot)
+	var rotation_wing := Sprite2D.new()
+	rotation_wing.texture = CASTLE_WING_TEXTURE
+	rotation_wing.centered = false
+	rotation_wing.scale = Vector2(0.27, 0.27)
+	rotation_wing.position = Vector2(-627.0, -1047.0) * rotation_wing.scale
+	rotation_pivot.add_child(rotation_wing)
+	_label(castle_rotation, Rect2(100, 48, 1472, 70), "OBSERVATORY CASTLE · REMOTE DRIVE ACTIVE", 30, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	castle_rotation.visible = false
+
 	pause_menu = Control.new()
 	pause_menu.name = "PauseMenu"
 	pause_menu.size = Vector2(1672, 941)
@@ -290,7 +372,7 @@ func show_gauge_inspection(recorded: bool) -> void:
 	hide_prompt()
 
 
-func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false) -> void:
+func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false, room_compared: bool = false, incident_complete: bool = false, room_prepared: bool = false, incident_active: bool = false) -> void:
 	hide_modals()
 	var discovered: Dictionary = {}
 	for entry in entries:
@@ -299,7 +381,7 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	for note_id in HALL_NOTE_IDS:
 		if discovered.has(note_id):
 			hall_count += 1
-	journal_progress.text = "HALL PATROL  %d / 3\n%s  Archive door\n%s  Old clock\n%s  Maintenance sheet\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered" % [
+	journal_progress.text = "HALL PATROL  %d / 3\n%s  Archive door\n%s  Old clock\n%s  Maintenance sheet\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
 		hall_count,
 		"[x]" if discovered.has(&"archive-door") else "[ ]",
 		"[x]" if discovered.has(&"clock-housing") else "[ ]",
@@ -307,7 +389,9 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 		"1 / 1  Reading recorded" if machine_recorded else "0 / 1  Reading pending",
 		int(leak_contained) + int(page_collected),
 		"[x]" if leak_contained else "[ ]",
-		"[x]" if page_collected else "[ ]"
+		"[x]" if page_collected else "[ ]",
+		"Prepared to leave" if room_prepared else ("Page matched" if room_compared else "Compare the torn page"),
+		"Recorded" if incident_complete else ("In progress" if incident_active else ("Alarm pending" if room_compared else "Not yet"))
 	]
 	if hall_complete and hall_count == 3:
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
@@ -327,6 +411,41 @@ func show_torn_page(from_journal: bool) -> void:
 	hide_prompt()
 
 
+func show_notebook_comparison() -> void:
+	hide_modals()
+	notebook_comparison.visible = true
+	hide_prompt()
+
+
+func show_emergency_console(valve_two_open: bool, valve_four_open: bool, drive_stopped: bool, selected_lever: int) -> void:
+	hide_modals()
+	update_emergency_console(valve_two_open, valve_four_open, drive_stopped, selected_lever)
+	emergency_console.visible = true
+	hide_prompt()
+
+
+func update_emergency_console(valve_two_open: bool, valve_four_open: bool, drive_stopped: bool, selected_lever: int) -> void:
+	var selected_name := "LEVER 2 · RETURN" if selected_lever == 2 else "LEVER 4 · ISOLATION"
+	emergency_selection.text = "‹  %s  ›" % selected_name
+	emergency_status.text = "Lever 2: %s     ·     Lever 4: %s     ·     Drive: %s" % [
+		"open" if valve_two_open else "pending",
+		"isolated" if valve_four_open else "pending",
+		"stopped" if drive_stopped else "running"
+	]
+
+
+func play_castle_rotation() -> void:
+	hide_modals()
+	castle_rotation.visible = true
+	var pivot := castle_rotation.get_node("CastleWingPivot") as Node2D
+	pivot.rotation = 0.0
+	var rotation_tween := create_tween()
+	rotation_tween.tween_property(pivot, "rotation", PI, 8.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	await rotation_tween.finished
+	await get_tree().create_timer(0.35).timeout
+	castle_rotation.visible = false
+
+
 func scroll_journal(direction: int) -> void:
 	journal_scroll.scroll_vertical = maxi(0, journal_scroll.scroll_vertical + direction * 72)
 
@@ -343,6 +462,9 @@ func hide_modals() -> void:
 	gauge_inspection.visible = false
 	journal.visible = false
 	torn_page.visible = false
+	notebook_comparison.visible = false
+	emergency_console.visible = false
+	castle_rotation.visible = false
 	pause_menu.visible = false
 	hint.visible = false
 

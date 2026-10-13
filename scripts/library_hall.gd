@@ -2,6 +2,8 @@ extends Node2D
 ## The Hall patrol and its connection to the Machine Room.
 
 const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/water-drop.wav")
+const WARNING_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop-switch.wav")
+const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-library.wav")
 
 const INSPECTIONS := {
@@ -15,6 +17,7 @@ const INSPECTIONS := {
 @onready var ui: CanvasLayer = $HallUI
 @onready var archive_door: Node2D = $ArchiveDoor
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
+@onready var far: Sprite2D = $Far
 @onready var hotspots: Array[Node] = [$ArchiveDoor, $OldClock, $MaintenanceSheet, $UpperStacksEntry]
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var notes: Array[Dictionary] = state.notes
@@ -42,9 +45,14 @@ func _ready() -> void:
 	add_child(ambience)
 	ambience.play()
 	var spawn_tag: StringName = state.take_spawn_tag()
+	if state.flags.get("dawn_reached", false):
+		far.texture = DAWN_CITY
 	if spawn_tag == &"from-machine-room":
 		kath.position.x = 120.0
-		if state.flags.get("machine_baseline_recorded", false) \
+		if state.flags.get("incident_complete", false) and not state.flags.get("incident_return_line_seen", false):
+			state.flags["incident_return_line_seen"] = true
+			_start_dialogue(["The local drive is quiet. Through the window, the castle wing is still upside down.", "I recorded what happened. I need to reach the Observatory Castle and find out why."])
+		elif state.flags.get("machine_baseline_recorded", false) \
 			and not state.flags.get("hall_return_cue_seen", false):
 			state.flags["hall_return_cue_seen"] = true
 			one_shot_audio.stream = DRIP_SOUND
@@ -55,6 +63,14 @@ func _ready() -> void:
 			_start_dialogue(["I haven't written down the machine-room reading yet. The service stairs are still open."])
 	elif spawn_tag == &"from-upper-stacks":
 		kath.position.x = 1530.0
+		if state.flags.get("prologue_departure_ready", false) \
+			and not state.flags.get("machine_alarm_seen", false):
+			state.flags["machine_alarm_seen"] = true
+			state.flags["machine_incident_active"] = true
+			one_shot_audio.stream = WARNING_SOUND
+			one_shot_audio.volume_db = -2.0
+			one_shot_audio.play()
+			_start_dialogue(["That alarm is coming from the machine room! The gauge was still below the red sector last night.", "I need to get back to the controls."])
 	elif not state.flags.get("hall_intro_seen", false):
 		state.flags["hall_intro_seen"] = true
 		_start_dialogue(["Evening rounds. The door, the clock, the checklist... then the machine-room reading."])
@@ -223,7 +239,7 @@ func _close_modal() -> void:
 
 
 func _show_journal() -> void:
-	ui.show_journal(notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)))
+	ui.show_journal(notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)))
 
 
 func _return_from_saved_page() -> void:

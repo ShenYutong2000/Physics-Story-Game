@@ -119,6 +119,15 @@ frame = 0
 offset = Vector2(0, -44)
 scale = Vector2(0.105, 0.105)
 
+[node name="StopHotspot" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(1338, 773)
+z_index = -4
+interaction_id = &"emergency-stop"
+display_name = "Emergency stop"
+approach_x = 1338.0
+reach_radius = 110.0
+content_key = &"stop"
+
 [node name="ReturnToHall" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(120, 773)
 z_index = -5
