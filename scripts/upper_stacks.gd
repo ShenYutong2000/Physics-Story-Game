@@ -2,6 +2,8 @@ extends Node2D
 ## Exploration, leak response, and the rolling ladder in the Upper Stacks.
 
 const HALL_SCENE := "res://scenes/library_hall.tscn"
+const ROOM_SCENE := "res://scenes/kath_room.tscn"
+const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-room.wav")
 const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/water-drop.wav")
 const CASE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/case-open.wav")
@@ -27,6 +29,7 @@ const RETURN_X := 500.0
 @onready var bucket: Sprite2D = $Bucket
 @onready var ripple: AnimatedSprite2D = $Ripple
 @onready var rain_drop: Sprite2D = $RainDrop
+@onready var far: Sprite2D = $Far
 @onready var state: Node = get_node("/root/PrologueState")
 
 var mode: StringName = &"roam"
@@ -49,6 +52,10 @@ func _ready() -> void:
 		kath.position.x = RETURN_X
 	elif spawn_tag == &"from-upper-stacks":
 		kath.position.x = 1530.0
+	elif spawn_tag == &"from-kath-room":
+		kath.position.x = 100.0
+	if state.flags.get("dawn_reached", false):
+		far.texture = DAWN_CITY
 
 	ladder.position.x = float(state.flags.get("stacks_ladder_x", LADDER_START_X))
 	ladder.position.y = FLOOR_Y
@@ -122,7 +129,9 @@ func _process(delta: float) -> void:
 		else:
 			ui.hide_prompt()
 		return
-	if absf(feet_x - RETURN_X) <= 112.0:
+	if absf(feet_x - 100.0) <= 92.0 and state.flags.get("stacks_page_collected", false):
+		ui.show_prompt("Kath's Room", 100.0, "ENTER", 255.0)
+	elif absf(feet_x - RETURN_X) <= 112.0:
 		ui.show_prompt("Stairway to Hall", RETURN_X, "RETURN", 260.0)
 	elif absf(feet_x - LEAK_X) <= 125.0 and not state.flags.get("stacks_bucket_moved", false):
 		ui.show_prompt("Roof seam", LEAK_X, "MOVE BUCKET" if leak_inspected else "INSPECT", 238.0)
@@ -204,7 +213,10 @@ func _handle_interact() -> void:
 	if kath.locomotion_mode == &"push":
 		_end_ladder_push()
 		return
-	if x < 610.0 and kath.locomotion_mode == &"walk":
+	if x <= 195.0 and state.flags.get("stacks_page_collected", false) and kath.locomotion_mode == &"walk":
+		state.travel_to(ROOM_SCENE, &"from-upper-stacks")
+		return
+	if absf(x - RETURN_X) <= 112.0 and kath.locomotion_mode == &"walk":
 		state.travel_to(HALL_SCENE, &"from-upper-stacks")
 		return
 	if absf(x - LEAK_X) <= 125.0 and not state.flags.get("stacks_bucket_moved", false):
@@ -313,7 +325,7 @@ func _return_to_journal() -> void:
 
 
 func _show_journal() -> void:
-	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)))
+	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)))
 
 
 func _start_dialogue(lines: Array[String]) -> void:
