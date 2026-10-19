@@ -139,6 +139,17 @@ content_key = &"return"
 destination_scene = "res://scenes/library_hall.tscn"
 spawn_tag = "from-machine-room"
 
+[node name="ServiceRoadExit" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(1540, 773)
+z_index = -5
+interaction_id = &"service-road-exit"
+display_name = "Service road"
+approach_x = 1540.0
+reach_radius = 120.0
+content_key = &"service-road"
+destination_scene = "res://scenes/service_road.tscn"
+spawn_tag = "from-machine-room"
+
 [node name="Kath" parent="." instance=ExtResource("4_kath")]
 position = Vector2(250, 773)
 floor_y = 773.0

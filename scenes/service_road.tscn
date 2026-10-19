@@ -1,0 +1,124 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/service_road.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/05-service-road-far.png" id="2_far"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/mid/05-service-road-mid.png" id="3_mid"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/foregrounds/05-service-road-front.png" id="4_front"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="5_kath"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="6_wick"]
+[ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="7_ui"]
+[ext_resource type="SpriteFrames" path="res://prologue-asset-pack-v1/godot/frames/service-gate-states.tres" id="8_gate"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/service-road-sign.png" id="9_sign"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/cable-segment.png" id="10_cable"]
+[ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="11_hotspot"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/castle-wing-upright.png" id="12_wing"]
+
+[node name="ServiceRoad" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Far" type="Sprite2D" parent="."]
+z_index = -20
+texture = ExtResource("2_far")
+centered = false
+
+[node name="CastleWingPivot" type="Node2D" parent="."]
+position = Vector2(1480, 185)
+z_index = -19
+rotation = 3.1415927
+
+[node name="WingSprite" type="Sprite2D" parent="CastleWingPivot"]
+texture = ExtResource("12_wing")
+centered = false
+offset = Vector2(-627, -1047)
+scale = Vector2(0.27, 0.27)
+
+[node name="Mid" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("3_mid")
+centered = false
+
+[node name="MachineDoor" parent="." instance=ExtResource("11_hotspot")]
+position = Vector2(100, 720)
+z_index = -5
+interaction_id = &"service-road-return-machine"
+display_name = "Machine Room"
+approach_x = 100.0
+reach_radius = 112.0
+content_key = &"machine-door"
+
+[node name="RoadSign" parent="." instance=ExtResource("11_hotspot")]
+position = Vector2(482, 766)
+z_index = -5
+interaction_id = &"service-road-sign"
+display_name = "Castle service sign"
+approach_x = 482.0
+reach_radius = 120.0
+content_key = &"sign"
+
+[node name="SignSprite" type="Sprite2D" parent="RoadSign"]
+texture = ExtResource("9_sign")
+centered = false
+offset = Vector2(-768, -1024)
+scale = Vector2(0.164, 0.164)
+
+[node name="SignText" type="Label" parent="RoadSign"]
+position = Vector2(112, -111)
+size = Vector2(220, 44)
+text = "CASTLE SERVICE WAY →"
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.91, 0.72, 1)
+theme_override_constants/outline_size = 3
+theme_override_colors/font_outline_color = Color(0.12, 0.12, 0.19, 1)
+modulate = Color(1, 0.91, 0.72, 1)
+
+[node name="SlackCable" parent="." instance=ExtResource("11_hotspot")]
+position = Vector2(900, 827)
+z_index = -4
+interaction_id = &"road-gravity-observation"
+display_name = "Hanging service cable"
+approach_x = 900.0
+reach_radius = 125.0
+content_key = &"cable"
+
+[node name="CableSprite" type="Sprite2D" parent="SlackCable"]
+position = Vector2(0, -220)
+rotation = 1.5707964
+scale = Vector2(0.12, 0.12)
+texture = ExtResource("10_cable")
+
+[node name="ServiceGate" parent="." instance=ExtResource("11_hotspot")]
+position = Vector2(1322, 888)
+z_index = -2
+interaction_id = &"service-gate"
+display_name = "Service gate"
+approach_x = 1322.0
+reach_radius = 145.0
+content_key = &"gate"
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="ServiceGate"]
+sprite_frames = ExtResource("8_gate")
+centered = false
+offset = Vector2(-395, -527)
+scale = Vector2(0.27, 0.27)
+animation = &"default"
+
+[node name="Kath" parent="." instance=ExtResource("5_kath")]
+position = Vector2(150, 718)
+z_index = 2
+floor_y = 824.0
+floor_anchor_x = 880.0
+floor_slope = 0.145
+left_limit = 54.0
+right_limit = 1210.0
+
+[node name="Wick" parent="." instance=ExtResource("6_wick")]
+z_index = 4
+
+[node name="Foreground" type="Sprite2D" parent="."]
+z_index = 10
+texture = ExtResource("4_front")
+centered = false
+
+[node name="HallUI" parent="." instance=ExtResource("7_ui")]

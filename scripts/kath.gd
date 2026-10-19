@@ -16,6 +16,9 @@ const CLIMB_SOURCE_HEIGHT: float = 753.0
 @export var push_speed: float = 150.0
 @export var climb_speed: float = 145.0
 @export var floor_y: float = 778.0
+## Optional ground slope. floor_y is the ground height at floor_anchor_x.
+@export var floor_anchor_x: float = 0.0
+@export var floor_slope: float = 0.0
 @export var left_limit: float = 56.0
 @export var right_limit: float = 1616.0
 
@@ -33,7 +36,7 @@ var climb_bottom_y: float = 0.0
 
 
 func _ready() -> void:
-	position.y = floor_y
+	position.y = floor_height_at(position.x)
 	_set_animation(false)
 
 
@@ -45,7 +48,7 @@ func _physics_process(delta: float) -> void:
 	if locomotion_mode == &"push":
 		var push_direction: float = Input.get_axis("move_left", "move_right")
 		position.x = clampf(position.x + push_direction * push_speed * delta, push_min_x, push_max_x)
-		position.y = floor_y
+		position.y = floor_height_at(position.x)
 		if push_direction != 0.0:
 			animated_sprite.flip_h = push_direction < 0.0
 		_set_animation(absf(push_direction) > 0.01)
@@ -67,10 +70,14 @@ func _physics_process(delta: float) -> void:
 
 	# This scene has no vertical traversal. Keep the feet aligned with the painted floor.
 	position.x = clampf(position.x, left_limit, right_limit)
-	position.y = floor_y
+	position.y = floor_height_at(position.x)
 	if direction != 0.0:
 		animated_sprite.flip_h = direction < 0.0
 	_set_animation(absf(velocity.x) > 8.0)
+
+
+func floor_height_at(world_x: float) -> float:
+	return floor_y + (world_x - floor_anchor_x) * floor_slope
 
 
 func begin_pushing(ladder_x: float, minimum_ladder_x: float, maximum_ladder_x: float, horizontal_offset: float = 80.0) -> void:
@@ -78,13 +85,13 @@ func begin_pushing(ladder_x: float, minimum_ladder_x: float, maximum_ladder_x: f
 	push_ladder_offset = horizontal_offset
 	push_min_x = minimum_ladder_x - horizontal_offset
 	push_max_x = maximum_ladder_x - horizontal_offset
-	position = Vector2(ladder_x - horizontal_offset, floor_y)
+	position = Vector2(ladder_x - horizontal_offset, floor_height_at(ladder_x - horizontal_offset))
 	velocity = Vector2.ZERO
 
 
 func stop_pushing(ladder_x: float) -> void:
 	locomotion_mode = &"walk"
-	position = Vector2(ladder_x - push_ladder_offset, floor_y)
+	position = Vector2(ladder_x - push_ladder_offset, floor_height_at(ladder_x - push_ladder_offset))
 	velocity = Vector2.ZERO
 	_set_animation(false)
 
@@ -101,7 +108,7 @@ func begin_climbing(ladder_x: float, top_y: float, bottom_y: float) -> void:
 
 func stop_climbing() -> void:
 	locomotion_mode = &"walk"
-	position = Vector2(position.x, floor_y)
+	position = Vector2(position.x, floor_height_at(position.x))
 	velocity = Vector2.ZERO
 	_set_animation(false)
 
