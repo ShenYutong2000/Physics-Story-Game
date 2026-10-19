@@ -2,6 +2,7 @@ extends Node2D
 ## Walkable dawn route from the Archive machinery to the Observatory Castle.
 
 const MACHINE_SCENE := "res://scenes/machine_room.tscn"
+const CONTROL_WALKWAY_SCENE := "res://scenes/castle_control_walkway.tscn"
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-road.wav")
 const GATE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/gate-latch.wav")
 const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
@@ -20,8 +21,8 @@ const ROAD_NOTES := {
 		"body": "The maintenance way leads east from the Archive to the Observatory Castle."
 	},
 	"road-gravity-observation": {
-		"title": "A familiar downward direction",
-		"body": "A loose service cable hangs toward the paving while the Castle's supported wing remains upside down. The local surroundings still point downward; the cause of the Castle's position remains unknown."
+		"title": "Cable and tilted wing",
+		"body": "A loose service cable hangs toward the paving while the Castle's supported wing remains tilted in its ring. That is one observation from the road; the cause of the wing's position remains unknown."
 	}
 }
 
@@ -29,6 +30,7 @@ const ROAD_NOTES := {
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var gate: AnimatedSprite2D = $ServiceGate/AnimatedSprite2D
+@onready var castle_wing_pivot: Node2D = $CastleWingPivot
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var hotspots: Array[Node] = [$MachineDoor, $RoadSign, $SlackCable, $ServiceGate]
 
@@ -43,6 +45,7 @@ var effects_player: AudioStreamPlayer
 
 
 func _ready() -> void:
+	castle_wing_pivot.rotation = state.castle_pose_angle_radians()
 	var spawn_tag: StringName = state.take_spawn_tag()
 	kath.floor_anchor_x = FLOOR_REFERENCE_X
 	kath.floor_y = FLOOR_REFERENCE_Y
@@ -51,8 +54,8 @@ func _ready() -> void:
 	kath.right_limit = ROAD_RIGHT if state.flags.get("service_gate_open", false) else CLOSED_GATE_LIMIT
 	if spawn_tag == &"from-machine-room":
 		kath.position.x = 150.0
-	elif spawn_tag == &"from-road":
-		kath.position.x = 1540.0
+	elif spawn_tag == &"from-control-walkway":
+		kath.position.x = 1510.0
 	kath.position.y = kath.floor_height_at(kath.position.x)
 	gate.frame = 1 if state.flags.get("service_gate_open", false) else 0
 
@@ -68,7 +71,7 @@ func _ready() -> void:
 
 	if not state.flags.get("service_road_intro_seen", false):
 		state.flags["service_road_intro_seen"] = true
-		_start_dialogue(["The service road leads straight to the Observatory Castle.", "The tower is upright. The wing inside the ring is still upside down."])
+		_start_dialogue(["The service road leads straight to the Observatory Castle.", "The fixed tower is upright. The wing inside the ring is still tilted."])
 
 
 func _exit_tree() -> void:
@@ -108,7 +111,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.echo:
 		return
 	if event.is_action_pressed("ui_cancel"):
-		if mode == &"roam":
+		if mode == &"chapter_end":
+			_return_from_chapter_card()
+		elif mode == &"paper":
+			_set_mode(&"journal")
+			_show_journal()
+		elif mode == &"roam":
 			_set_mode(&"paused")
 			ui.show_pause()
 		elif mode == &"dialogue":
@@ -133,6 +141,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif mode == &"journal" and event.is_action_pressed("toggle_journal"):
 		_close_overlay()
 		get_viewport().set_input_as_handled()
+	elif mode == &"journal" and event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
+		_set_mode(&"paper")
+		ui.show_torn_page(true)
+		get_viewport().set_input_as_handled()
 	elif mode == &"journal" and event.is_action_pressed("move_up"):
 		ui.scroll_journal(-1)
 		get_viewport().set_input_as_handled()
@@ -140,10 +152,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		ui.scroll_journal(1)
 		get_viewport().set_input_as_handled()
 	elif mode == &"chapter_end" and event.is_action_pressed("advance_dialogue"):
-		_close_overlay()
-		kath.position.x = 1510.0
-		kath.position.y = kath.floor_height_at(kath.position.x)
 		get_viewport().set_input_as_handled()
+		_set_mode(&"travel")
+		ui.hide_modals()
+		state.travel_to(CONTROL_WALKWAY_SCENE, &"from-service-road")
 	elif mode == &"paused":
 		if event.is_action_pressed("advance_dialogue"):
 			_close_overlay()
@@ -174,7 +186,7 @@ func _inspect(hotspot: Node) -> void:
 		_start_note_dialogue(&"service-road-sign", ["CASTLE SERVICE WAY →", "The old sign still points toward the Observatory."])
 	elif hotspot == $SlackCable:
 		wick.react_to(1480.0, 185.0)
-		_start_note_dialogue(&"road-gravity-observation", ["The loose cable hangs toward the paving.", "The Castle wing is upside down, but this still looks like down here."])
+		_start_note_dialogue(&"road-gravity-observation", ["The loose cable hangs toward the paving.", "The Castle wing is tilted. I should check what happens inside before drawing conclusions."])
 	elif hotspot == $ServiceGate:
 		if state.flags.get("service_gate_open", false):
 			_start_dialogue(["The service gate is open. The road continues beyond it."])
@@ -243,9 +255,9 @@ func _show_chapter_end() -> void:
 		state.add_note_once(
 			&"service-road-arrival",
 			"At the Castle entrance",
-			"The supported wing remains upside down inside the ring. I have reached the Castle, but I have not yet found a safe way inside."
+			"The supported wing remains tilted inside the ring. I have reached the Castle's control walkway; the cause is still unknown."
 		)
-		_start_dialogue(["The service road ends at the Observatory Castle.", "The wing is still inverted. I need to find a safe way inside."])
+		_start_dialogue(["The service road ends at the Observatory Castle.", "The wing is still tilted. The control walkway is the nearest way in."])
 		return
 	_set_mode(&"chapter_end")
 	ui.show_chapter_end()
@@ -253,6 +265,13 @@ func _show_chapter_end() -> void:
 
 func _close_overlay() -> void:
 	ui.hide_modals()
+	_set_mode(&"roam")
+
+
+func _return_from_chapter_card() -> void:
+	ui.hide_modals()
+	kath.position.x = 1510.0
+	kath.position.y = kath.floor_height_at(kath.position.x)
 	_set_mode(&"roam")
 
 

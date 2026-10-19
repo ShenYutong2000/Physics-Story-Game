@@ -149,6 +149,10 @@ func _run() -> void:
 	if upper.mode != &"paper" or not upper.ui.torn_page.visible:
 		_fail("The note close-up did not open.")
 		return
+	var page_sketch: Node = upper.ui.torn_page.get_node("PagePanel/IncompleteHoistSketch")
+	if page_sketch.get_child_count() < 2:
+		_fail("The torn page close-up is missing its incomplete hoist sketch.")
+		return
 	upper._unhandled_input(_key(KEY_ESCAPE))
 	if state.has_note(&"newton-note") or upper.case_sprite.frame != 1 or upper.mode != &"roam":
 		_fail("Escaping the note close-up incorrectly collected or removed the page.")
@@ -169,6 +173,9 @@ func _run() -> void:
 	upper._unhandled_input(_key(KEY_ENTER))
 	if upper.mode != &"paper":
 		_fail("The collected page could not be revisited from Notes.")
+		return
+	if not upper.ui.torn_page.visible or upper.ui.torn_page.get_node("PagePanel/IncompleteHoistSketch") != page_sketch:
+		_fail("The Notes view did not reuse the same torn page artwork.")
 		return
 	upper._unhandled_input(_key(KEY_ESCAPE))
 	if upper.mode != &"journal":

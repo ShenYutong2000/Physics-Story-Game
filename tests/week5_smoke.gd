@@ -132,9 +132,17 @@ func _run() -> void:
 	if not state.flags.get("incident_drive_stopped", false):
 		_fail("The emergency stop did not stop the local drive.")
 		return
-	await create_timer(8.7).timeout
-	if not state.flags.get("incident_rotation_seen", false) or not state.flags.get("incident_complete", false) or not state.has_note(&"castle-alarm"):
-		_fail("The castle rotation did not finish and record its observed result.")
+	await create_timer(3.7).timeout
+	if not state.flags.get("incident_tilt_observed", false) or not state.flags.get("incident_complete", false) or not state.has_note(&"castle-alarm"):
+		_fail("The remote castle tilt did not finish and record its observed result.")
+		return
+	if state.castle_pose != &"tilted" or not is_equal_approx(state.castle_pose_angle_radians(), deg_to_rad(12.0)):
+		_fail("The incident did not leave the shared castle pose at a 12-degree tilt.")
+		return
+	var incident_note := state.notes.back() as Dictionary
+	if incident_note.get("title", "") != "Remote tilt observed" \
+		or incident_note.get("body", "").find("do not know whether the two events are connected") < 0:
+		_fail("The incident note did not preserve the observation and uncertainty about the cause.")
 		return
 	if machine.mode != &"dialogue":
 		_fail("The post-incident decision dialogue did not appear.")
@@ -147,9 +155,60 @@ func _run() -> void:
 	if hall == null or hall.name != "LibraryHall" or not state.flags.get("incident_return_line_seen", false):
 		_fail("The completed incident did not return to the Hall with its one-time follow-up.")
 		return
-	hall.queue_free()
+	if hall.dialogue_lines.is_empty() or not hall.dialogue_lines[0].contains("still tilted"):
+		_fail("The Hall return dialogue did not describe the wing's tilted pose.")
+		return
+	hall._close_dialogue(false)
+	hall._inspect(hall.archive_door)
+	for i in 3:
+		await process_frame
+	machine = current_scene
+	if machine == null or machine.name != "MachineRoom":
+		_fail("The completed incident did not allow travel back into the Machine Room.")
+		return
+	machine.kath.position.x = 1540.0
+	machine._inspect(machine.service_road_exit)
+	for i in 3:
+		await process_frame
+	var road = current_scene
+	if road == null or road.name != "ServiceRoad" \
+		or not is_equal_approx(road.castle_wing_pivot.rotation, state.castle_pose_angle_radians()):
+		_fail("The completed incident did not open a road with the shared tilted castle pose.")
+		return
+	road._close_dialogue(false)
+	road.kath.position.x = 1322.0
+	road._inspect(road.get_node("ServiceGate"))
+	road._close_dialogue(false)
+	road.kath.position.x = 1580.0
+	road._process(0.016)
+	if road.mode != &"dialogue":
+		_fail("The first Castle arrival did not start its observation dialogue.")
+		return
+	road._advance_dialogue()
+	road._advance_dialogue()
+	road._process(0.016)
+	if road.mode != &"chapter_end":
+		_fail("The chapter card did not follow the first Castle arrival dialogue.")
+		return
+	road._unhandled_input(_key(KEY_ENTER))
+	for i in 3:
+		await process_frame
+	var control = current_scene
+	if control == null or control.name != "CastleControlWalkway" or state.castle_pose != &"tilted":
+		_fail("The real incident route did not enter the Control Walkway in the tilted stage.")
+		return
+	control._close_overlay()
+	control.kath.position.x = 150.0
+	control._unhandled_input(_key(KEY_E))
+	for i in 3:
+		await process_frame
+	road = current_scene
+	if road == null or road.name != "ServiceRoad" or road.mode != &"roam":
+		_fail("The real incident route could not return from the Control Walkway.")
+		return
+	road.queue_free()
 	await process_frame
-	for flag_name in ["incident_valve_two_open", "incident_valve_four_open", "incident_valves_complete", "incident_drive_stopped", "incident_needle_rebounded", "incident_rotation_started", "incident_rotation_seen", "incident_complete"]:
+	for flag_name in ["incident_valve_two_open", "incident_valve_four_open", "incident_valves_complete", "incident_drive_stopped", "incident_needle_rebounded", "incident_tilt_started", "incident_tilt_observed", "incident_complete"]:
 		state.flags[flag_name] = false
 	state.pending_spawn_tag = &""
 	var early_stop_machine := MACHINE.instantiate()
@@ -166,11 +225,11 @@ func _run() -> void:
 	early_stop_machine._inspect(early_stop_machine.get_node("Gauge"))
 	early_stop_machine._unhandled_input(_key(KEY_E))
 	early_stop_machine._unhandled_input(_key(KEY_E))
-	await create_timer(8.7).timeout
+	await create_timer(3.7).timeout
 	if not state.flags.get("incident_complete", false):
 		_fail("Operating both valves after an early stop did not complete recovery.")
 		return
-	print("WEEK5_SMOKE_OK: comparison cancel/confirm, dawn, packing, alarm, pause, lever rebound, incident re-entry, both stop orders, castle rotation")
+	print("WEEK5_SMOKE_OK: comparison cancel/confirm, dawn, packing, alarm, pause, lever rebound, incident re-entry, both stop orders, remote castle tilt")
 	early_stop_machine.queue_free()
 	state.queue_free()
 	for i in 4:

@@ -51,7 +51,7 @@ func _ready() -> void:
 		kath.position.x = 120.0
 		if state.flags.get("incident_complete", false) and not state.flags.get("incident_return_line_seen", false):
 			state.flags["incident_return_line_seen"] = true
-			_start_dialogue(["The local drive is quiet. Through the window, the castle wing is still upside down.", "I recorded what happened. I need to reach the Observatory Castle and find out why."])
+			_start_dialogue(["The Archive drive is quiet. Through the window, the castle wing is still tilted.", "I recorded what I saw. I need to reach the Observatory Castle and find out why."])
 		elif state.flags.get("machine_baseline_recorded", false) \
 			and not state.flags.get("hall_return_cue_seen", false):
 			state.flags["hall_return_cue_seen"] = true
