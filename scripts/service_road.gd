@@ -23,6 +23,10 @@ const ROAD_NOTES := {
 	"road-gravity-observation": {
 		"title": "Cable and tilted wing",
 		"body": "A loose service cable hangs toward the paving while the Castle's supported wing remains tilted in its ring. That is one observation from the road; the cause of the wing's position remains unknown."
+	},
+	"road-inverted-wing": {
+		"title": "Cable and inverted wing",
+		"body": "Back on the road after the return test, the loose cable still hangs toward the paving. The supported wing is now inverted inside the fixed ring."
 	}
 }
 
@@ -86,7 +90,10 @@ func _process(_delta: float) -> void:
 		ui.hide_prompt()
 		return
 	if state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X:
-		_show_chapter_end()
+		if state.castle_pose == &"inverted" or state.castle_pose == &"restored":
+			ui.show_prompt("Control Walkway", END_CARD_X, "ENTER", kath.position.y - 200.0)
+		else:
+			_show_chapter_end()
 		return
 	var closest: Node = nearest_hotspot(kath.position.x)
 	if closest == null:
@@ -128,6 +135,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if mode == &"roam":
 		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
+			if state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
+				and (state.castle_pose == &"inverted" or state.castle_pose == &"restored"):
+				_set_mode(&"travel")
+				ui.hide_modals()
+				state.travel_to(CONTROL_WALKWAY_SCENE, &"from-service-road")
+				return
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
 				_inspect(closest)
@@ -186,7 +199,10 @@ func _inspect(hotspot: Node) -> void:
 		_start_note_dialogue(&"service-road-sign", ["CASTLE SERVICE WAY →", "The old sign still points toward the Observatory."])
 	elif hotspot == $SlackCable:
 		wick.react_to(1480.0, 185.0)
-		_start_note_dialogue(&"road-gravity-observation", ["The loose cable hangs toward the paving.", "The Castle wing is tilted. I should check what happens inside before drawing conclusions."])
+		if state.castle_pose == &"inverted":
+			_start_note_dialogue(&"road-inverted-wing", ["The cable still hangs toward the paving.", "The wing has turned over inside the fixed ring. I need to find Erin another route."])
+		else:
+			_start_note_dialogue(&"road-gravity-observation", ["The loose cable hangs toward the paving.", "The Castle wing is tilted. I should check what happens inside before drawing conclusions."])
 	elif hotspot == $ServiceGate:
 		if state.flags.get("service_gate_open", false):
 			_start_dialogue(["The service gate is open. The road continues beyond it."])
@@ -255,9 +271,9 @@ func _show_chapter_end() -> void:
 		state.add_note_once(
 			&"service-road-arrival",
 			"At the Castle entrance",
-			"The supported wing remains tilted inside the ring. I have reached the Castle's control walkway; the cause is still unknown."
+			"The supported wing is %s inside the ring. I have reached the Castle's control walkway; the cause is still unknown." % String(state.castle_pose)
 		)
-		_start_dialogue(["The service road ends at the Observatory Castle.", "The wing is still tilted. The control walkway is the nearest way in."])
+		_start_dialogue(["The service road ends at the Observatory Castle.", "The wing is %s. The control walkway is the nearest way in." % String(state.castle_pose)])
 		return
 	_set_mode(&"chapter_end")
 	ui.show_chapter_end()

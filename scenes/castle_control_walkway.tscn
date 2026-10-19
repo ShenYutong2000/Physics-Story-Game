@@ -66,8 +66,32 @@ position = Vector2(150, 755)
 interaction_id = &"castle-control-return"
 display_name = "Service Road"
 approach_x = 150.0
-reach_radius = 130.0
+reach_radius = 90.0
 content_key = &"service-road-return"
+
+[node name="ErinStation" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(305, 755)
+interaction_id = &"castle-erin-station"
+display_name = "Erin"
+approach_x = 305.0
+reach_radius = 60.0
+content_key = &"erin-briefing"
+
+[node name="PositionDial" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(438, 755)
+interaction_id = &"castle-position-dial"
+display_name = "Dial"
+approach_x = 438.0
+reach_radius = 60.0
+content_key = &"position-reading"
+
+[node name="ReturnConsole" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(568, 755)
+interaction_id = &"castle-return-console"
+display_name = "Return Test"
+approach_x = 568.0
+reach_radius = 60.0
+content_key = &"return-test"
 
 [node name="Kath" parent="." instance=ExtResource("3_kath")]
 position = Vector2(430, 755)
