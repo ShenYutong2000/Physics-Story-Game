@@ -11,7 +11,7 @@ const LADDER_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/la
 const PAGE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
 const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
 const LEAK_NOTE := "Rain slips through a roof seam above the stacks. Moving a bucket beneath the falling water stopped it reaching the floor."
-const NEWTON_NOTE := "A torn page reads F = ma. The measurements are crossed out and repeated. At the bottom: ‘Next time at the castle, try again.’ The handwriting is Kath's."
+const NEWTON_NOTE := "A torn page reads F = ma. The measurements are crossed out and repeated. Beneath them is a faint, incomplete sketch of a hanging basket. At the bottom: ‘Next time at the castle, try again.’ The handwriting is Kath's."
 
 const FLOOR_Y := 708.0
 const LADDER_START_X := 1198.0

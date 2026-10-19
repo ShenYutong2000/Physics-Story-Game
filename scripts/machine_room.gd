@@ -352,19 +352,23 @@ func _operate_emergency_stop() -> void:
 
 
 func _complete_incident() -> void:
-	if incident_busy or state.flags.get("incident_rotation_seen", false):
+	if incident_busy or state.flags.get("incident_tilt_observed", false):
 		return
 	incident_busy = true
-	state.flags["incident_rotation_started"] = true
+	state.flags["incident_tilt_started"] = true
 	_set_mode(&"cutscene")
 	ui.hide_modals()
-	await ui.play_castle_rotation()
-	state.flags["incident_rotation_seen"] = true
+	await ui.play_castle_tilt()
+	if not state.transition_castle_pose(&"tilted"):
+		incident_busy = false
+		_set_mode(&"roam")
+		return
+	state.flags["incident_tilt_observed"] = true
 	state.flags["incident_complete"] = true
-	state.add_note_once(&"castle-alarm", "The castle turned", "After the local drive stopped, the Observatory Castle's supported wing continued around the ring and came to rest upside down. The cause remains unknown.")
+	state.add_note_once(&"castle-alarm", "Remote tilt observed", "The Archive's local drive stopped, but the Observatory Castle's local control signal remained unstable. Its supported wing tilted about 12 degrees clockwise. I do not know whether the two events are connected.")
 	incident_busy = false
 	_set_mode(&"dialogue")
-	_start_dialogue(["The local drive is quiet. The fixed tower stayed upright; only the supported wing turned.", "I don't know what failed at the castle. I can find out if I go there."])
+	_start_dialogue(["The Archive's local drive is stopped. The Castle's local control is still behaving abnormally.", "The fixed tower stayed upright, while the supported wing tilted. I can't tell whether the two failures are connected."])
 
 
 func _play_incident_sound(stream: AudioStream) -> void:

@@ -24,12 +24,11 @@ centered = false
 [node name="CastleWingPivot" type="Node2D" parent="."]
 position = Vector2(1480, 185)
 z_index = -19
-rotation = 3.1415927
 
 [node name="WingSprite" type="Sprite2D" parent="CastleWingPivot"]
 texture = ExtResource("12_wing")
 centered = false
-offset = Vector2(-627, -1047)
+offset = Vector2(-627, -600)
 scale = Vector2(0.27, 0.27)
 
 [node name="Mid" type="Sprite2D" parent="."]

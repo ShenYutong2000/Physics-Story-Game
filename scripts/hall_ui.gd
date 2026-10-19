@@ -199,6 +199,7 @@ func _ready() -> void:
 	canvas.add_child(torn_page)
 	_dim(torn_page)
 	var page_panel := Panel.new()
+	page_panel.name = "PagePanel"
 	page_panel.position = Vector2(251, 112)
 	page_panel.size = Vector2(1170, 718)
 	page_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -212,6 +213,7 @@ func _ready() -> void:
 	page_panel.add_theme_stylebox_override("panel", page_style)
 	torn_page.add_child(page_panel)
 	_texture(page_panel, NEWTON_NOTE_TEXTURE, Rect2(54, 78, 490, 560))
+	_add_incomplete_hoist_sketch(page_panel)
 	_label(page_panel, Rect2(584, 69, 520, 52), "A PAGE FROM KATH'S OLD NOTES", 27, INK)
 	var equation := _label(page_panel, Rect2(584, 128, 520, 66), "F = ma", 43, INK)
 	equation.add_theme_font_size_override("font_size", 43)
@@ -290,9 +292,9 @@ func _ready() -> void:
 	rotation_wing.texture = CASTLE_WING_TEXTURE
 	rotation_wing.centered = false
 	rotation_wing.scale = Vector2(0.27, 0.27)
-	rotation_wing.position = Vector2(-627.0, -1047.0) * rotation_wing.scale
+	rotation_wing.position = Vector2(-627.0, -600.0) * rotation_wing.scale
 	rotation_pivot.add_child(rotation_wing)
-	_label(castle_rotation, Rect2(100, 48, 1472, 70), "OBSERVATORY CASTLE · REMOTE DRIVE ACTIVE", 30, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(castle_rotation, Rect2(100, 48, 1472, 70), "OBSERVATORY CASTLE · LOCAL CONTROL SIGNAL UNSTABLE", 30, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	castle_rotation.visible = false
 
 	pause_menu = Control.new()
@@ -327,7 +329,7 @@ func _ready() -> void:
 	_label(end_panel, Rect2(70, 150, 860, 90), "CHAPTER I", 34, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(end_panel, Rect2(70, 230, 860, 85), "UPSIDE-DOWN CASTLE", 46, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(end_panel, Rect2(70, 335, 860, 38), "PROLOGUE COMPLETE", 22, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label(end_panel, Rect2(70, 385, 860, 38), "ENTER  RETURN TO THE SERVICE ROAD", 20, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(end_panel, Rect2(70, 385, 860, 38), "ENTER  CONTROL WALKWAY     ·     ESC  SERVICE ROAD", 20, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chapter_end.visible = false
 
 
@@ -460,13 +462,16 @@ func update_emergency_console(valve_two_open: bool, valve_four_open: bool, drive
 	]
 
 
-func play_castle_rotation() -> void:
+func play_castle_tilt() -> void:
 	hide_modals()
 	castle_rotation.visible = true
 	var pivot := castle_rotation.get_node("CastleWingPivot") as Node2D
-	pivot.rotation = 0.0
+	var state: Node = get_node("/root/PrologueState")
+	var start_angle: float = state.castle_pose_angle_radians(&"upright")
+	var target_angle: float = state.castle_pose_angle_radians(&"tilted")
+	pivot.rotation = start_angle
 	var rotation_tween := create_tween()
-	rotation_tween.tween_property(pivot, "rotation", PI, 8.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	rotation_tween.tween_property(pivot, "rotation", target_angle, 3.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await rotation_tween.finished
 	await get_tree().create_timer(0.35).timeout
 	castle_rotation.visible = false
@@ -524,6 +529,39 @@ func _texture(parent: Control, asset: Texture2D, rect: Rect2) -> TextureRect:
 	picture.position = rect.position
 	picture.size = rect.size
 	return picture
+
+
+func _add_incomplete_hoist_sketch(page_panel: Control) -> void:
+	var sketch := Node2D.new()
+	sketch.name = "IncompleteHoistSketch"
+	sketch.position = Vector2(237, 482)
+	sketch.scale = Vector2(1.16, 1.16)
+	page_panel.add_child(sketch)
+	# The rope breaks off above the basket; the page never shows a full reeving path.
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(72, 22), Vector2(75, 13), Vector2(84, 8), Vector2(96, 10), Vector2(103, 19)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(77, 25), Vector2(69, 38), Vector2(64, 45)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(58, 55), Vector2(52, 67)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(100, 24), Vector2(114, 49), Vector2(123, 67)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(48, 66), Vector2(137, 67)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(50, 68), Vector2(60, 83), Vector2(126, 84), Vector2(137, 68)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(79, 70), Vector2(82, 82)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(109, 70), Vector2(106, 83)]))
+	_page_sketch_stroke(sketch, PackedVector2Array([Vector2(88, 2), Vector2(91, -4)]))
+
+
+func _page_sketch_stroke(parent: Node2D, points: PackedVector2Array) -> void:
+	var blurred_ink := Line2D.new()
+	blurred_ink.points = points
+	blurred_ink.width = 6.0
+	blurred_ink.default_color = Color(0.16, 0.20, 0.32, 0.10)
+	blurred_ink.antialiased = true
+	parent.add_child(blurred_ink)
+	var worn_ink := Line2D.new()
+	worn_ink.points = points
+	worn_ink.width = 1.8
+	worn_ink.default_color = Color(0.16, 0.20, 0.32, 0.52)
+	worn_ink.antialiased = true
+	parent.add_child(worn_ink)
 
 
 func _label(parent: Control, rect: Rect2, value: String, font_size: int, color: Color) -> Label:

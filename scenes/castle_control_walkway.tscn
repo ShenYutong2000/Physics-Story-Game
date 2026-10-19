@@ -1,0 +1,36 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/castle_control_walkway.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/prototype/castle-control-walkway.png" id="2_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="4_wick"]
+[ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="5_ui"]
+[ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="6_hotspot"]
+
+[node name="CastleControlWalkway" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("2_backdrop")
+centered = false
+
+[node name="ReturnExit" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(150, 755)
+interaction_id = &"castle-control-return"
+display_name = "Service Road"
+approach_x = 150.0
+reach_radius = 130.0
+content_key = &"service-road-return"
+
+[node name="Kath" parent="." instance=ExtResource("3_kath")]
+position = Vector2(430, 755)
+z_index = 2
+floor_y = 755.0
+left_limit = 85.0
+right_limit = 625.0
+
+[node name="Wick" parent="." instance=ExtResource("4_wick")]
+z_index = 4
+
+[node name="HallUI" parent="." instance=ExtResource("5_ui")]
