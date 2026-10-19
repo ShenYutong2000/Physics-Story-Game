@@ -6,6 +6,7 @@
 build/
 exports/
 *.pck
+/test_movie.avi
 
 # Local editor files
 .DS_Store

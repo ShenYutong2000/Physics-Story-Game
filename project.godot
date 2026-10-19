@@ -26,10 +26,6 @@ window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 
-[editor]
-
-movie_writer/movie_file="E:/Project-Physics-Game/Physics-Story-Game/test_movie.avi"
-
 [input]
 
 move_left={

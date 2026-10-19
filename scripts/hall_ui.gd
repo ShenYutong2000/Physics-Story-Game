@@ -35,6 +35,7 @@ var emergency_console: Control
 var emergency_status: Label
 var emergency_selection: Label
 var castle_rotation: Control
+var chapter_end: Control
 var pause_menu: Control
 var hint_deadline: int = 0
 
@@ -283,7 +284,7 @@ func _ready() -> void:
 	castle_rotation.add_child(rotation_backdrop)
 	var rotation_pivot := Node2D.new()
 	rotation_pivot.name = "CastleWingPivot"
-	rotation_pivot.position = Vector2(1370, 180)
+	rotation_pivot.position = Vector2(1480, 185)
 	castle_rotation.add_child(rotation_pivot)
 	var rotation_wing := Sprite2D.new()
 	rotation_wing.texture = CASTLE_WING_TEXTURE
@@ -304,6 +305,30 @@ func _ready() -> void:
 	_label(pause_menu, Rect2(540, 445, 595, 65), "ENTER / ESC   RESUME", 29, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(pause_menu, Rect2(540, 510, 595, 65), "Q   QUIT GAME", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pause_menu.visible = false
+
+	chapter_end = Control.new()
+	chapter_end.name = "ChapterEnd"
+	chapter_end.size = Vector2(1672, 941)
+	chapter_end.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(chapter_end)
+	_dim(chapter_end)
+	var end_panel := Panel.new()
+	end_panel.position = Vector2(336, 250)
+	end_panel.size = Vector2(1000, 440)
+	end_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var end_style := StyleBoxFlat.new()
+	end_style.bg_color = Color("202746")
+	end_style.border_color = Color("c59a58")
+	end_style.set_border_width_all(4)
+	end_style.set_corner_radius_all(14)
+	end_panel.add_theme_stylebox_override("panel", end_style)
+	chapter_end.add_child(end_panel)
+	_label(end_panel, Rect2(70, 70, 860, 48), "FOOTNOTES TO THE WORLD", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(end_panel, Rect2(70, 150, 860, 90), "CHAPTER I", 34, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(end_panel, Rect2(70, 230, 860, 85), "UPSIDE-DOWN CASTLE", 46, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(end_panel, Rect2(70, 335, 860, 38), "PROLOGUE COMPLETE", 22, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(end_panel, Rect2(70, 385, 860, 38), "ENTER  RETURN TO THE SERVICE ROAD", 20, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chapter_end.visible = false
 
 
 func _process(_delta: float) -> void:
@@ -372,7 +397,7 @@ func show_gauge_inspection(recorded: bool) -> void:
 	hide_prompt()
 
 
-func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false, room_compared: bool = false, incident_complete: bool = false, room_prepared: bool = false, incident_active: bool = false) -> void:
+func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false, room_compared: bool = false, incident_complete: bool = false, room_prepared: bool = false, incident_active: bool = false, service_gate_open: bool = false, service_road_end_reached: bool = false) -> void:
 	hide_modals()
 	var discovered: Dictionary = {}
 	for entry in entries:
@@ -395,6 +420,7 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	]
 	if hall_complete and hall_count == 3:
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
+	journal_progress.text += "\n\nSERVICE ROAD  %s" % ("Castle entrance reached" if service_road_end_reached else ("Gate open" if service_gate_open else "Not reached"))
 	var lines := PackedStringArray()
 	for entry in entries:
 		lines.append("• %s\n%s" % [entry["title"], entry["body"]])
@@ -456,6 +482,15 @@ func show_pause() -> void:
 	hide_prompt()
 
 
+func show_chapter_end() -> void:
+	hide_modals()
+	chapter_end.visible = true
+	chapter_end.modulate.a = 0.0
+	var fade := create_tween()
+	fade.tween_property(chapter_end, "modulate:a", 1.0, 0.7)
+	hide_prompt()
+
+
 func hide_modals() -> void:
 	dialogue.visible = false
 	sheet.visible = false
@@ -465,6 +500,7 @@ func hide_modals() -> void:
 	notebook_comparison.visible = false
 	emergency_console.visible = false
 	castle_rotation.visible = false
+	chapter_end.visible = false
 	pause_menu.visible = false
 	hint.visible = false
 

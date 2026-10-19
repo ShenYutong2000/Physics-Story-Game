@@ -16,6 +16,7 @@ const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-d
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var return_exit: Node2D = $ReturnToHall
+@onready var service_road_exit: Node2D = $ServiceRoadExit
 @onready var stop_hotspot: Node2D = $StopHotspot
 @onready var far: Sprite2D = $Far
 @onready var needle: Sprite2D = $Gauge/Needle
@@ -24,7 +25,7 @@ const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-d
 @onready var lamp_one: AnimatedSprite2D = $StatusLampOne
 @onready var lamp_two: AnimatedSprite2D = $StatusLampTwo
 @onready var stop_switch: AnimatedSprite2D = $EmergencyStop
-@onready var hotspots: Array[Node] = [$Gauge, $RouteDiagram, $ReturnToHall, $StopHotspot]
+@onready var hotspots: Array[Node] = [$Gauge, $RouteDiagram, $ReturnToHall, $StopHotspot, $ServiceRoadExit]
 @onready var state: Node = get_node("/root/PrologueState")
 
 var mode: StringName = &"roam"
@@ -39,6 +40,7 @@ var incident_busy := false
 
 func _ready() -> void:
 	return_exit.exit_requested.connect(_on_exit_requested)
+	service_road_exit.exit_requested.connect(_on_exit_requested)
 	var spawn_tag: StringName = state.take_spawn_tag()
 	if state.flags.get("dawn_reached", false):
 		far.texture = DAWN_CITY
@@ -47,6 +49,8 @@ func _ready() -> void:
 		if not state.flags.get("machine_intro_seen", false):
 			state.flags["machine_intro_seen"] = true
 			_start_dialogue(["No warning lamp. The upper needle is still below the red sector.", "I should compare it with yesterday's mark before I leave."])
+	elif spawn_tag == &"from-service-road":
+		kath.position.x = 1510.0
 	else:
 		kath.position.x = 250.0
 	var ambience := AudioStreamPlayer.new()
@@ -96,7 +100,13 @@ func _process(_delta: float) -> void:
 			return
 		var action := "RETURN" if closest == return_exit else "INSPECT"
 		var prompt_y := 415.0
-		if closest == stop_hotspot:
+		if closest == service_road_exit:
+			if not state.flags.get("incident_complete", false):
+				ui.show_prompt("Service road", closest.approach_x, "COMPLETE THE REPAIR", 415.0)
+				return
+			action = "EXIT TO ROAD"
+			prompt_y = 415.0
+		elif closest == stop_hotspot:
 			action = "STOP DRIVE"
 			prompt_y = 465.0
 		elif closest.content_key == &"gauge":
@@ -200,6 +210,12 @@ func nearest_hotspot(feet_x: float) -> Node:
 func _inspect(hotspot: Node) -> void:
 	if hotspot == return_exit:
 		return_exit.request_exit()
+		return
+	if hotspot == service_road_exit:
+		if not state.flags.get("incident_complete", false):
+			_start_dialogue(["I should finish dealing with the machine before taking the service road."])
+		else:
+			service_road_exit.request_exit()
 		return
 	match hotspot.content_key:
 		&"gauge":
