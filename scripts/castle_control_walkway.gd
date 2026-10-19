@@ -1,13 +1,16 @@
 extends Node2D
-## Temporary Chapter I entrance, using the supplied control walkway illustration.
+## Fixed control tower and independently posed castle wing. Story still stops here.
 
 const SERVICE_ROAD_SCENE := "res://scenes/service_road.tscn"
 const FLOOR_Y := 755.0
+const SOURCE_WING_POSE_ANGLE := deg_to_rad(12.0)
 
 @onready var kath: CharacterBody2D = $Kath
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var return_exit: Node2D = $ReturnExit
+@onready var castle_wing_pivot: Node2D = $CastleWingPivot
+@onready var dial_needle_pivot: Node2D = $DialNeedlePivot
 @onready var state: Node = get_node("/root/PrologueState")
 
 var mode: StringName = &"roam"
@@ -17,6 +20,18 @@ var dialogue_index := 0
 
 func _ready() -> void:
 	state.take_spawn_tag()
+	# The approved source painting depicts the wing and needle already tilted by 12°.
+	# Apply the delta so the stationary ring never follows the rotating wing.
+	var pose_delta: float = state.castle_pose_angle_radians() - SOURCE_WING_POSE_ANGLE
+	castle_wing_pivot.rotation = pose_delta
+	# This is a bounded status dial, not a full 360-degree angle scale.
+	match state.castle_pose:
+		&"upright", &"restored":
+			dial_needle_pivot.rotation = deg_to_rad(-12.0)
+		&"tilted":
+			dial_needle_pivot.rotation = 0.0
+		&"inverted":
+			dial_needle_pivot.rotation = deg_to_rad(40.0)
 	kath.floor_y = FLOOR_Y
 	kath.floor_slope = 0.0
 	kath.left_limit = 85.0

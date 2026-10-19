@@ -1,19 +1,65 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/castle_control_walkway.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://chapter1-assets/prototype/castle-control-walkway.png" id="2_backdrop"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/far-landscape.png" id="2_far"]
 [ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
 [ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="4_wick"]
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="5_ui"]
 [ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="6_hotspot"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/tower-and-bridge.png" id="7_fixed"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/rotating-wing.png" id="8_wing"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/dial-needle.png" id="9_needle"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/short-guardrail.png" id="10_guardrail"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/front-parapet.png" id="11_front"]
+[ext_resource type="PackedScene" path="res://scenes/erin.tscn" id="12_erin"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/support-ring.png" id="13_ring"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/control-dial.png" id="14_dial"]
 
 [node name="CastleControlWalkway" type="Node2D"]
 script = ExtResource("1_script")
 
-[node name="Backdrop" type="Sprite2D" parent="."]
-z_index = -10
-texture = ExtResource("2_backdrop")
+[node name="Far" type="Sprite2D" parent="."]
+z_index = -20
+texture = ExtResource("2_far")
 centered = false
+
+[node name="CastleWingPivot" type="Node2D" parent="."]
+position = Vector2(1540, 470)
+z_index = -15
+
+[node name="WingSprite" type="Sprite2D" parent="CastleWingPivot"]
+position = Vector2(-1540, -470)
+texture = ExtResource("8_wing")
+centered = false
+
+[node name="FixedArchitecture" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("7_fixed")
+centered = false
+
+[node name="SupportRing" type="Sprite2D" parent="."]
+z_index = -9
+texture = ExtResource("13_ring")
+centered = false
+modulate = Color(0.86, 0.85, 0.88, 1)
+
+[node name="ControlDial" type="Sprite2D" parent="."]
+position = Vector2(183, 164)
+z_index = -8
+texture = ExtResource("14_dial")
+centered = false
+scale = Vector2(0.4, 0.4)
+modulate = Color(0.9, 0.89, 0.9, 1)
+
+[node name="DialNeedlePivot" type="Node2D" parent="."]
+position = Vector2(397, 423)
+z_index = -7
+
+[node name="NeedleSprite" type="Sprite2D" parent="DialNeedlePivot"]
+position = Vector2(-41.14, -116.32)
+texture = ExtResource("9_needle")
+centered = false
+scale = Vector2(0.085, 0.108)
 
 [node name="ReturnExit" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(150, 755)
@@ -32,5 +78,22 @@ right_limit = 625.0
 
 [node name="Wick" parent="." instance=ExtResource("4_wick")]
 z_index = 4
+
+[node name="Erin" parent="." instance=ExtResource("12_erin")]
+position = Vector2(265, 755)
+z_index = 2
+
+[node name="ShortGuardrail" type="Sprite2D" parent="."]
+position = Vector2(266.6, 462.35)
+z_index = 6
+texture = ExtResource("10_guardrail")
+centered = false
+scale = Vector2(0.325, 0.325)
+modulate = Color(0.85, 0.83, 0.86, 1)
+
+[node name="FrontParapet" type="Sprite2D" parent="."]
+z_index = 7
+texture = ExtResource("11_front")
+centered = false
 
 [node name="HallUI" parent="." instance=ExtResource("5_ui")]
