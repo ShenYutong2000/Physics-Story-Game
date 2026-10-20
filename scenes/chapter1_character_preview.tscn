@@ -1,0 +1,48 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/chapter1_character_preview.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/storybook-original-scenes-v1/01-control-walkway.png" id="2_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="4_wick"]
+[ext_resource type="PackedScene" path="res://scenes/erin.tscn" id="5_erin"]
+[ext_resource type="PackedScene" path="res://scenes/castle_fixture.tscn" id="6_fixture"]
+
+[node name="Chapter1CharacterPreview" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("2_backdrop")
+centered = false
+
+[node name="Kath" parent="." instance=ExtResource("3_kath")]
+position = Vector2(275, 755)
+z_index = 2
+floor_y = 755.0
+left_limit = 90.0
+right_limit = 610.0
+
+[node name="Wick" parent="." instance=ExtResource("4_wick")]
+z_index = 4
+
+[node name="Erin" parent="." instance=ExtResource("5_erin")]
+position = Vector2(495, 755)
+z_index = 2
+
+[node name="RailOcclusionLeft" parent="." instance=ExtResource("6_fixture")]
+position = Vector2(230, 660)
+z_index = 6
+
+[node name="RailOcclusionRight" parent="." instance=ExtResource("6_fixture")]
+position = Vector2(390, 660)
+z_index = 6
+
+[node name="ReviewLabel" type="Label" parent="."]
+z_index = 12
+offset_left = 24.0
+offset_top = 16.0
+offset_right = 670.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(0.953, 0.835, 0.655, 1)
+theme_override_font_sizes/font_size = 24
+text = "CHAPTER I ART REVIEW   A/D: Kath   E: Erin pose"

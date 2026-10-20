@@ -100,9 +100,10 @@ func _run() -> void:
 		_fail("Kath did not spawn on the control walkway's walkable floor.")
 		return
 	control._close_overlay()
+	control.kath.position.x = 370.0
 	control._unhandled_input(_key(KEY_E))
-	if current_scene != control:
-		_fail("The walkway return exit worked while Kath was out of range.")
+	if current_scene != control or control.mode != &"roam":
+		_fail("A walkway hotspot worked while Kath was out of range.")
 		return
 	control._unhandled_input(_key(KEY_J))
 	if control.mode != &"journal":
