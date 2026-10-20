@@ -96,12 +96,12 @@ func stop_pushing(ladder_x: float) -> void:
 	_set_animation(false)
 
 
-func begin_climbing(ladder_x: float, top_y: float, bottom_y: float) -> void:
+func begin_climbing(ladder_x: float, top_y: float, bottom_y: float, start_y: float = -1.0) -> void:
 	locomotion_mode = &"climb"
 	climb_anchor_x = ladder_x
 	climb_top_y = top_y
 	climb_bottom_y = bottom_y
-	position = Vector2(ladder_x, bottom_y)
+	position = Vector2(ladder_x, clampf(start_y if start_y >= 0.0 else bottom_y, top_y, bottom_y))
 	velocity = Vector2.ZERO
 	_set_climb_animation()
 
