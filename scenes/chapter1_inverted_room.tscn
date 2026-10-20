@@ -1,0 +1,127 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/chapter1_inverted_room.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/far-exterior.png" id="2_far"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/room-shell.png" id="3_shell"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/split-water-pipe.png" id="4_pipe"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/falling-water.png" id="5_water"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/plumb-chain.png" id="6_plumb"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/fallen-chair.png" id="7_chair"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/wall-ladder.png" id="8_ladder"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/front-parapet.png" id="9_front"]
+[ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="10_kath"]
+[ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="11_wick"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/inverted-room-layers-v1/fallen-chandelier.png" id="12_chandelier"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/story-route-v1/wing-lower-entry.png" id="13_entry"]
+[ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="14_ui"]
+[ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="15_hotspot"]
+
+[node name="Chapter1InvertedRoom" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="FarExterior" type="Sprite2D" parent="."]
+z_index = -20
+texture = ExtResource("2_far")
+centered = false
+
+[node name="RoomShell" type="Sprite2D" parent="."]
+z_index = -10
+texture = ExtResource("3_shell")
+centered = false
+
+[node name="SplitWaterPipe" type="Sprite2D" parent="."]
+position = Vector2(885, 190)
+z_index = -9
+texture = ExtResource("4_pipe")
+scale = Vector2(0.18, 0.18)
+
+[node name="PlumbChain" type="Sprite2D" parent="."]
+position = Vector2(200, 175)
+z_index = -8
+texture = ExtResource("6_plumb")
+centered = false
+scale = Vector2(0.6, 0.6)
+
+[node name="FallingWater" type="Sprite2D" parent="."]
+position = Vector2(400, 180)
+z_index = -7
+texture = ExtResource("5_water")
+centered = false
+scale = Vector2(0.6, 0.72)
+modulate = Color(0.72, 0.82, 1, 0.78)
+
+[node name="LowerEntryArt" type="Sprite2D" parent="."]
+position = Vector2(177, 623)
+z_index = -6
+texture = ExtResource("13_entry")
+scale = Vector2(0.3, 0.3)
+
+[node name="WallLadder" type="Sprite2D" parent="."]
+position = Vector2(1555, 628)
+z_index = -6
+texture = ExtResource("8_ladder")
+scale = Vector2(0.32, 0.32)
+
+[node name="FallenChair" type="Sprite2D" parent="."]
+position = Vector2(1170, 738)
+z_index = -5
+texture = ExtResource("7_chair")
+scale = Vector2(0.18, 0.18)
+
+[node name="FallenChandelier" type="Sprite2D" parent="."]
+position = Vector2(500, 738)
+z_index = -5
+texture = ExtResource("12_chandelier")
+scale = Vector2(0.2, 0.2)
+
+[node name="ReturnHatch" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(145, 806)
+interaction_id = &"room-return-hatch"
+display_name = "Lower Hatch"
+approach_x = 145.0
+reach_radius = 85.0
+
+[node name="PlumbWeight" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(704, 806)
+interaction_id = &"room-plumb-weight"
+display_name = "Hanging Weight"
+approach_x = 704.0
+reach_radius = 100.0
+
+[node name="WaterPath" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(915, 806)
+interaction_id = &"room-water-path"
+display_name = "Falling Water"
+approach_x = 915.0
+reach_radius = 100.0
+
+[node name="FallenFurniture" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(1190, 806)
+interaction_id = &"room-fallen-furniture"
+display_name = "Fallen Chair"
+approach_x = 1190.0
+reach_radius = 90.0
+
+[node name="ShaftLadder" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(1460, 806)
+interaction_id = &"room-shaft-ladder"
+display_name = "Maintenance Ladder"
+approach_x = 1460.0
+reach_radius = 90.0
+
+[node name="Kath" parent="." instance=ExtResource("10_kath")]
+position = Vector2(330, 806)
+z_index = 2
+floor_y = 806.0
+left_limit = 100.0
+right_limit = 1470.0
+
+[node name="Wick" parent="." instance=ExtResource("11_wick")]
+z_index = 4
+
+[node name="FrontParapet" type="Sprite2D" parent="."]
+z_index = 7
+texture = ExtResource("9_front")
+centered = false
+
+[node name="HallUI" parent="." instance=ExtResource("14_ui")]

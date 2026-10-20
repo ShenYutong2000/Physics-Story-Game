@@ -73,6 +73,9 @@ func _run() -> void:
 	if control.erin.visible or control.nearest_hotspot(control.erin_station.approach_x) == control.erin_station:
 		_fail("Erin remained on the fixed walkway after reaching the inner ledge.")
 		return
+	if not control.lower_service_hatch_art.visible or control.nearest_hotspot(control.lower_service_hatch.approach_x) != control.lower_service_hatch:
+		_fail("The on-site inversion did not uncover the fixed tower's lower service hatch.")
+		return
 	if not state.has_note(&"castle-on-site-inversion") or control.mode != &"dialogue":
 		_fail("The completed inversion did not provide its observation and aftermath dialogue.")
 		return

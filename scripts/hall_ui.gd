@@ -423,6 +423,14 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	if hall_complete and hall_count == 3:
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
 	journal_progress.text += "\n\nSERVICE ROAD  %s" % ("Castle entrance reached" if service_road_end_reached else ("Gate open" if service_gate_open else "Not reached"))
+	if discovered.has(&"castle-on-site-inversion"):
+		journal_progress.text += "\n\nCASTLE WING  Inverted"
+		journal_progress.text += "\n%s  Falling water\n%s  Hanging weight\n%s  Lower ledge\n%s  Shaft access" % [
+			"[x]" if discovered.has(&"castle-water-path") else "[ ]",
+			"[x]" if discovered.has(&"castle-plumb-weight") else "[ ]",
+			"[x]" if discovered.has(&"castle-down-confirmed") else "[ ]",
+			"[x]" if discovered.has(&"castle-shaft-access") else "[ ]"
+		]
 	var lines := PackedStringArray()
 	for entry in entries:
 		lines.append("• %s\n%s" % [entry["title"], entry["body"]])
