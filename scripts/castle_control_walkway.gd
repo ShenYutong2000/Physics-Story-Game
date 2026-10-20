@@ -2,6 +2,7 @@ extends Node2D
 ## Fixed control tower: Kath observes Erin's return test and the on-site inversion.
 
 const SERVICE_ROAD_SCENE := "res://scenes/service_road.tscn"
+const INVERTED_ROOM_SCENE := "res://scenes/chapter1_inverted_room.tscn"
 const FLOOR_Y := 755.0
 const SOURCE_WING_POSE_ANGLE := deg_to_rad(12.0)
 const MOTOR_AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-machine.wav")
@@ -15,11 +16,13 @@ const STOP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop
 @onready var erin_station: Node2D = $ErinStation
 @onready var position_dial: Node2D = $PositionDial
 @onready var return_console: Node2D = $ReturnConsole
+@onready var lower_service_hatch: Node2D = $LowerServiceHatch
+@onready var lower_service_hatch_art: Sprite2D = $LowerServiceHatchArt
 @onready var erin: Node2D = $Erin
 @onready var castle_wing_pivot: Node2D = $CastleWingPivot
 @onready var dial_needle_pivot: Node2D = $DialNeedlePivot
 @onready var state: Node = get_node("/root/PrologueState")
-@onready var hotspots: Array[Node] = [return_exit, erin_station, position_dial, return_console]
+@onready var hotspots: Array[Node] = [return_exit, erin_station, position_dial, return_console, lower_service_hatch]
 
 var mode: StringName = &"roam"
 var dialogue_lines: Array[String] = []
@@ -31,13 +34,14 @@ var effect_player: AudioStreamPlayer
 
 
 func _ready() -> void:
-	state.take_spawn_tag()
+	var spawn_tag: StringName = state.take_spawn_tag()
 	_apply_pose_from_state()
+	lower_service_hatch_art.visible = state.castle_pose == &"inverted" and bool(state.flags.get("control_inversion_complete", false))
 	kath.floor_y = FLOOR_Y
 	kath.floor_slope = 0.0
 	kath.left_limit = 85.0
 	kath.right_limit = 625.0
-	kath.position = Vector2(430.0, FLOOR_Y)
+	kath.position = Vector2(575.0 if spawn_tag == &"from-inverted-room" else 430.0, FLOOR_Y)
 	erin.visible = state.castle_pose != &"inverted"
 	motor_player = AudioStreamPlayer.new()
 	motor_player.stream = MOTOR_AMBIENCE
@@ -51,8 +55,10 @@ func _ready() -> void:
 			"The fixed walkway is still standing. The supported wing is tilted inside the ring.",
 			"Erin is here. I should compare the position dial with what we can actually see."
 		])
+	elif spawn_tag == &"from-inverted-room":
+		ui.show_hint("Back at the fixed tower. The lower hatch remains open.", 4.0)
 	elif state.castle_pose == &"inverted":
-		ui.show_hint("The wing is inverted. Erin needs another route out.", 4.0)
+		ui.show_hint("The old bridge no longer meets the wing. Check the lower service hatch.", 4.0)
 
 
 func _exit_tree() -> void:
@@ -81,7 +87,10 @@ func _process(_delta: float) -> void:
 	elif closest == return_console:
 		action = "START" if _return_test_ready() else "CHECK"
 		prompt_y = 260.0
-	ui.show_prompt(closest.display_name, closest.approach_x, action, prompt_y)
+	elif closest == lower_service_hatch:
+		action = "ENTER"
+		prompt_y = 300.0
+	ui.show_prompt(closest.display_name, 830.0 if closest == lower_service_hatch else closest.approach_x, action, prompt_y)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -138,6 +147,8 @@ func nearest_hotspot(feet_x: float) -> Node:
 	for hotspot in hotspots:
 		if hotspot == erin_station and not erin.visible:
 			continue
+		if hotspot == lower_service_hatch and not lower_service_hatch_art.visible:
+			continue
 		if not hotspot.is_reachable(feet_x):
 			continue
 		var distance: float = hotspot.distance_from(feet_x)
@@ -187,6 +198,10 @@ func _inspect(hotspot: Node) -> void:
 				[&"erin", &"kath"],
 				&"begin_return_test"
 			)
+	elif hotspot == lower_service_hatch and lower_service_hatch_art.visible:
+		_set_mode(&"travel")
+		ui.hide_modals()
+		state.travel_to(INVERTED_ROOM_SCENE, &"from-control-walkway")
 
 
 func _return_to_service_road() -> void:
@@ -299,6 +314,7 @@ func _begin_return_test() -> void:
 		_set_mode(&"roam")
 		return
 	_apply_pose_from_state()
+	lower_service_hatch_art.visible = true
 	state.flags["control_inversion_complete"] = true
 	state.add_note_once(
 		&"castle-on-site-inversion",

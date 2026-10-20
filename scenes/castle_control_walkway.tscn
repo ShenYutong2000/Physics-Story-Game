@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/castle_control_walkway.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/far-landscape.png" id="2_far"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/erin.tscn" id="12_erin"]
 [ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/support-ring.png" id="13_ring"]
 [ext_resource type="Texture2D" path="res://chapter1-assets/control-walkway-layers-v1/control-dial.png" id="14_dial"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/story-route-v1/fixed-tower-lower-hatch.png" id="15_hatch"]
 
 [node name="CastleControlWalkway" type="Node2D"]
 script = ExtResource("1_script")
@@ -61,6 +62,13 @@ texture = ExtResource("9_needle")
 centered = false
 scale = Vector2(0.085, 0.108)
 
+[node name="LowerServiceHatchArt" type="Sprite2D" parent="."]
+position = Vector2(678, 615)
+z_index = -6
+texture = ExtResource("15_hatch")
+scale = Vector2(0.25, 0.25)
+visible = false
+
 [node name="ReturnExit" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(150, 755)
 interaction_id = &"castle-control-return"
@@ -92,6 +100,14 @@ display_name = "Return Test"
 approach_x = 568.0
 reach_radius = 60.0
 content_key = &"return-test"
+
+[node name="LowerServiceHatch" parent="." instance=ExtResource("6_hotspot")]
+position = Vector2(615, 755)
+interaction_id = &"castle-lower-service-hatch"
+display_name = "Lower Hatch"
+approach_x = 615.0
+reach_radius = 48.0
+content_key = &"inverted-room-entry"
 
 [node name="Kath" parent="." instance=ExtResource("3_kath")]
 position = Vector2(430, 755)
