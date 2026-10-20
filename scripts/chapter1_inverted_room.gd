@@ -2,13 +2,18 @@ extends Node2D
 ## First official route into the rotating wing: identify the real down direction.
 
 const CONTROL_WALKWAY_SCENE := "res://scenes/castle_control_walkway.tscn"
+const MAINTENANCE_SHAFT_SCENE := "res://scenes/chapter1_maintenance_shaft.tscn"
 const FLOOR_Y := 806.0
+const LADDER_X := 1510.0
+const LADDER_TOP_Y := 475.0
+const LADDER_FOOT_X := 1460.0
 const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/water-drop.wav")
 
 @onready var kath: CharacterBody2D = $Kath
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var falling_water: Sprite2D = $FallingWater
+@onready var shaft_hatch_art: Sprite2D = $ShaftHatchArt
 @onready var return_hatch: Node2D = $ReturnHatch
 @onready var plumb_weight: Node2D = $PlumbWeight
 @onready var water_path: Node2D = $WaterPath
@@ -26,18 +31,22 @@ var drip_elapsed := 0.0
 
 
 func _ready() -> void:
-	state.take_spawn_tag()
+	var spawn_tag: StringName = state.take_spawn_tag()
 	kath.floor_y = FLOOR_Y
 	kath.floor_slope = 0.0
 	kath.left_limit = 100.0
 	kath.right_limit = 1470.0
 	kath.position = Vector2(390.0, FLOOR_Y)
+	shaft_hatch_art.visible = state.castle_pose == &"inverted"
 	drip_player = AudioStreamPlayer.new()
 	drip_player.stream = DRIP_SOUND
 	drip_player.volume_db = -22.0
 	add_child(drip_player)
 	if state.castle_pose != &"inverted" or not state.flags.get("control_inversion_complete", false):
 		_start_dialogue(["This passage is only safe after the wing has stopped moving. I should return to the fixed tower."])
+	elif spawn_tag == &"from-maintenance-shaft":
+		kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, LADDER_TOP_Y)
+		ui.show_hint("W/S climb down. E at the top returns to the shaft.", 4.0)
 	elif not state.flags.get("inverted_room_intro_seen", false):
 		state.flags["inverted_room_intro_seen"] = true
 		_start_dialogue([
@@ -59,6 +68,15 @@ func _process(delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
+	if kath.locomotion_mode == &"climb":
+		if kath.position.y >= FLOOR_Y - 1.0:
+			_leave_ladder_at_foot()
+		elif kath.position.y <= LADDER_TOP_Y + 18.0:
+			ui.show_prompt("Shaft Hatch", 1300.0, "ENTER", 550.0)
+			return
+		else:
+			ui.hide_prompt()
+			return
 	var closest: Node = nearest_hotspot(kath.position.x)
 	if closest == null:
 		ui.hide_prompt()
@@ -69,7 +87,7 @@ func _process(delta: float) -> void:
 		action = "RETURN"
 		prompt_y = 475.0
 	elif closest == shaft_ladder:
-		action = "CHECK"
+		action = "CLIMB" if state.flags.get("room_ladder_checked", false) else "CHECK"
 		prompt_y = 390.0
 	ui.show_prompt(closest.display_name, closest.approach_x, action, prompt_y)
 
@@ -88,6 +106,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if mode == &"roam":
 		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
+			if kath.locomotion_mode == &"climb":
+				if kath.position.y <= LADDER_TOP_Y + 18.0:
+					_set_mode(&"travel")
+					ui.hide_modals()
+					state.travel_to(MAINTENANCE_SHAFT_SCENE, &"from-inverted-room")
+				return
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
 				_inspect(closest)
@@ -122,6 +146,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func nearest_hotspot(feet_x: float) -> Node:
+	if kath.locomotion_mode == &"climb":
+		return null
 	var best: Node = null
 	var best_distance := INF
 	for hotspot in hotspots:
@@ -161,7 +187,9 @@ func _inspect(hotspot: Node) -> void:
 	elif hotspot == fallen_furniture:
 		_start_dialogue(["That chair slid from the old floor and stopped on the stone below me. I'll keep clear of the loose furniture."])
 	elif hotspot == shaft_ladder:
-		if not state.flags.get("castle_down_confirmed", false):
+		if state.castle_pose != &"inverted" or not state.flags.get("control_inversion_complete", false):
+			_start_dialogue(["The wing must settle before this ladder is safe."])
+		elif not state.flags.get("castle_down_confirmed", false):
 			_start_dialogue(["The ladder runs toward the maintenance shaft, but I need to check this room's safe lower surface first."])
 		elif not state.flags.get("room_ladder_checked", false):
 			_start_dialogue([
@@ -169,7 +197,14 @@ func _inspect(hotspot: Node) -> void:
 				"I'll mark this access and check the shaft before I climb with any load."
 			], &"mark_ladder")
 		else:
-			_start_dialogue(["This is the access to the maintenance shaft. The bolts need a closer check before I climb."])
+			kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, FLOOR_Y - 30.0)
+			ui.show_hint("W/S climb. E at the top enters the maintenance shaft.", 4.0)
+
+
+func _leave_ladder_at_foot() -> void:
+	kath.stop_climbing()
+	kath.position = Vector2(LADDER_FOOT_X, FLOOR_Y)
+	ui.show_hint("Back on the lower ledge.", 2.0)
 
 
 func _start_down_comparison() -> void:
