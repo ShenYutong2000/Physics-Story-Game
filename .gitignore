@@ -1,6 +1,7 @@
 # Godot-generated editor/import cache
 .godot/
 .godot-local/
+chapter1-assets/review-*/*.png.import
 
 # Local builds and exports
 build/
