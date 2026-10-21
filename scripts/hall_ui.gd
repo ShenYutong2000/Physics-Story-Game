@@ -35,6 +35,9 @@ var shaft_winch: Control
 var shaft_winch_status: Label
 var shaft_winch_instruction: Label
 var shaft_winch_fill: ColorRect
+var shaft_winch_path: Label
+var shaft_rigging: Control
+var shaft_rigging_status: Label
 var emergency_console: Control
 var emergency_status: Label
 var emergency_selection: Label
@@ -270,7 +273,7 @@ func _ready() -> void:
 	winch_panel.add_theme_stylebox_override("panel", winch_style)
 	shaft_winch.add_child(winch_panel)
 	_label(winch_panel, Rect2(65, 42, 810, 50), "MAINTENANCE SHAFT · HAND WINCH", 31, GOLD)
-	_label(winch_panel, Rect2(65, 108, 810, 70), "One cable crosses the fixed pulley and holds the basket.", 25, CREAM)
+	shaft_winch_path = _label(winch_panel, Rect2(65, 108, 810, 70), "One cable crosses the fixed pulley and holds the basket.", 25, CREAM)
 	var winch_track := ColorRect.new()
 	winch_track.position = Vector2(120, 237)
 	winch_track.size = Vector2(700, 26)
@@ -289,6 +292,36 @@ func _ready() -> void:
 	shaft_winch_instruction = _label(winch_panel, Rect2(80, 385, 780, 50), "", 22, CREAM)
 	_label(winch_panel, Rect2(80, 450, 780, 38), "ESC  CLOSE  ·  Release keys to hold position", 19, GOLD)
 	shaft_winch.visible = false
+
+	shaft_rigging = Control.new()
+	shaft_rigging.name = "ShaftRigging"
+	shaft_rigging.size = Vector2(1672, 941)
+	shaft_rigging.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(shaft_rigging)
+	_dim(shaft_rigging)
+	var rig_panel := Panel.new()
+	rig_panel.position = Vector2(326, 172)
+	rig_panel.size = Vector2(1020, 590)
+	rig_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var rig_style := StyleBoxFlat.new()
+	rig_style.bg_color = Color("1c2944")
+	rig_style.border_color = Color("bd9257")
+	rig_style.set_border_width_all(6)
+	rig_style.set_corner_radius_all(16)
+	rig_panel.add_theme_stylebox_override("panel", rig_style)
+	shaft_rigging.add_child(rig_panel)
+	_label(rig_panel, Rect2(65, 35, 900, 55), "PASSENGER ROPE · MAINTENANCE GUIDE", 30, GOLD)
+	_label(rig_panel, Rect2(72, 105, 880, 100), "The empty basket is locked to the lower dock. Pull the long rope along the thin pilot line from this platform.", 25, CREAM)
+	var diagram := Line2D.new()
+	diagram.points = PackedVector2Array([Vector2(180, 274), Vector2(346, 230), Vector2(420, 345), Vector2(510, 345), Vector2(580, 230), Vector2(765, 274)])
+	diagram.width = 7.0
+	diagram.default_color = Color("d1a96f")
+	diagram.antialiased = true
+	rig_panel.add_child(diagram)
+	_label(rig_panel, Rect2(72, 355, 880, 60), "WINCH   →   FIXED WHEEL   →   BASKET WHEEL   →   TOP ANCHOR", 21, GOLD)
+	shaft_rigging_status = _label(rig_panel, Rect2(72, 425, 880, 75), "", 24, CREAM)
+	_label(rig_panel, Rect2(72, 525, 880, 38), "ENTER  CONTINUE     ·     ESC  CANCEL", 19, GOLD)
+	shaft_rigging.visible = false
 
 	emergency_console = Control.new()
 	emergency_console.name = "EmergencyConsole"
@@ -517,22 +550,47 @@ func show_notebook_comparison() -> void:
 	hide_prompt()
 
 
-func show_shaft_winch(progress: float, rail_removed: bool) -> void:
+func show_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false) -> void:
 	hide_modals()
 	shaft_winch.visible = true
-	update_shaft_winch(progress, rail_removed)
+	update_shaft_winch(progress, rail_removed, passenger_test)
 	hide_prompt()
 
 
-func update_shaft_winch(progress: float, rail_removed: bool) -> void:
+func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false) -> void:
 	shaft_winch_fill.size.x = 700.0 * clampf(progress, 0.0, 1.0)
-	shaft_winch_status.text = "Basket position: %d%% of the lift" % roundi(progress * 100.0)
+	if passenger_test:
+		shaft_winch_path.text = "Two rope runs support the empty basket. Reel in about two rope marks to lift it one mark."
+		shaft_winch_status.text = "Empty test: basket %d%% · rope taken in ~%d%%" % [roundi(progress * 100.0), roundi(progress * 200.0)]
+		shaft_winch_instruction.text = "Hold ↑ for a short lift, release to hold, then hold ↓ to return."
+	else:
+		shaft_winch_path.text = "One cable crosses the fixed pulley and holds the basket."
+		shaft_winch_status.text = "Basket position: %d%% of the lift" % roundi(progress * 100.0)
+	if passenger_test:
+		return
 	if rail_removed:
 		shaft_winch_instruction.text = "Hold ↓ to lower the empty basket."
 	elif progress >= 0.995:
 		shaft_winch_instruction.text = "Basket at Erin's ledge. E to dock and pass the tools."
 	else:
 		shaft_winch_instruction.text = "Hold ↑ to reel in. Hold ↓ to lower."
+
+
+func show_shaft_rigging(step: int) -> void:
+	hide_modals()
+	shaft_rigging.visible = true
+	update_shaft_rigging(step)
+	hide_prompt()
+
+
+func update_shaft_rigging(step: int) -> void:
+	match step:
+		0:
+			shaft_rigging_status.text = "1 / 3  Attach the long rope to the waiting pilot line."
+		1:
+			shaft_rigging_status.text = "2 / 3  Pull it over the fixed wheel and around the basket wheel."
+		2:
+			shaft_rigging_status.text = "3 / 3  Seat the free end in the top anchor and secure the winch."
 
 
 func show_emergency_console(valve_two_open: bool, valve_four_open: bool, drive_stopped: bool, selected_lever: int) -> void:
@@ -594,6 +652,7 @@ func hide_modals() -> void:
 	torn_page.visible = false
 	notebook_comparison.visible = false
 	shaft_winch.visible = false
+	shaft_rigging.visible = false
 	emergency_console.visible = false
 	castle_rotation.visible = false
 	chapter_end.visible = false

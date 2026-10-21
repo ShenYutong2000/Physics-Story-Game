@@ -134,8 +134,8 @@ func _run() -> void:
 		_fail("The completed tool trip was not recorded exactly once.")
 		return
 	shaft._inspect(shaft.winch_console)
-	if state.notes.size() != note_count + 1 or shaft.get_node("MovingPulley").visible:
-		_fail("Repeat interaction duplicated notes or enabled the passenger pulley.")
+	if state.notes.size() != note_count + 1 or shaft.get_node("RopeCore").points.size() != 9 or state.flags.get("shaft_passenger_rethread_complete", false):
+		_fail("Repeat interaction duplicated notes or enabled the passenger rope before rethreading.")
 		return
 	shaft._close_overlay()
 	current_scene = null
