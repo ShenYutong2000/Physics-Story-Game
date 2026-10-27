@@ -1,5 +1,5 @@
 extends Node2D
-## Two rescue preparations: deliver Erin's tools, then prove the passenger rope with an empty basket.
+## Tool lift, passenger rig test, load check and controlled rescue on the fixed shaft.
 
 const INVERTED_ROOM_SCENE := "res://scenes/chapter1_inverted_room.tscn"
 const FLOOR_Y := 790.0
@@ -9,11 +9,21 @@ const BASKET_HIGH_Y := 358.0
 const WINCH_SPEED := 0.19
 const EMPTY_TEST_LIMIT := 0.28
 const EMPTY_TEST_MIN_LIFT := 0.20
+const PASSENGER_ACCELERATION := 0.16
+const PASSENGER_MAX_SPEED := 0.18
+const PASSIVE_DECELERATION := 0.10
+const ACTIVE_BRAKE_DECELERATION := 0.42
+const SAFE_DOCK_SPEED := 0.045
+const SAFETY_STOP_PROGRESS := 0.08
+const BASKET_OPEN: Texture2D = preload("res://chapter1-assets/maintenance-shaft-layers-v1/basket-gate-open.png")
+const BASKET_CLOSED: Texture2D = preload("res://chapter1-assets/maintenance-shaft-layers-v1/basket-empty.png")
 const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 
 @onready var kath: CharacterBody2D = $Kath
 @onready var wick: Node2D = $Wick
 @onready var erin: Node2D = $ErinOnLedge
+@onready var erin_in_basket: Node2D = $BasketRig/ErinInBasket
+@onready var erin_at_lower: Node2D = $ErinAtLower
 @onready var ui: CanvasLayer = $HallUI
 @onready var return_aperture: Node2D = $ReturnAperture
 @onready var speaking_tube: Node2D = $SpeakingTube
@@ -33,6 +43,8 @@ const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lev
 @onready var rope_mark_near: Line2D = $RopeMarkNear
 @onready var rope_mark_far: Line2D = $RopeMarkFar
 @onready var basket_rig: Node2D = $BasketRig
+@onready var basket_body: Sprite2D = $BasketRig/BasketBody
+@onready var upper_dock_clamp: Polygon2D = $UpperDockClamp
 @onready var basket_tools: Sprite2D = $BasketRig/ToolCrate
 @onready var platform_tools: Sprite2D = $PlatformToolCrate
 @onready var transfer_tools: Sprite2D = $TransferCrate
@@ -55,6 +67,9 @@ var pending_dialogue_action: StringName = &""
 var basket_progress := 0.0
 var winch_motion_direction := 0.0
 var rigging_step := 0
+var load_check_selection := 0
+var pending_load_checks: Array[StringName] = []
+var descent_speed := 0.0
 var sound_player: AudioStreamPlayer
 
 
@@ -75,8 +90,18 @@ func _ready() -> void:
 	if spawn_tag == &"from-inverted-room" and not state.flags.get("shaft_intro_seen", false):
 		state.flags["shaft_intro_seen"] = true
 		_start_dialogue(["This fixed platform does not turn with the wing. Erin is stranded across the shaft; I should check the hoist and ask what she needs."])
+	elif state.flags.get("shaft_rescue_complete", false):
+		ui.show_hint("Erin is safe on the fixed platform. We can inspect the engine room next.", 5.0)
+	elif state.flags.get("shaft_lower_arrived", false):
+		ui.show_hint("Lock the basket at the lower berth before Erin steps out.", 5.0)
+	elif _rescue_phase() == &"passenger_descent":
+		ui.show_hint("Erin is aboard. Operate the winch and allow room to stop.", 5.0)
+	elif state.flags.get("shaft_erin_aboard", false):
+		ui.show_hint("Take up slack at the winch, then check the loaded rope and brake.", 5.0)
+	elif state.flags.get("shaft_upper_dock_locked", false):
+		ui.show_hint("Erin secured the empty basket. Call her to board.", 5.0)
 	elif state.flags.get("shaft_empty_test_complete", false):
-		ui.show_hint("The empty passenger rig held. Erin still needs a load check before boarding.", 5.0)
+		ui.show_hint("The basket is level with Erin. Call her through the voice tube." if basket_progress >= 0.995 else "Raise the empty basket to Erin, then call her through the voice tube.", 5.0)
 	elif state.flags.get("shaft_passenger_rethread_complete", false):
 		ui.show_hint("Release the lower dock, then make a short empty-basket lift.", 5.0)
 	elif state.flags.get("shaft_tool_trip_complete", false):
@@ -91,7 +116,12 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if mode == &"winch":
-		_process_winch(delta)
+		if _rescue_phase() == &"load_tension":
+			_process_load_tension(delta)
+		elif _rescue_phase() == &"passenger_descent":
+			_process_passenger_descent(delta)
+		else:
+			_process_winch(delta)
 		ui.hide_prompt()
 		return
 	if mode != &"roam":
@@ -103,14 +133,23 @@ func _process(delta: float) -> void:
 		return
 	var action := "INSPECT"
 	if closest == return_aperture:
-		action = "RETURN"
+		action = "WAIT" if state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false) else "RETURN"
 	elif closest == speaking_tube:
-		action = "CALL"
+		if _rescue_phase() == &"load_verified":
+			action = "RELEASE"
+		elif state.flags.get("shaft_upper_dock_locked", false) and not state.flags.get("shaft_erin_aboard", false):
+			action = "BOARD"
+		else:
+			action = "DOCK" if _winch_phase() == &"passenger_raise" and basket_progress >= 0.995 else "CALL"
 	elif closest == tool_chest and state.flags.get("shaft_tool_goal", false) and not state.flags.get("shaft_tools_loaded", false):
 		action = "LOAD"
 	elif closest == lower_dock_latch:
-		if state.flags.get("shaft_empty_test_complete", false):
-			action = "CHECK"
+		if state.flags.get("shaft_lower_arrived", false) and not state.flags.get("shaft_lower_dock_locked", false):
+			action = "LOCK"
+		elif _rescue_phase() == &"lower_docked":
+			action = "HELP"
+		elif state.flags.get("shaft_empty_test_complete", false):
+			action = "RELEASE" if state.flags.get("shaft_lower_dock_locked", false) and basket_progress <= 0.005 else "CHECK"
 		elif state.flags.get("shaft_lower_dock_locked", false):
 			action = "RELEASE" if state.flags.get("shaft_passenger_rethread_complete", false) else "CHECK"
 		else:
@@ -120,7 +159,9 @@ func _process(delta: float) -> void:
 	elif closest == rig_inspection and state.flags.get("shaft_tool_trip_complete", false) and state.flags.get("shaft_passenger_rig_inspected", false) and state.flags.get("shaft_lower_dock_locked", false) and state.flags.get("shaft_long_rope_taken", false) and state.flags.get("shaft_top_anchor_inspected", false) and not state.flags.get("shaft_passenger_rethread_complete", false):
 		action = "RETHREAD"
 	elif closest == winch_console and state.flags.get("shaft_tools_loaded", false):
-		action = "CHECK" if state.flags.get("shaft_empty_test_complete", false) or (state.flags.get("shaft_tool_trip_complete", false) and (not state.flags.get("shaft_passenger_rethread_complete", false) or state.flags.get("shaft_lower_dock_locked", false))) else "OPERATE"
+		action = "CHECK" if state.flags.get("shaft_upper_dock_locked", false) or (state.flags.get("shaft_tool_trip_complete", false) and (not state.flags.get("shaft_passenger_rethread_complete", false) or state.flags.get("shaft_lower_dock_locked", false))) else "OPERATE"
+		if _rescue_phase() in [&"load_tension", &"passenger_descent"]:
+			action = "OPERATE"
 	ui.show_prompt(closest.display_name, closest.approach_x, action, 430.0)
 
 
@@ -153,6 +194,23 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif mode == &"rigging" and event.is_action_pressed("advance_dialogue"):
 		get_viewport().set_input_as_handled()
 		_advance_rigging()
+	elif mode == &"load_check":
+		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			get_viewport().set_input_as_handled()
+			load_check_selection = posmod(load_check_selection + (-1 if event.is_action_pressed("move_left") else 1), 4)
+			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
+		elif event.is_action_pressed("interact"):
+			get_viewport().set_input_as_handled()
+			var check_ids: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
+			if not pending_load_checks.has(check_ids[load_check_selection]):
+				pending_load_checks.append(check_ids[load_check_selection])
+			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
+		elif event.is_action_pressed("advance_dialogue"):
+			get_viewport().set_input_as_handled()
+			if pending_load_checks.size() == 4:
+				_complete_load_check()
+			else:
+				ui.shaft_load_detail.text = "Check all four observations before confirming."
 	elif mode == &"winch" and event.is_action_pressed("interact"):
 		get_viewport().set_input_as_handled()
 		if basket_progress >= 0.995 and not state.flags.get("shaft_rail_removed", false):
@@ -203,13 +261,26 @@ func nearest_hotspot(feet_x: float) -> Node:
 
 func _inspect(hotspot: Node) -> void:
 	if hotspot == return_aperture:
-		_set_mode(&"travel")
-		ui.hide_modals()
-		state.travel_to(INVERTED_ROOM_SCENE, &"from-maintenance-shaft")
+		if state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false):
+			_start_dialogue(["Erin is still in the basket. I should stay at the winch until she reaches the fixed platform."])
+		else:
+			_set_mode(&"travel")
+			ui.hide_modals()
+			state.travel_to(INVERTED_ROOM_SCENE, &"from-maintenance-shaft")
 	elif hotspot == speaking_tube:
 		wick.react_to(1420.0, 250.0)
-		if state.flags.get("shaft_empty_test_complete", false):
-			_start_dialogue(["Erin: I saw both rope runs stay seated. Before I step in, we must check the load with someone aboard."], &"", erin.global_position)
+		if state.flags.get("shaft_rescue_complete", false):
+			_start_dialogue(["Erin is beside me on the fixed platform. The basket is secured below."])
+		elif _rescue_phase() == &"load_verified":
+			_start_dialogue(["Erin: The loaded rope and brake held. I will release the upper catch; lower me slowly and allow room to stop."], &"release_upper_passenger_dock", basket_rig.global_position)
+		elif state.flags.get("shaft_erin_aboard", false):
+			_start_dialogue(["Erin: I am aboard. Keep the catch secured until you take up the rope and check its load."], &"", basket_rig.global_position)
+		elif state.flags.get("shaft_upper_dock_locked", false):
+			_start_dialogue(["Erin: The upper catch holds the empty basket and its gate is open. I can step in while it is secured."], &"board_erin", erin.global_position)
+		elif state.flags.get("shaft_empty_test_complete", false) and basket_progress >= 0.995 and is_zero_approx(winch_motion_direction):
+			_start_dialogue(["Erin: The empty basket is level with my ledge and has stopped. I can fasten the upper catch and open its gate."], &"lock_upper_dock", erin.global_position)
+		elif state.flags.get("shaft_empty_test_complete", false):
+			_start_dialogue(["Erin: The empty rig held its short test. Bring the basket level with my ledge and stop it before I touch the catch."], &"", erin.global_position)
 		elif state.flags.get("shaft_passenger_rethread_complete", false):
 			_start_dialogue(["Erin: The top latch is closed and the rope sits in both wheels. Test it empty before I board."], &"", erin.global_position)
 		elif state.flags.get("shaft_tool_trip_complete", false):
@@ -222,7 +293,9 @@ func _inspect(hotspot: Node) -> void:
 				"I can unfasten it if you send up the small tool chest. I cannot reach your platform from here."
 			], &"contact_erin" if not state.flags.get("shaft_erin_contacted", false) else &"", erin.global_position)
 	elif hotspot == rig_inspection:
-		if state.flags.get("shaft_passenger_rethread_complete", false):
+		if state.flags.get("shaft_erin_aboard", false):
+			_start_dialogue(["Both rope runs still pass through their wheels. The basket carries Erin now; I should compare the indicator and brake before lowering."])
+		elif state.flags.get("shaft_passenger_rethread_complete", false):
 			_start_dialogue(["The long rope runs from the top anchor, under the basket wheel, over the fixed wheel and back to the winch. Two strands now hold the empty basket."])
 		elif state.flags.get("shaft_tool_trip_complete", false):
 			if not state.flags.get("shaft_passenger_rig_inspected", false):
@@ -252,8 +325,19 @@ func _inspect(hotspot: Node) -> void:
 		wick.react_to(1160.0, 94.0)
 		_start_dialogue(["From this viewing mark, I can see the separate top anchor and its pull-operated latch. Erin can check the wheel and latch from her ledge."], &"inspect_top_anchor" if not state.flags.get("shaft_top_anchor_inspected", false) else &"")
 	elif hotspot == lower_dock_latch:
-		if state.flags.get("shaft_empty_test_complete", false):
-			_start_dialogue(["The empty basket is locked at the lower berth. Erin cannot board until I check a person's load."])
+		if state.flags.get("shaft_rescue_complete", false):
+			_start_dialogue(["The lower dock holds the empty basket. Erin is safely back on this platform."])
+		elif _rescue_phase() == &"lower_docked":
+			_start_dialogue(["The lower dock is locked and the loading spur reaches the basket. Erin can cross to this platform."], &"help_erin_out")
+		elif state.flags.get("shaft_lower_arrived", false):
+			_start_dialogue(["The basket has stopped at the lower berth. I should fasten the dock catch before opening its gate."], &"dock_loaded_basket")
+		elif state.flags.get("shaft_erin_aboard", false):
+			_start_dialogue(["Erin is still above the lower berth. The dock catch cannot reach the basket yet."])
+		elif state.flags.get("shaft_empty_test_complete", false):
+			if state.flags.get("shaft_lower_dock_locked", false) and basket_progress <= 0.005:
+				_start_dialogue(["The empty test is complete. I can release the lower clamp and raise the basket to Erin's ledge."], &"release_lower_dock")
+			else:
+				_start_dialogue(["The lower clamp is released. The empty basket can travel to Erin's ledge."])
 		elif not state.flags.get("shaft_lower_dock_locked", false):
 			if basket_progress > 0.005:
 				_start_dialogue(["The dock latch cannot catch a raised basket. I need to lower it first."])
@@ -286,8 +370,31 @@ func _inspect(hotspot: Node) -> void:
 				"The empty basket is back at the lower berth. The railing no longer blocks Erin.",
 				"This single cable carried the tools, but I have not checked it for a person. The other pulley in my sketch may matter."
 			], &"finish_tool_trip")
+		elif state.flags.get("shaft_rescue_complete", false):
+			_start_dialogue(["The brake is set and Erin is safe. The next fault is in the engine room."])
+		elif state.flags.get("shaft_lower_arrived", false):
+			_start_dialogue(["The basket has stopped at the lower berth. Lock it to the dock before Erin steps out."])
+		elif _rescue_phase() == &"passenger_descent":
+			_set_mode(&"winch")
+			ui.show_shaft_winch(basket_progress, true, true, &"passenger_descent", descent_speed, 0.0, state.flags.get("shaft_safety_stopped", false))
+		elif state.flags.get("shaft_load_verified", false) and state.flags.get("shaft_upper_dock_locked", false):
+			_start_dialogue(["The four loaded checks are recorded. Call Erin to release the upper catch."])
+		elif state.flags.get("shaft_erin_aboard", false):
+			if state.flags.get("shaft_load_tensioned", false) and state.flags.get("shaft_brake_hold_observed", false):
+				pending_load_checks.clear()
+				load_check_selection = 0
+				_set_mode(&"load_check")
+				ui.show_shaft_load_check(pending_load_checks, load_check_selection)
+			else:
+				_set_mode(&"winch")
+				ui.show_shaft_winch(basket_progress, true, true, &"load_tension", 0.0, float(state.flags.get("shaft_load_preload", 0.0)))
+		elif state.flags.get("shaft_upper_dock_locked", false):
+			_start_dialogue(["The empty basket is secured. Call Erin through the voice tube so she can step aboard."])
+		elif state.flags.get("shaft_empty_test_complete", false) and state.flags.get("shaft_lower_dock_locked", false):
+			_start_dialogue(["The empty test held. Release the lower clamp, then raise the empty basket to Erin."])
 		elif state.flags.get("shaft_empty_test_complete", false):
-			_start_dialogue(["The empty test held. Before Erin rides, I need a separate load check."])
+			_set_mode(&"winch")
+			ui.show_shaft_winch(basket_progress, true, true, &"passenger_raise")
 		elif state.flags.get("shaft_passenger_rethread_complete", false) and state.flags.get("shaft_lower_dock_locked", false):
 			_start_dialogue(["The lower clamp is still holding the basket. Release it at the dock linkage before the empty test."])
 		elif state.flags.get("shaft_passenger_rethread_complete", false):
@@ -301,11 +408,13 @@ func _inspect(hotspot: Node) -> void:
 
 
 func _process_winch(delta: float) -> void:
-	var passenger_test: bool = state.flags.get("shaft_passenger_rethread_complete", false)
+	var winch_phase: StringName = _winch_phase()
+	var passenger_test: bool = winch_phase == &"empty_test"
+	var passenger_raise: bool = winch_phase == &"passenger_raise"
 	var direction := 0.0
-	if Input.is_action_pressed("move_up") and (passenger_test or not state.flags.get("shaft_rail_removed", false)):
+	if Input.is_action_pressed("move_up") and (passenger_test or passenger_raise or not state.flags.get("shaft_rail_removed", false)):
 		direction = 1.0
-	elif Input.is_action_pressed("move_down"):
+	elif Input.is_action_pressed("move_down") and not state.flags.get("shaft_upper_dock_locked", false):
 		direction = -1.0
 	if passenger_test and direction == 0.0 and winch_motion_direction > 0.0 and basket_progress >= EMPTY_TEST_MIN_LIFT:
 		state.flags["shaft_empty_test_held"] = true
@@ -316,23 +425,108 @@ func _process_winch(delta: float) -> void:
 			sound_player.play()
 		winch_motion_direction = direction
 	if direction != 0.0:
-		var speed := WINCH_SPEED * (0.5 if passenger_test else 1.0)
+		var speed := WINCH_SPEED * (0.5 if passenger_test or passenger_raise else 1.0)
 		basket_progress = clampf(basket_progress + direction * speed * delta, 0.0, EMPTY_TEST_LIMIT if passenger_test else 1.0)
 		state.flags["shaft_basket_progress"] = basket_progress
 		if passenger_test:
 			state.flags["shaft_empty_test_peak"] = maxf(float(state.flags.get("shaft_empty_test_peak", 0.0)), basket_progress)
 		_update_rig_visuals()
-	ui.update_shaft_winch(basket_progress, state.flags.get("shaft_rail_removed", false), passenger_test)
+	ui.update_shaft_winch(basket_progress, state.flags.get("shaft_rail_removed", false), passenger_test or passenger_raise, winch_phase)
 	if passenger_test and direction < 0.0 and basket_progress <= 0.005 and state.flags.get("shaft_empty_test_held", false) and not state.flags.get("shaft_empty_test_complete", false):
 		state.flags["shaft_lower_dock_locked"] = true
 		state.flags["shaft_empty_test_complete"] = true
+		state.flags["shaft_rescue_phase"] = &"passenger_raise"
 		state.add_note_once(&"shaft-empty-passenger-test", "Empty passenger test", "The new rope stayed in both wheels during a short empty lift and return. Two strands supported the basket; the winch took in more rope for the same rise. A person's load remains untested. Less force. More rope.")
 		_update_rig_visuals()
 		_start_dialogue(["The brake held, and the empty basket returned to its berth. Less force. More rope.", "That test did not carry Erin. I still need to check what changes when someone boards."])
 
 
+func _winch_phase() -> StringName:
+	if state.flags.has("shaft_rescue_phase") and state.flags["shaft_rescue_phase"] in [&"load_tension", &"load_verified", &"passenger_descent", &"lower_arrived", &"lower_docked", &"rescued"]:
+		return state.flags["shaft_rescue_phase"]
+	if state.flags.get("shaft_upper_dock_locked", false):
+		return &"upper_docked"
+	if state.flags.get("shaft_empty_test_complete", false):
+		return &"passenger_raise"
+	if state.flags.get("shaft_passenger_rethread_complete", false):
+		return &"empty_test"
+	return &"tool"
+
+
+func _rescue_phase() -> StringName:
+	return _winch_phase()
+
+
+func _process_load_tension(delta: float) -> void:
+	var tension_level: float = float(state.flags.get("shaft_load_preload", 0.0))
+	var winding: bool = Input.is_action_pressed("move_up")
+	if winding and not state.flags.get("shaft_load_tensioned", false):
+		tension_level = clampf(tension_level + delta * 0.38, 0.0, 1.0)
+		state.flags["shaft_load_preload"] = tension_level
+		brake_lever.rotation = -0.22
+		_update_rig_visuals()
+	else:
+		brake_lever.rotation = 0.0
+		if tension_level >= 0.995 and not state.flags.get("shaft_brake_hold_observed", false):
+			state.flags["shaft_load_tensioned"] = true
+			state.flags["shaft_brake_hold_observed"] = true
+			sound_player.play()
+	ui.update_shaft_winch(basket_progress, true, true, &"load_tension", 0.0, tension_level)
+
+
+func _process_passenger_descent(delta: float) -> void:
+	if state.flags.get("shaft_safety_stopped", false):
+		if Input.is_action_pressed("shaft_brake"):
+			state.flags["shaft_safety_stopped"] = false
+			ui.show_hint("The safety catch has reset. Lower in shorter steps.", 3.0)
+		ui.update_shaft_winch(basket_progress, true, true, &"passenger_descent", 0.0, 0.0, state.flags.get("shaft_safety_stopped", false))
+		return
+	var remaining := minf(delta, 10.0)
+	while remaining > 0.0 and not state.flags.get("shaft_lower_arrived", false):
+		var step := minf(remaining, 0.05)
+		remaining -= step
+		var braking: bool = Input.is_action_pressed("shaft_brake")
+		if Input.is_action_pressed("move_down") and not braking:
+			descent_speed = minf(descent_speed + PASSENGER_ACCELERATION * step, PASSENGER_MAX_SPEED)
+		else:
+			descent_speed = maxf(descent_speed - (ACTIVE_BRAKE_DECELERATION if braking else PASSIVE_DECELERATION) * step, 0.0)
+		var next_progress := basket_progress - descent_speed * step
+		if next_progress <= SAFETY_STOP_PROGRESS and descent_speed > SAFE_DOCK_SPEED:
+			basket_progress = minf(basket_progress, SAFETY_STOP_PROGRESS)
+			descent_speed = 0.0
+			state.flags["shaft_safety_stopped"] = true
+			ui.show_hint("Safety catch engaged above the lower berth. Press Space to reset it.", 4.0)
+			break
+		basket_progress = maxf(next_progress, 0.0)
+		if basket_progress <= 0.005:
+			basket_progress = 0.0
+			descent_speed = 0.0
+			state.flags["shaft_lower_arrived"] = true
+			state.flags["shaft_rescue_phase"] = &"lower_arrived"
+			break
+	state.flags["shaft_basket_progress"] = basket_progress
+	brake_lever.rotation = -0.32 if Input.is_action_pressed("shaft_brake") else -0.18 if descent_speed > 0.0 else 0.0
+	_update_rig_visuals()
+	ui.update_shaft_winch(basket_progress, true, true, &"passenger_descent", descent_speed, 0.0, state.flags.get("shaft_safety_stopped", false))
+	if state.flags.get("shaft_lower_arrived", false):
+		_start_dialogue(["Erin: The basket has stopped at the lower berth. Fasten its dock catch before I step out."], &"", basket_rig.global_position)
+
+
+func _complete_load_check() -> void:
+	if pending_load_checks.size() != 4 or not state.flags.get("shaft_load_tensioned", false) or not state.flags.get("shaft_brake_hold_observed", false):
+		return
+	state.flags["shaft_load_verified"] = true
+	state.flags["shaft_rescue_phase"] = &"load_verified"
+	state.add_note_once(&"shaft-occupied-load", "Check the load", "Erin entered the secured basket. The rope tightened, the indicator settled at a new position, both runs stayed in their wheels, the top anchor stayed closed, and the brake held when I stopped winding. The still basket still needs support.")
+	_close_overlay()
+	_start_dialogue(["The occupied basket is still, but the rope is supporting a different load than it did in the empty test.", "The checks held. I can ask Erin to release the upper catch, then lower her carefully."])
+
+
 func _update_rig_visuals() -> void:
-	basket_rig.position = Vector2(BASKET_X, lerpf(BASKET_LOW_Y, BASKET_HIGH_Y, basket_progress))
+	var aboard: bool = state.flags.get("shaft_erin_aboard", false)
+	var rescued: bool = state.flags.get("shaft_rescue_complete", false)
+	var settle := 4.0 if aboard and state.flags.get("shaft_upper_dock_locked", false) else 0.0
+	basket_rig.position = Vector2(BASKET_X, lerpf(BASKET_LOW_Y, BASKET_HIGH_Y, basket_progress) + settle)
 	var rethreaded: bool = state.flags.get("shaft_passenger_rethread_complete", false)
 	var trip_complete: bool = state.flags.get("shaft_tool_trip_complete", false)
 	var basket_eye_y: float = basket_rig.position.y - 78.0
@@ -380,13 +574,21 @@ func _update_rig_visuals() -> void:
 	lower_dock_clamp.rotation = -0.32 if state.flags.get("shaft_lower_dock_locked", false) else 0.0
 	var loaded: bool = state.flags.get("shaft_tools_loaded", false)
 	var rail_removed: bool = state.flags.get("shaft_rail_removed", false)
+	var upper_docked: bool = state.flags.get("shaft_upper_dock_locked", false)
+	var lower_docked: bool = state.flags.get("shaft_lower_arrived", false) and state.flags.get("shaft_lower_dock_locked", false)
 	platform_tools.visible = not loaded
 	basket_tools.visible = loaded and not rail_removed
 	receiving_rail.visible = not rail_removed
 	receiving_rail_open.visible = rail_removed
 	bent_rail.visible = not rail_removed
 	open_rail.visible = rail_removed
-	load_indicator.rotation = -0.58 if rethreaded else (-0.12 if loaded and not rail_removed else -0.45)
+	upper_dock_clamp.visible = upper_docked
+	basket_body.texture = BASKET_OPEN if upper_docked or lower_docked else BASKET_CLOSED
+	erin.visible = not aboard
+	erin_in_basket.visible = aboard and not rescued
+	erin_at_lower.visible = rescued
+	loading_spur.scale.x = 0.16 if lower_docked else 0.11
+	load_indicator.rotation = lerpf(-0.38, -0.10, float(state.flags.get("shaft_load_preload", 0.0))) if aboard and not rescued else -0.58 if rethreaded else (-0.12 if loaded and not rail_removed else -0.45)
 
 
 func _start_rigging() -> void:
@@ -471,7 +673,39 @@ func _complete_dialogue_action(action: StringName) -> void:
 			state.flags["shaft_lower_dock_locked"] = false
 			sound_player.play()
 			_update_rig_visuals()
-			ui.show_hint("At the winch, raise the empty basket a little, stop, then bring it back.", 5.0)
+			ui.show_hint("Raise the empty basket to Erin's ledge." if state.flags.get("shaft_empty_test_complete", false) else "At the winch, raise the empty basket a little, stop, then bring it back.", 5.0)
+		&"lock_upper_dock":
+			if not state.flags.get("shaft_empty_test_complete", false) or basket_progress < 0.995 or not is_zero_approx(winch_motion_direction):
+				return
+			state.flags["shaft_upper_dock_locked"] = true
+			state.flags["shaft_rescue_phase"] = &"upper_docked"
+			sound_player.play()
+			_update_rig_visuals()
+			ui.show_hint("The basket is secured and its gate is open. Erin can board next.", 5.0)
+		&"board_erin":
+			if state.flags.get("shaft_upper_dock_locked", false) and basket_progress >= 0.995 and not state.flags.get("shaft_erin_aboard", false):
+				_start_boarding()
+				return
+		&"release_upper_passenger_dock":
+			if not state.flags.get("shaft_load_verified", false) or not state.flags.get("shaft_erin_aboard", false):
+				return
+			state.flags["shaft_upper_dock_locked"] = false
+			state.flags["shaft_rescue_phase"] = &"passenger_descent"
+			sound_player.play()
+			_update_rig_visuals()
+			ui.show_hint("At the winch, hold Down to descend and Space to brake.", 5.0)
+		&"dock_loaded_basket":
+			if not state.flags.get("shaft_lower_arrived", false) or basket_progress > 0.005:
+				return
+			state.flags["shaft_lower_dock_locked"] = true
+			state.flags["shaft_rescue_phase"] = &"lower_docked"
+			sound_player.play()
+			_update_rig_visuals()
+			ui.show_hint("The lower dock is locked. Help Erin cross the loading spur.", 5.0)
+		&"help_erin_out":
+			if _rescue_phase() == &"lower_docked":
+				_help_erin_out()
+				return
 	if action in [&"contact_erin", &"inspect_rig"] and state.flags.get("shaft_erin_contacted", false) and state.flags.get("shaft_rig_inspected", false) and not state.flags.get("shaft_tool_goal", false):
 		state.flags["shaft_tool_goal"] = true
 		_start_dialogue([
@@ -499,6 +733,47 @@ func _start_tool_transfer() -> void:
 	ui.show_hint("The tools are secured. E at the winch, then hold Up to lift.", 5.0)
 
 
+func _start_boarding() -> void:
+	_set_mode(&"loading")
+	ui.hide_modals()
+	erin.set_walking(true)
+	var crossing := create_tween()
+	crossing.tween_property(erin, "position:x", 1070.0, 1.7).set_trans(Tween.TRANS_SINE)
+	await crossing.finished
+	erin.set_walking(false)
+	state.flags["shaft_erin_aboard"] = true
+	state.flags["shaft_load_preload"] = 0.0
+	state.flags["shaft_rescue_phase"] = &"load_tension"
+	sound_player.play()
+	_update_rig_visuals()
+	_start_dialogue(["Erin steps into the secured basket. It settles slightly, the rope pulls taut, and the load needle moves.", "The upper catch stays fastened while I take up slack and check the brake."], &"", basket_rig.global_position)
+
+
+func _help_erin_out() -> void:
+	_set_mode(&"loading")
+	ui.hide_modals()
+	erin_in_basket.set_walking(true)
+	var crossing := create_tween().set_parallel(true)
+	crossing.tween_property(erin_in_basket, "position", Vector2(-325.0, 87.0), 1.45).set_trans(Tween.TRANS_SINE)
+	crossing.tween_property(erin_in_basket, "scale", Vector2.ONE, 1.45)
+	await crossing.finished
+	erin_in_basket.set_walking(false)
+	erin_in_basket.visible = false
+	erin_at_lower.position = Vector2(775.0, 790.0)
+	erin_at_lower.visible = true
+	erin_at_lower.set_walking(true)
+	var to_safe_ground := create_tween()
+	to_safe_ground.tween_property(erin_at_lower, "position:x", 325.0, 2.0).set_trans(Tween.TRANS_SINE)
+	await to_safe_ground.finished
+	erin_at_lower.set_walking(false)
+	state.flags["shaft_rescue_complete"] = true
+	state.flags["shaft_rescue_phase"] = &"rescued"
+	state.add_note_once(&"shaft-rescue", "Erin reached the lower platform", "Erin's load changed the rope reading. During descent, paying out rope increased the basket's speed; braking before the lower berth gave it room to stop. I locked the basket, then Erin crossed to the fixed platform.")
+	_update_rig_visuals()
+	wick.react_to(325.0, 545.0)
+	_start_dialogue(["Erin steps from the locked basket, across the loading spur, onto the fixed platform.", "Kath: The load changed, and so did the way the basket moved. I needed room to stop it.", "Erin: We can trace the rotation fault in the engine room now."], &"", erin_at_lower.global_position)
+
+
 func _show_journal() -> void:
 	ui.show_journal(
 		state.notes,
@@ -516,6 +791,10 @@ func _show_journal() -> void:
 
 
 func _close_overlay() -> void:
+	if mode == &"load_check":
+		pending_load_checks.clear()
+	if mode == &"winch" and _rescue_phase() == &"passenger_descent":
+		descent_speed = 0.0
 	ui.hide_modals()
 	erin.set_repairing(false)
 	pending_dialogue_action = &""

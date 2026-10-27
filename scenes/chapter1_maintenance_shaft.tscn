@@ -267,9 +267,21 @@ z_index = 1
 texture = ExtResource("12_dock")
 scale = Vector2(0.07, 0.07)
 
+[node name="UpperDockClamp" type="Polygon2D" parent="."]
+position = Vector2(1216, 396)
+z_index = 2
+color = Color(0.78, 0.57, 0.31, 1)
+polygon = PackedVector2Array(-42, -8, 22, -8, 36, 0, 22, 8, -42, 8)
+visible = false
+
 [node name="ErinOnLedge" parent="." instance=ExtResource("18_erin")]
 position = Vector2(1450, 430)
 z_index = 2
+
+[node name="ErinAtLower" parent="." instance=ExtResource("18_erin")]
+position = Vector2(325, 790)
+z_index = 2
+visible = false
 
 [node name="Kath" parent="." instance=ExtResource("16_kath")]
 position = Vector2(300, 790)
