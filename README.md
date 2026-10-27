@@ -1,6 +1,6 @@
-# Footnotes to the World — Prologue prototype
+# Footnotes to the World — Prologue and Chapter I prototype
 
-This Godot 4.7.2 project contains the playable prologue rooms: the Library Hall, Machine Room, Upper Stacks, Kath's Room, and the dawn Service Road to the Observatory Castle. These prologue rooms use separate far, middle, character, and foreground layers. A temporary Chapter I Control Walkway uses the supplied full illustration until its layered artwork is built.
+This Godot 4.7.2 project contains the playable prologue and the opening rescue route in Chapter I. The rooms use separate far, middle, character, and foreground layers.
 
 ## Run
 
@@ -15,6 +15,8 @@ After recording the Machine Room reading, use the Hall's right-side stairs to en
 After collecting the torn page, use the Upper Stacks' left doorway to enter Kath's Room. Turn on the desk lamp, compare the page with the gap in her notebook, then rest at the bed to advance to dawn. Pack the notebook in the satchel and return through the stacks to the Hall. The one-time alarm leads back to the Machine Room. Open the gauge console, use **Left / Right** to select levers 2 and 4, and press **E** to operate them. Press **Esc** to close the console, then use the emergency stop near the right side of the room. If you stop the drive first, you can still operate both levers afterward. Watch the distant Observatory Castle's supported wing tilt about 12° clockwise in its ring over roughly three seconds; the fixed tower remains upright. The Archive's local drive is stopped, while the Castle's local control signal remains unstable. Kath records what she saw without claiming a cause. The incident record and dawn state persist when moving between rooms.
 
 After the incident, use the far-right Machine Room exit to reach the Service Road; the left exit still returns to the Library Hall. Inspect the sign and loose cable, then approach the gate and press **E** to open it. Walk through to the far right to see **Chapter I — Upside-Down Castle / Prologue Complete**. Press **Enter** to enter the Control Walkway, or **Esc** to return to the road. On the walkway, move left and press **E** near its exit to return to the Service Road. Kath follows the road's painted incline; the walkway uses a flat standing area on the left of its illustration. The Castle's 180° inversion will occur later inside Chapter I.
+
+In Chapter I, investigate the Control Walkway to witness the wing turn, then use its lower passage to enter the Inverted Room. Compare falling water and the hanging weight before checking the maintenance ladder. Climb with **W / S** or **Up / Down**, press **E** at the top to enter the Maintenance Shaft, and use the left aperture to return to the ladder top. In the shaft, inspect the rope and call Erin through the voice tube in either order. Inspect the tool chest and confirm loading with **Enter**; **Esc** cancels. At the hand winch, hold **Up** to lift the loaded basket and **Down** to lower it; releasing the keys holds its position. Press **E** when the basket reaches Erin to pass the tools. Once she clears the bent rail, lower the empty basket. The rope inspection for carrying a person is the next development step.
 
 The scenes use a 1672 × 941 design canvas and open in a 1280 × 720 window. They keep the artwork's aspect ratio when resized. Floors and left/right movement limits are set per room. `PrologueState` keeps unique notes and transition flags for the current run; it does not write a disk save.
 
@@ -58,4 +60,5 @@ For automated integration checks, run the following from this folder with Godot 
 & 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week4_smoke.gd
 & 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week5_smoke.gd
 & 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week6_smoke.gd
+& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/phase3_step4_smoke.gd
 ```
