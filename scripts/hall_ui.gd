@@ -36,6 +36,10 @@ var shaft_winch_status: Label
 var shaft_winch_instruction: Label
 var shaft_winch_fill: ColorRect
 var shaft_winch_path: Label
+var shaft_winch_footer: Label
+var shaft_load_check: Control
+var shaft_load_selection: Label
+var shaft_load_detail: Label
 var shaft_rigging: Control
 var shaft_rigging_status: Label
 var emergency_console: Control
@@ -290,8 +294,32 @@ func _ready() -> void:
 	_label(winch_panel, Rect2(650, 190, 200, 37), "ERIN'S LEDGE", 19, GOLD)
 	shaft_winch_status = _label(winch_panel, Rect2(80, 290, 780, 70), "", 26, CREAM)
 	shaft_winch_instruction = _label(winch_panel, Rect2(80, 385, 780, 50), "", 22, CREAM)
-	_label(winch_panel, Rect2(80, 450, 780, 38), "ESC  CLOSE  ·  Release keys to hold position", 19, GOLD)
+	shaft_winch_footer = _label(winch_panel, Rect2(80, 450, 780, 38), "ESC  CLOSE  ·  Release keys to hold position", 19, GOLD)
 	shaft_winch.visible = false
+
+	shaft_load_check = Control.new()
+	shaft_load_check.name = "ShaftLoadCheck"
+	shaft_load_check.size = Vector2(1672, 941)
+	shaft_load_check.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(shaft_load_check)
+	_dim(shaft_load_check)
+	var load_panel := Panel.new()
+	load_panel.position = Vector2(346, 185)
+	load_panel.size = Vector2(980, 570)
+	load_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var load_style := StyleBoxFlat.new()
+	load_style.bg_color = Color("1c2944")
+	load_style.border_color = Color("bd9257")
+	load_style.set_border_width_all(6)
+	load_style.set_corner_radius_all(16)
+	load_panel.add_theme_stylebox_override("panel", load_style)
+	shaft_load_check.add_child(load_panel)
+	_label(load_panel, Rect2(65, 34, 850, 50), "CHECK THE LOAD · UPPER CATCH SECURED", 29, GOLD)
+	_label(load_panel, Rect2(65, 93, 850, 68), "The rope is taut. Check what still supports the occupied basket before Erin releases the catch.", 23, CREAM)
+	shaft_load_selection = _label(load_panel, Rect2(78, 188, 830, 202), "", 27, CREAM)
+	shaft_load_detail = _label(load_panel, Rect2(78, 404, 830, 67), "", 22, GOLD)
+	_label(load_panel, Rect2(78, 510, 830, 36), "← / →  SELECT     ·     E  CHECK     ·     ENTER  CONFIRM     ·     ESC  CANCEL", 18, GOLD)
+	shaft_load_check.visible = false
 
 	shaft_rigging = Control.new()
 	shaft_rigging.name = "ShaftRigging"
@@ -550,15 +578,32 @@ func show_notebook_comparison() -> void:
 	hide_prompt()
 
 
-func show_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false) -> void:
+func show_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false, operation: StringName = &"", speed: float = 0.0, tension_level: float = 0.0, safety_stop: bool = false) -> void:
 	hide_modals()
 	shaft_winch.visible = true
-	update_shaft_winch(progress, rail_removed, passenger_test)
+	update_shaft_winch(progress, rail_removed, passenger_test, operation, speed, tension_level, safety_stop)
 	hide_prompt()
 
 
-func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false) -> void:
+func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false, operation: StringName = &"", speed: float = 0.0, tension_level: float = 0.0, safety_stop: bool = false) -> void:
 	shaft_winch_fill.size.x = 700.0 * clampf(progress, 0.0, 1.0)
+	shaft_winch_footer.text = "ESC  CLOSE  ·  Closing engages the brake" if operation == &"passenger_descent" else "ESC  CLOSE  ·  Release keys to hold position"
+	if operation == &"load_tension":
+		shaft_winch_fill.size.x = 700.0 * clampf(tension_level, 0.0, 1.0)
+		shaft_winch_path.text = "Erin is inside. The upper catch stays secured while the winch takes up slack."
+		shaft_winch_status.text = "Rope tension: %s" % ("stable" if tension_level >= 0.995 else "increasing" if tension_level > 0.01 else "not yet checked")
+		shaft_winch_instruction.text = "The brake held. Close this view, then E at the winch to check the load." if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
+		return
+	if operation == &"passenger_descent":
+		shaft_winch_path.text = "Erin: The lower berth is close. Leave room to brake." if progress <= 0.25 else "Erin is aboard. The rope supports the basket; the upper catch is released."
+		shaft_winch_status.text = "Travel left: %d%%  ·  Descent: %s" % [roundi(progress * 100.0), "stopped" if speed < 0.002 else "slow" if speed < 0.055 else "gaining speed"]
+		shaft_winch_instruction.text = "Safety catch engaged. Press Space to reset, then lower carefully." if safety_stop else "Brake early: allow room to stop." if progress <= 0.2 else "Hold ↓ to pay out rope. Release to slow; Space brakes harder."
+		return
+	if operation == &"passenger_raise":
+		shaft_winch_path.text = "The empty basket runs on two supporting strands. Bring it level with Erin's ledge."
+		shaft_winch_status.text = "Empty basket: %d%% of the full lift" % roundi(progress * 100.0)
+		shaft_winch_instruction.text = "Basket level: release the key, close this view, then call Erin." if progress >= 0.995 else "Hold ↑ to raise or ↓ to lower. Release to stop."
+		return
 	if passenger_test:
 		shaft_winch_path.text = "Two rope runs support the empty basket. Reel in about two rope marks to lift it one mark."
 		shaft_winch_status.text = "Empty test: basket %d%% · rope taken in ~%d%%" % [roundi(progress * 100.0), roundi(progress * 200.0)]
@@ -574,6 +619,29 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 		shaft_winch_instruction.text = "Basket at Erin's ledge. E to dock and pass the tools."
 	else:
 		shaft_winch_instruction.text = "Hold ↑ to reel in. Hold ↓ to lower."
+
+
+func show_shaft_load_check(checked: Array[StringName], selected: int) -> void:
+	hide_modals()
+	shaft_load_check.visible = true
+	update_shaft_load_check(checked, selected)
+	hide_prompt()
+
+
+func update_shaft_load_check(checked: Array[StringName], selected: int) -> void:
+	var ids: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
+	var titles := ["ROPE IN BOTH WHEELS", "TOP ANCHOR CLOSED", "LOAD INDICATOR STABLE", "BRAKE HOLDS AT REST"]
+	var details := [
+		"Both supporting strands remain in their wheel grooves.",
+		"Erin confirms the top latch is closed.",
+		"The needle settled at a new position after the rope took Erin's load.",
+		"The basket stayed still after Kath released the winch."
+	]
+	var lines: Array[String] = []
+	for index in 4:
+		lines.append("%s  %s  %s" % ["›" if index == selected else " ", "✓" if checked.has(ids[index]) else "○", titles[index]])
+	shaft_load_selection.text = "\n".join(lines)
+	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else "E to compare: " + details[selected]
 
 
 func show_shaft_rigging(step: int) -> void:
@@ -652,6 +720,7 @@ func hide_modals() -> void:
 	torn_page.visible = false
 	notebook_comparison.visible = false
 	shaft_winch.visible = false
+	shaft_load_check.visible = false
 	shaft_rigging.visible = false
 	emergency_console.visible = false
 	castle_rotation.visible = false
