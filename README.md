@@ -1,71 +1,41 @@
 # Footnotes to the World — Prologue and Chapter I prototype
 
-This Godot 4.7.2 project contains the playable prologue and the opening rescue route in Chapter I. The rooms use separate far, middle, character, and foreground layers.
+Godot 4.7.2 project for a 2D storybook adventure about Kath, Wick, and the lost explanations behind a mechanical world. The playable route runs from the Grand Archive's library hall through the Observatory Castle rescue and ends with an unfinished record pointing to the Floating Isles. The Floating Isles is a next-chapter lead, not a playable map in this prototype.
 
-## Run
+## Start and continue
 
-1. Open this folder in Godot 4.7.2 (`project.godot`). Let the asset import finish.
-2. Press **F6** with `scenes/library_hall.tscn` open, or **F5** to run the project.
-3. Press **Enter** to finish Kath's opening thought. Use **A / D** or **Left / Right Arrow** to move, **E** to inspect or use a nearby object, **Enter** to advance dialogue or confirm the torn page, **J** to open or close Notes, and **Esc** to close the current view or pause. While paused, **Enter / Esc** resumes and **Q** quits.
+Open `project.godot` in Godot 4.7.2 and press **F5**. The title screen offers **New Game** and, when a valid single-slot checkpoint exists, **Continue**. Starting over with a checkpoint requires a second Enter confirmation. Continue restores the latest observations, mechanism states, castle orientation, and scene at a safe entrance. It does not restore Kath's exact position inside the room or an unfinished modal choice.
 
-Inspect the archive door on the left, the old clock near the middle, and the maintenance sheet on the right. The sheet's close-up lists **Lamps, Pipes, Pressure, Doors, Upper Shelves**. Each completed inspection adds one observation to Notes. After all three, use the archive door to enter the Machine Room. Compare the gauge's current needle position with its previous pencil mark; **Enter** records the observation and **Esc** leaves without recording it. The route diagram is optional. Use the left-side exit to return to the Hall. The Hall then plays a one-time drip cue and points Kath toward the upper stacks.
+The game saves on room transitions and about every five seconds while Kath is freely exploring, paused, or viewing the chapter end card. Press **Esc** in exploration to pause, then **Q** to save and quit. A new run replaces the old slot. The file lives in Godot's `user://footnotes-chapter1-save.json`; Godot manages its actual system location. Direct **F6** scene previews are developer previews and do not enable disk saves.
 
-After recording the Machine Room reading, use the Hall's right-side stairs to enter the Upper Stacks. Inspect the roof seam and press **E** again to slide the bucket under the drip. At the rolling ladder, press **E** to take hold; use **A / D** or the arrow keys to push it along the floor, then press **E** to lock it in place. Align it beneath the high wooden case, press **E** to climb, and use **W / S** or **Up / Down Arrow** to climb. The case only opens when Kath is high enough and the ladder is correctly positioned. Press **E** to open it, then **E** again to view the page. **Enter** records the page; **Esc** closes it while leaving it in the box. Press **J** and **Enter** to revisit a collected page from Notes. Descend to the floor before using the stairway back to the Hall.
+## Controls
 
-After collecting the torn page, use the Upper Stacks' left doorway to enter Kath's Room. Turn on the desk lamp, compare the page with the gap in her notebook, then rest at the bed to advance to dawn. Pack the notebook in the satchel and return through the stacks to the Hall. The one-time alarm leads back to the Machine Room. Open the gauge console, use **Left / Right** to select levers 2 and 4, and press **E** to operate them. Press **Esc** to close the console, then use the emergency stop near the right side of the room. If you stop the drive first, you can still operate both levers afterward. Watch the distant Observatory Castle's supported wing tilt about 12° clockwise in its ring over roughly three seconds; the fixed tower remains upright. The Archive's local drive is stopped, while the Castle's local control signal remains unstable. Kath records what she saw without claiming a cause. The incident record and dawn state persist when moving between rooms.
+- **A/D** or **Left/Right**: walk; select items in certain close views.
+- **E**: inspect, use, grab, lock, or operate the nearby object.
+- **Enter**: advance dialogue or confirm a close view.
+- **Esc**: close a view; pause while exploring. **Enter/Esc** resumes from pause.
+- **J**: open or close Notes. **Up/Down** scrolls them.
+- **W/S** or **Up/Down**: climb ladders; control the shaft winch when its view is open.
+- **Space**: apply the stronger basket brake during Erin's descent.
+- **Q** on the pause screen: save and quit.
 
-After the incident, use the far-right Machine Room exit to reach the Service Road; the left exit still returns to the Library Hall. Inspect the sign and loose cable, then approach the gate and press **E** to open it. Walk through to the far right to see **Chapter I — Upside-Down Castle / Prologue Complete**. Press **Enter** to enter the Control Walkway, or **Esc** to return to the road. On the walkway, move left and press **E** near its exit to return to the Service Road. Kath follows the road's painted incline; the walkway uses a flat standing area on the left of its illustration. The Castle's 180° inversion will occur later inside Chapter I.
+## Play route
 
-In Chapter I, investigate the Control Walkway to witness the wing turn, then use its lower passage to enter the Inverted Room. Compare falling water and the hanging weight before checking the maintenance ladder. Climb with **W / S** or **Up / Down**, press **E** at the top to enter the Maintenance Shaft, and use the left aperture to return to the ladder top.
+1. **Grand Archive.** Inspect the library door, clock, and maintenance sheet. Record the machine-room gauge baseline. Return to the hall, follow the leak to the upper stacks, position the bucket and ladder, and recover Kath's torn `F = ma` page. In Kath's room, match its torn edge to her notebook, rest until morning, and pack the notebook.
+2. **Alarm and service road.** Return to the hall for the alarm. In the machine room, operate levers 2 and 4 and stop the local drive; the distant castle wing becomes tilted. Follow the service road, inspect the hanging cable, open the gate, and enter the castle control walkway from the chapter card.
+3. **On-site inversion.** At the control walkway, compare the dial with the visible wing and speak with Erin. The failed return test turns the wing to the separate inverted maintenance catch. Enter the lower passage. In the inverted room, compare falling water and the plumb weight to establish the actual downward direction, then inspect and climb the maintenance ladder.
+4. **Rescue in the fixed shaft.** Contact Erin through the speaking tube, load tools from the safe platform, raise the basket, and let her open the bent upper rail. Bring the empty basket down, lock it, take the long rope, and rethread through the basket pulley. Perform a short empty test, raise and dock the empty basket again, then let Erin board. Take up slack, confirm the four load checks, release the upper catch, and lower her with measured braking. Lock the lower dock and use the loading spur to bring her onto the fixed platform.
+5. **Restore the castle.** Enter the engine room with Erin. Inspect the chart, wet track, linkage, brake, and signal. Isolate the automatic drive, remove the obstruction, test the home stop, brake, and lock, then hold Left at the maintenance drive to return the wing slowly to its normal position.
+6. **Archive and ending.** Cross into the observatory. Open the shaken drawer and read its signed work record, Floating Isles comparison slip, and unexplained withdrawn page in any order. At the worktable, stitch the torn leaf into Kath's notebook. Return to Erin in the engine room for the final conversation and the Chapter I completion card. Enter or Esc closes the card and leaves the restored castle explorable.
 
-In the shaft, inspect the rig and call Erin through the voice tube. Load tools from the safe platform, raise the basket with **Up** at the winch, and pass the tools to Erin. Once she clears the bent rail, lower the empty basket. Lock it to the lower dock, collect the long rope, and follow the guided rethreading steps to connect the basket pulley. Release the dock for a short empty test: raise, stop, and lower the basket. Release the dock again and raise the empty basket fully to Erin. After it stops level with her ledge, call through the voice tube so she can secure the upper catch, open the gate, and board.
+Notes are added once in discovery order. Esc cancels an unconfirmed document, inspection, or repair check. The game never assumes the cause of the original roof leak or the reason for a withdrawn record before evidence establishes it.
 
-At the winch, hold **Up** to take up slack until the loaded indicator settles, then release it and observe the brake hold. Inspect the four load checks with **Left / Right** to select and **E** to mark each; **Enter** confirms only after all four are marked, while **Esc** discards an unfinished check. Call Erin to release the upper catch. For her descent, hold **Down** to pay out rope, release it to slow gradually, and hold **Space** for stronger braking. The safety catch stops an overly fast approach above the lower berth; press **Space** to reset and continue with shorter movements. Once stopped at the bottom, lock the lower dock and help Erin cross the loading spur to the fixed platform. The engine-room route is the next development step.
+## Prototype timing
 
-The scenes use a 1672 × 941 design canvas and open in a 1280 × 720 window. They keep the artwork's aspect ratio when resized. Floors and left/right movement limits are set per room. `PrologueState` keeps unique notes and transition flags for the current run; it does not write a disk save.
+`PrologueState` tracks active play time, excluding pause. When the first Chapter I completion card is reached, Godot prints `CHAPTER_I_PLAYTIME: mm:ss` in Output and stores the same timer fields in the checkpoint. This is an instrument for a fresh-player test, not a claim that the chapter already lasts a measured 25 minutes. The timing and review protocol is in `chapter1-assets/planning/phase3-step7-integration.md`.
 
-Kath's shared display height is 301.6 scene pixels (1.3× the initial 232 px). Both idle and walk frames are normalized to this height in `scripts/kath.gd`; future scenes should instance `scenes/kath.tscn` without applying another scale.
+## Project and checks
 
-Wick's shared display height is 130 scene pixels. Perching and flight frames are both normalized to this height in `scripts/wick.gd`; future scenes should instance `scenes/wick.tscn` without applying another scale.
+The design canvas is **1672×941** and the default window is **1280×720**, with aspect-preserving scaling. Kath's shared display height is **301.6 scene pixels** and Wick's is **130 scene pixels**; their shared scenes normalize their frames, so do not scale individual instances again. The reusable art source and game PNG layers are under `chapter1-assets/` and `prologue-asset-pack-v1/`.
 
-## Acceptance checks
-
-- Godot imports the project without missing-resource errors.
-- Kath starts near the middle of the Hall, idles, walks and faces the direction of travel.
-- Foreground books and the globe cover Kath as she passes behind them.
-- Kath stays on the painted floor and cannot leave the left/right edges.
-- Resizing the window preserves the scene proportions.
-- The nearest reachable object shows an **E Inspect** prompt above the foreground. Door, clock and sheet can all be inspected; distant **E** presses do nothing.
-- Dialogue, sheet, Notes and pause each block movement and never overlap. **Esc** closes the active view first.
-- Notes open empty, keep discoveries in order and never duplicate an observation. The final line plays once after all three are done.
-- The machine-room door stays an inspection until the three Hall checks are complete; afterward it changes to an entrance.
-- The gauge view shows a prior pencil mark and a current needle below the red sector. **Enter** records once; **Esc** cancels.
-- Returning from the Machine Room restores Kath beside the Hall door, keeps all notes, and plays the drip cue once after a reading is recorded.
-- Wick follows Kath, settles when Kath stops and reacts to the clock and sheet without speaking.
-- The Hall's right staircase is inspect-only until the Machine Room reading is recorded.
-- In the Upper Stacks, roof leak, bucket, ladder position, open case, and recovered page survive multiple trips between rooms.
-- Ladder movement and climbing use A/D or arrows and W/S or arrows; pausing on the ladder preserves Kath's height.
-- The case requires both horizontal ladder alignment and climbing height. Escaping the page close-up does not collect it; Enter records it once and the journal can reopen it.
-- In Kath's Room, the comparison can be cancelled, but confirming it records one unique note. Resting changes the window view to dawn across every prologue room; the satchel must be packed before the incident alarm is armed.
-- The machine incident can be completed in the listed order or by stopping the local drive first. Re-entering during the incident restores lever and stop states. The one-time remote view ends at a 12° wing tilt and leaves an observation note without claiming its cause.
-- The Service Road stays locked before the incident is complete and opens afterward; its doorway returns to the Machine Room while the Hall exit remains available.
-- Kath's feet follow the Service Road slope, and the supported castle wing remains tilted inside the ring while the fixed tower stays upright.
-- The road sign and hanging cable add unique notes; the cable is one observation and does not establish the Castle's vertical direction. The gate state persists across travel.
-- Reaching the open road's end displays the chapter handoff card. **Esc** places Kath left of the trigger without reopening it immediately; **Enter** enters the temporary Control Walkway. Kath and Wick appear on its walkable left platform and can return to the road without repeating first-arrival dialogue or notes.
-
-The original prototype asset pack lives under `prologue-asset-pack-v1/`. Keep that folder name: its Godot SpriteFrames resources contain paths beginning with `res://prologue-asset-pack-v1/`.
-
-For automated integration checks, run the following from this folder with Godot 4.7.2:
-
-```powershell
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week1_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week2_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week3_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week4_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week5_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/week6_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/phase3_step4_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/phase3_step5_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/phase3_step6a_smoke.gd
-& 'D:\Game\Godot-4.7.2\Godot_v4.7.2-stable_win64.exe' --headless --path . --script res://tests/phase3_step6_smoke.gd
-```
+Run the smoke scripts under `tests/` with Godot 4.7.2. The complete sequence includes `week1_smoke.gd` through `week6_smoke.gd`, `phase3_step1_smoke.gd` through `phase3_step6_smoke.gd` (including `phase3_step6a_smoke.gd`), `phase3_engine_restoration_smoke.gd`, `phase3_archive_finale_smoke.gd`, `phase3_step7_checkpoint_smoke.gd`, and `phase3_step7_quit_smoke.gd`. The save checks use dedicated temporary filenames and do not touch the player's slot.

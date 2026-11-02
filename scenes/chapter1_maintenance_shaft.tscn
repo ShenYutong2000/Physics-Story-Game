@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/chapter1_maintenance_shaft.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://chapter1-assets/maintenance-shaft-layers-v1/far-wheelworks.png" id="2_far"]
@@ -21,6 +21,7 @@
 [ext_resource type="Texture2D" path="res://chapter1-assets/story-route-v1/wing-lower-entry.png" id="19_entry"]
 [ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="20_hotspot"]
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="21_ui"]
+[ext_resource type="Texture2D" path="res://chapter1-assets/engine-room-layers-v1/service-threshold.png" id="22_engine_door"]
 
 [node name="Chapter1MaintenanceShaft" type="Node2D"]
 script = ExtResource("1_script")
@@ -47,6 +48,19 @@ interaction_id = &"shaft-return-aperture"
 display_name = "Wing Passage"
 approach_x = 190.0
 reach_radius = 82.0
+
+[node name="EngineAccessArt" type="Sprite2D" parent="."]
+position = Vector2(790, 658)
+z_index = -5
+texture = ExtResource("22_engine_door")
+scale = Vector2(0.16, 0.19)
+
+[node name="EngineAccess" parent="." instance=ExtResource("20_hotspot")]
+position = Vector2(775, 790)
+interaction_id = &"shaft-engine-access"
+display_name = "Engine Room"
+approach_x = 775.0
+reach_radius = 46.0
 
 [node name="SpeakingTube" parent="." instance=ExtResource("20_hotspot")]
 position = Vector2(805, 790)
