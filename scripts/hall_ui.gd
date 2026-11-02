@@ -26,11 +26,13 @@ var gauge_status: Label
 var gauge_instruction: Label
 var journal: Control
 var journal_progress: Label
+var journal_progress_scroll: ScrollContainer
 var journal_scroll: ScrollContainer
 var journal_entries: RichTextLabel
 var torn_page: Control
 var torn_page_instruction: Label
 var notebook_comparison: Control
+var chapter1_notebook: Control
 var shaft_winch: Control
 var shaft_winch_status: Label
 var shaft_winch_instruction: Label
@@ -42,11 +44,17 @@ var shaft_load_selection: Label
 var shaft_load_detail: Label
 var shaft_rigging: Control
 var shaft_rigging_status: Label
+var engine_panel: Control
+var engine_title: Label
+var engine_body: Label
+var engine_status: Label
+var engine_footer: Label
 var emergency_console: Control
 var emergency_status: Label
 var emergency_selection: Label
 var castle_rotation: Control
 var chapter_end: Control
+var chapter1_end: Control
 var pause_menu: Control
 var hint_deadline: int = 0
 
@@ -182,7 +190,15 @@ func _ready() -> void:
 	_dim(journal)
 	_texture(journal, NOTEBOOK_TEXTURE, Rect2(240, 105, 1192, 795))
 	_label(journal, Rect2(380, 227, 430, 58), "EVENING ROUNDS", 33, INK)
-	journal_progress = _label(journal, Rect2(383, 310, 440, 390), "0 / 3 inspected", 25, INK)
+	journal_progress_scroll = ScrollContainer.new()
+	journal_progress_scroll.position = Vector2(383, 310)
+	journal_progress_scroll.size = Vector2(440, 390)
+	journal_progress_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	journal_progress_scroll.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	journal.add_child(journal_progress_scroll)
+	journal_progress = _label(journal_progress_scroll, Rect2(0, 0, 418, 390), "0 / 3 inspected", 25, INK)
+	journal_progress.custom_minimum_size = Vector2(418, 390)
+	journal_progress.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 	_label(journal, Rect2(884, 220, 400, 48), "OBSERVATIONS", 30, INK)
 	journal_scroll = ScrollContainer.new()
 	journal_scroll.position = Vector2(879, 292)
@@ -256,6 +272,21 @@ func _ready() -> void:
 	_label(comparison_panel, Rect2(587, 178, 500, 300), "The torn edge fits the empty place in my notebook.\n\nA route entry remains beneath it: OBSERVATORY CASTLE — return visit pending.\n\nThe handwriting is mine. I still don't know what F = ma means.", 24, INK)
 	_label(comparison_panel, Rect2(300, 620, 600, 45), "ENTER  RECORD MATCH     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	notebook_comparison.visible = false
+
+	chapter1_notebook = Control.new()
+	chapter1_notebook.name = "Chapter1Notebook"
+	chapter1_notebook.size = Vector2(1672, 941)
+	chapter1_notebook.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(chapter1_notebook)
+	_dim(chapter1_notebook)
+	_texture(chapter1_notebook, NOTEBOOK_TEXTURE, Rect2(230, 84, 1212, 810))
+	_label(chapter1_notebook, Rect2(356, 198, 465, 55), "THE MISSING LEAF", 33, INK)
+	_texture(chapter1_notebook, NEWTON_NOTE_TEXTURE, Rect2(360, 270, 390, 397))
+	_label(chapter1_notebook, Rect2(370, 683, 420, 56), "F = ma  ·  Kath's old hand", 24, INK)
+	_label(chapter1_notebook, Rect2(870, 204, 440, 50), "NOTES FROM THIS VISIT", 29, INK)
+	_label(chapter1_notebook, Rect2(880, 276, 420, 394), "The basket used a second rope\npath when Erin rode inside.\n\nHer load moved the needle.\nShe needed room to stop.\n\nThe wet rod missed the\ncastle's home stop.\n\nWhat else did F = ma mean?", 24, INK)
+	_label(chapter1_notebook, Rect2(875, 708, 420, 35), "ENTER  STITCH PAGE     ·     ESC  CLOSE", 18, INK)
+	chapter1_notebook.visible = false
 
 	shaft_winch = Control.new()
 	shaft_winch.name = "ShaftWinch"
@@ -351,6 +382,30 @@ func _ready() -> void:
 	_label(rig_panel, Rect2(72, 525, 880, 38), "ENTER  CONTINUE     ·     ESC  CANCEL", 19, GOLD)
 	shaft_rigging.visible = false
 
+	engine_panel = Control.new()
+	engine_panel.name = "EngineMaintenance"
+	engine_panel.size = Vector2(1672, 941)
+	engine_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(engine_panel)
+	_dim(engine_panel)
+	(engine_panel.get_child(0) as ColorRect).color = Color(0.025, 0.035, 0.09, 0.48)
+	var engine_card := Panel.new()
+	engine_card.position = Vector2(65, 170)
+	engine_card.size = Vector2(965, 600)
+	engine_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var engine_style := StyleBoxFlat.new()
+	engine_style.bg_color = Color("182639")
+	engine_style.border_color = Color("b28755")
+	engine_style.set_border_width_all(6)
+	engine_style.set_corner_radius_all(17)
+	engine_card.add_theme_stylebox_override("panel", engine_style)
+	engine_panel.add_child(engine_card)
+	engine_title = _label(engine_card, Rect2(65, 35, 835, 53), "", 30, GOLD)
+	engine_body = _label(engine_card, Rect2(65, 105, 835, 150), "", 25, CREAM)
+	engine_status = _label(engine_card, Rect2(65, 275, 835, 225), "", 26, CREAM)
+	engine_footer = _label(engine_card, Rect2(65, 522, 835, 52), "", 20, GOLD)
+	engine_panel.visible = false
+
 	emergency_console = Control.new()
 	emergency_console.name = "EmergencyConsole"
 	emergency_console.size = Vector2(1672, 941)
@@ -410,7 +465,7 @@ func _ready() -> void:
 	_dim(pause_menu)
 	_label(pause_menu, Rect2(630, 340, 415, 76), "PAUSED", 49, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(pause_menu, Rect2(540, 445, 595, 65), "ENTER / ESC   RESUME", 29, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label(pause_menu, Rect2(540, 510, 595, 65), "Q   QUIT GAME", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(pause_menu, Rect2(540, 510, 595, 65), "Q   SAVE & QUIT", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	pause_menu.visible = false
 
 	chapter_end = Control.new()
@@ -436,6 +491,30 @@ func _ready() -> void:
 	_label(end_panel, Rect2(70, 335, 860, 38), "PROLOGUE COMPLETE", 22, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(end_panel, Rect2(70, 385, 860, 38), "ENTER  CONTROL WALKWAY     ·     ESC  SERVICE ROAD", 20, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chapter_end.visible = false
+
+	chapter1_end = Control.new()
+	chapter1_end.name = "Chapter1End"
+	chapter1_end.size = Vector2(1672, 941)
+	chapter1_end.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(chapter1_end)
+	_dim(chapter1_end)
+	var chapter1_panel := Panel.new()
+	chapter1_panel.position = Vector2(296, 207)
+	chapter1_panel.size = Vector2(1080, 525)
+	chapter1_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var chapter1_style := StyleBoxFlat.new()
+	chapter1_style.bg_color = Color("172536")
+	chapter1_style.border_color = Color("b28755")
+	chapter1_style.set_border_width_all(5)
+	chapter1_style.set_corner_radius_all(18)
+	chapter1_panel.add_theme_stylebox_override("panel", chapter1_style)
+	chapter1_end.add_child(chapter1_panel)
+	_label(chapter1_panel, Rect2(90, 58, 900, 45), "FOOTNOTES TO THE WORLD", 26, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(chapter1_panel, Rect2(90, 135, 900, 68), "CHAPTER I COMPLETE", 47, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(chapter1_panel, Rect2(105, 230, 870, 74), "UPSIDE-DOWN CASTLE", 36, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(chapter1_panel, Rect2(120, 328, 840, 65), "Next: Floating Isles · Buoyancy Station", 28, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(chapter1_panel, Rect2(120, 438, 840, 38), "ENTER / ESC  RETURN TO THE CASTLE", 21, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chapter1_end.visible = false
 
 
 func _process(_delta: float) -> void:
@@ -549,18 +628,41 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
 	journal_progress.text += "\n\nSERVICE ROAD  %s" % ("Castle entrance reached" if service_road_end_reached else ("Gate open" if service_gate_open else "Not reached"))
 	if discovered.has(&"castle-on-site-inversion"):
-		journal_progress.text += "\n\nCASTLE WING  Inverted"
+		journal_progress.text += "\n\nCASTLE WING  %s" % ("Restored" if discovered.has(&"engine-wing-restored") else "Inverted")
 		journal_progress.text += "\n%s  Falling water\n%s  Hanging weight\n%s  Lower ledge\n%s  Shaft access" % [
 			"[x]" if discovered.has(&"castle-water-path") else "[ ]",
 			"[x]" if discovered.has(&"castle-plumb-weight") else "[ ]",
 			"[x]" if discovered.has(&"castle-down-confirmed") else "[ ]",
 			"[x]" if discovered.has(&"castle-shaft-access") else "[ ]"
 		]
+	if discovered.has(&"shaft-rescue") or discovered.has(&"engine-orientation-chart"):
+		journal_progress.text += "\n\nENGINE ROOM  %d / 4\n%s  Fault traced\n%s  Track cleared\n%s  Stop path tested\n%s  Wing restored" % [
+			int(discovered.has(&"engine-fault-chain")) + int(discovered.has(&"engine-track-cleared")) + int(discovered.has(&"engine-home-stop-test")) + int(discovered.has(&"engine-wing-restored")),
+			"[x]" if discovered.has(&"engine-fault-chain") else "[ ]",
+			"[x]" if discovered.has(&"engine-track-cleared") else "[ ]",
+			"[x]" if discovered.has(&"engine-home-stop-test") else "[ ]",
+			"[x]" if discovered.has(&"engine-wing-restored") else "[ ]"
+		]
+	if discovered.has(&"engine-wing-restored"):
+		journal_progress.text += "\n\nOBSERVATORY  %d / 4\n%s  Work record\n%s  Floating Isles slip\n%s  Withdrawn page\n%s  Notebook repaired" % [
+			int(discovered.has(&"observatory-work-record")) + int(discovered.has(&"observatory-floating-slip")) + int(discovered.has(&"observatory-withdrawn")) + int(discovered.has(&"observatory-page-stitched")),
+			"[x]" if discovered.has(&"observatory-work-record") else "[ ]",
+			"[x]" if discovered.has(&"observatory-floating-slip") else "[ ]",
+			"[x]" if discovered.has(&"observatory-withdrawn") else "[ ]",
+			"[x]" if discovered.has(&"observatory-page-stitched") else "[ ]"
+		]
+		if discovered.has(&"chapter1-departure"):
+			journal_progress.text += "\n\nCHAPTER I  COMPLETE"
+	var progress_lines: int = maxi(journal_progress.get_line_count(), journal_progress.text.count("\n") + 1)
+	var progress_height: float = maxf(390.0, float(progress_lines) * 37.0 + 24.0)
+	journal_progress.custom_minimum_size.y = progress_height
+	journal_progress.size.y = progress_height
 	var lines := PackedStringArray()
 	for entry in entries:
 		lines.append("• %s\n%s" % [entry["title"], entry["body"]])
 	journal_entries.text = "\n\n".join(lines) if not lines.is_empty() else "Nothing recorded yet.\n\nLook around the hall and press E near an object."
 	journal_scroll.scroll_vertical = 0
+	journal_progress_scroll.scroll_vertical = 0
 	journal.visible = true
 	hide_prompt()
 
@@ -575,6 +677,12 @@ func show_torn_page(from_journal: bool) -> void:
 func show_notebook_comparison() -> void:
 	hide_modals()
 	notebook_comparison.visible = true
+	hide_prompt()
+
+
+func show_chapter1_notebook() -> void:
+	hide_modals()
+	chapter1_notebook.visible = true
 	hide_prompt()
 
 
@@ -651,6 +759,22 @@ func show_shaft_rigging(step: int) -> void:
 	hide_prompt()
 
 
+func show_engine_maintenance(title: String, body: String, status: String, footer: String) -> void:
+	hide_modals()
+	engine_title.text = title
+	engine_body.text = body
+	engine_status.text = status
+	engine_footer.text = footer
+	engine_panel.visible = true
+	hide_prompt()
+
+
+func update_engine_maintenance(status: String, footer: String = "") -> void:
+	engine_status.text = status
+	if footer != "":
+		engine_footer.text = footer
+
+
 func update_shaft_rigging(step: int) -> void:
 	match step:
 		0:
@@ -695,6 +819,7 @@ func play_castle_tilt() -> void:
 
 func scroll_journal(direction: int) -> void:
 	journal_scroll.scroll_vertical = maxi(0, journal_scroll.scroll_vertical + direction * 72)
+	journal_progress_scroll.scroll_vertical = maxi(0, journal_progress_scroll.scroll_vertical + direction * 72)
 
 
 func show_pause() -> void:
@@ -712,6 +837,15 @@ func show_chapter_end() -> void:
 	hide_prompt()
 
 
+func show_chapter1_end() -> void:
+	hide_modals()
+	chapter1_end.visible = true
+	chapter1_end.modulate.a = 0.0
+	var fade := create_tween()
+	fade.tween_property(chapter1_end, "modulate:a", 1.0, 0.6)
+	hide_prompt()
+
+
 func hide_modals() -> void:
 	dialogue.visible = false
 	sheet.visible = false
@@ -719,12 +853,15 @@ func hide_modals() -> void:
 	journal.visible = false
 	torn_page.visible = false
 	notebook_comparison.visible = false
+	chapter1_notebook.visible = false
 	shaft_winch.visible = false
 	shaft_load_check.visible = false
 	shaft_rigging.visible = false
+	engine_panel.visible = false
 	emergency_console.visible = false
 	castle_rotation.visible = false
 	chapter_end.visible = false
+	chapter1_end.visible = false
 	pause_menu.visible = false
 	hint.visible = false
 

@@ -2,6 +2,7 @@ extends Node2D
 ## Tool lift, passenger rig test, load check and controlled rescue on the fixed shaft.
 
 const INVERTED_ROOM_SCENE := "res://scenes/chapter1_inverted_room.tscn"
+const ENGINE_ROOM_SCENE := "res://scenes/chapter1_engine_room.tscn"
 const FLOOR_Y := 790.0
 const BASKET_X := 1100.0
 const BASKET_LOW_Y := 703.0
@@ -26,6 +27,7 @@ const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lev
 @onready var erin_at_lower: Node2D = $ErinAtLower
 @onready var ui: CanvasLayer = $HallUI
 @onready var return_aperture: Node2D = $ReturnAperture
+@onready var engine_access: Node2D = $EngineAccess
 @onready var speaking_tube: Node2D = $SpeakingTube
 @onready var rig_inspection: Node2D = $RigInspection
 @onready var tool_chest: Node2D = $ToolChest
@@ -56,7 +58,7 @@ const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lev
 @onready var load_indicator: Sprite2D = $LoadIndicator
 @onready var brake_lever: Sprite2D = $BrakeLever
 @onready var state: Node = get_node("/root/PrologueState")
-@onready var hotspots: Array[Node] = [return_aperture, winch_console, rig_inspection, tool_chest, speaking_tube, long_rope_cabinet, lower_dock_latch, top_anchor_survey]
+@onready var hotspots: Array[Node] = [return_aperture, engine_access, winch_console, rig_inspection, tool_chest, speaking_tube, long_rope_cabinet, lower_dock_latch, top_anchor_survey]
 
 var mode: StringName = &"roam"
 var dialogue_lines: Array[String] = []
@@ -80,16 +82,20 @@ func _ready() -> void:
 	kath.floor_y = FLOOR_Y
 	kath.left_limit = 90.0
 	kath.right_limit = 815.0
-	kath.position = Vector2(300.0, FLOOR_Y)
+	kath.position = Vector2(704.0 if spawn_tag == &"from-engine-room" else 300.0, FLOOR_Y)
 	basket_progress = clampf(float(state.flags.get("shaft_basket_progress", 0.0)), 0.0, 1.0)
 	sound_player = AudioStreamPlayer.new()
 	sound_player.stream = CLICK_SOUND
 	sound_player.volume_db = -14.0
 	add_child(sound_player)
 	_update_rig_visuals()
+	if state.castle_pose == &"restored":
+		$ReturnApertureArt.modulate = Color(0.48, 0.53, 0.62, 1.0)
 	if spawn_tag == &"from-inverted-room" and not state.flags.get("shaft_intro_seen", false):
 		state.flags["shaft_intro_seen"] = true
 		_start_dialogue(["This fixed platform does not turn with the wing. Erin is stranded across the shaft; I should check the hoist and ask what she needs."])
+	elif state.castle_pose == &"restored":
+		ui.show_hint("The lower wing hatch is out of line. Return through the engine room.", 5.0)
 	elif state.flags.get("shaft_rescue_complete", false):
 		ui.show_hint("Erin is safe on the fixed platform. We can inspect the engine room next.", 5.0)
 	elif state.flags.get("shaft_lower_arrived", false):
@@ -133,7 +139,9 @@ func _process(delta: float) -> void:
 		return
 	var action := "INSPECT"
 	if closest == return_aperture:
-		action = "WAIT" if state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false) else "RETURN"
+		action = "CLOSED" if state.castle_pose == &"restored" else "WAIT" if state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false) else "RETURN"
+	elif closest == engine_access:
+		action = "ENTER" if state.flags.get("shaft_rescue_complete", false) else "WAIT"
 	elif closest == speaking_tube:
 		if _rescue_phase() == &"load_verified":
 			action = "RELEASE"
@@ -246,6 +254,10 @@ func nearest_hotspot(feet_x: float) -> Node:
 	var best: Node = null
 	var best_distance := INF
 	for hotspot in hotspots:
+		if hotspot == engine_access and not state.flags.get("shaft_rescue_complete", false):
+			continue
+		if state.flags.get("shaft_rescue_complete", false) and hotspot == speaking_tube:
+			continue
 		if hotspot in [long_rope_cabinet, lower_dock_latch, top_anchor_survey] and not state.flags.get("shaft_tool_trip_complete", false):
 			continue
 		if hotspot == tool_chest and state.flags.get("shaft_tool_trip_complete", false):
@@ -260,8 +272,17 @@ func nearest_hotspot(feet_x: float) -> Node:
 
 
 func _inspect(hotspot: Node) -> void:
-	if hotspot == return_aperture:
-		if state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false):
+	if hotspot == engine_access:
+		if not state.flags.get("shaft_rescue_complete", false):
+			_start_dialogue(["Erin is still across the shaft. I cannot leave the rescue platform yet."])
+		else:
+			_set_mode(&"travel")
+			ui.hide_modals()
+			state.travel_to(ENGINE_ROOM_SCENE, &"from-maintenance-shaft")
+	elif hotspot == return_aperture:
+		if state.castle_pose == &"restored":
+			_start_dialogue(["The wing's low maintenance hatch no longer lines up with the fixed shaft. The engine passage leads to the restored observatory."])
+		elif state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false):
 			_start_dialogue(["Erin is still in the basket. I should stay at the winch until she reaches the fixed platform."])
 		else:
 			_set_mode(&"travel")
