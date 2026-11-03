@@ -4,7 +4,7 @@ extends Node2D
 const HALL_SCENE := "res://scenes/library_hall.tscn"
 const ROUTE_NOTE := {
 	"title": "Service route diagram",
-	"body": "A service line connects the Library Hall machinery to the Observatory Castle."
+	"body": "The Archive auxiliary line and a separate status wire run toward the Observatory Castle. The diagram also marks a local ring drive and isolator at the Castle; this panel does not directly switch that motor."
 }
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-machine.wav")
 const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
@@ -54,12 +54,14 @@ func _ready() -> void:
 	else:
 		kath.position.x = 250.0
 	var ambience := AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "MachineRoomAmbience"
 	ambience.stream = AMBIENCE
 	ambience.volume_db = -14.0
 	add_child(ambience)
 	ambience.play()
 	record_audio = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(record_audio)
 	record_audio.name = "RecordAudio"
 	record_audio.stream = PENCIL_SOUND
 	record_audio.volume_db = -8.0
@@ -87,7 +89,7 @@ func _process(_delta: float) -> void:
 			needle.rotation = -0.54
 			state.flags["incident_needle_rebounded"] = true
 			incident_rebound_timer = -1.0
-			ui.show_hint("THE NEEDLE IS RISING AGAIN  ·  E  OPEN EMERGENCY STOP", 6.0)
+			ui.show_hint("THE NEEDLE IS RISING AGAIN  ·  F  OPEN EMERGENCY STOP", 6.0)
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
@@ -147,17 +149,23 @@ func _unhandled_input(event: InputEvent) -> void:
 			selected_lever = 4 if selected_lever == 2 else 2
 			_update_console()
 			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("interact"):
+		elif event.is_action_pressed("world_action"):
 			_operate_selected_lever()
 			get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			# Returning to the hall removes this scene immediately.
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()
@@ -229,7 +237,7 @@ func _inspect(hotspot: Node) -> void:
 				ui.show_gauge_inspection(bool(state.flags.get("machine_baseline_recorded", false)))
 		&"route":
 			pending_inspection = &"service-route"
-			_start_dialogue(["This line runs from the library machinery toward the Observatory Castle.", "I wonder what the two places were built to do together."])
+			_start_dialogue(["Two lines lead toward the Observatory Castle: an Archive auxiliary line and a status wire.", "The diagram marks a separate ring drive inside the Castle. This stop switch belongs to the Archive side; I still don't know whether the faults are related."])
 		&"stop":
 			if _incident_active():
 				_operate_emergency_stop()
@@ -346,7 +354,7 @@ func _operate_emergency_stop() -> void:
 	incident_rebound_timer = -1.0
 	_play_incident_sound(STOP_SOUND)
 	if not state.flags.get("incident_valves_complete", false):
-		_start_dialogue(["The local drive is stopped. The pressure trapped in this line still needs to be released."])
+		_start_dialogue(["The Archive drive is stopped. The emergency card still calls for levers 2 and 4 to unload and isolate this line."])
 	else:
 		_complete_incident()
 
@@ -365,10 +373,10 @@ func _complete_incident() -> void:
 		return
 	state.flags["incident_tilt_observed"] = true
 	state.flags["incident_complete"] = true
-	state.add_note_once(&"castle-alarm", "Remote tilt observed", "The Archive's local drive stopped, but the Observatory Castle's local control signal remained unstable. Its supported wing tilted about 12 degrees clockwise. I do not know whether the two events are connected.")
+	state.add_note_once(&"castle-alarm", "Remote tilt observed", "The Archive auxiliary drive and line were stopped and isolated. The Castle's status signal remained unstable, and its supported wing tilted about 12 degrees while the fixed tower stayed upright. The Castle has its own ring drive; I do not yet know whether these failures share a cause.")
 	incident_busy = false
 	_set_mode(&"dialogue")
-	_start_dialogue(["The Archive's local drive is stopped. The Castle's local control is still behaving abnormally.", "The fixed tower stayed upright, while the supported wing tilted. I can't tell whether the two failures are connected."])
+	_start_dialogue(["The Archive auxiliary drive is stopped, but the Castle's status signal still behaves abnormally.", "The fixed tower stayed upright while the supported wing tilted. Its ring drive is separate; I can't tell whether the two failures are connected."])
 
 
 func _play_incident_sound(stream: AudioStream) -> void:

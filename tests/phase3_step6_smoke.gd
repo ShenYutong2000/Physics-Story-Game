@@ -54,7 +54,7 @@ func _run() -> void:
 	if shaft.mode != &"load_check":
 		_fail("The loaded inspection did not open.")
 		return
-	shaft._unhandled_input(_key(KEY_E))
+	shaft._unhandled_input(_key(KEY_F))
 	shaft._unhandled_input(_key(KEY_ESCAPE))
 	if state.has_note(&"shaft-occupied-load") or state.flags.get("shaft_load_verified", false):
 		_fail("Esc committed unfinished load checks.")
@@ -161,7 +161,7 @@ func _run() -> void:
 func _select_and_check(shaft: Node, index: int) -> void:
 	while shaft.load_check_selection != index:
 		shaft._unhandled_input(_key(KEY_D))
-	shaft._unhandled_input(_key(KEY_E))
+	shaft._unhandled_input(_key(KEY_F))
 
 
 func _dismiss(shaft: Node) -> void:

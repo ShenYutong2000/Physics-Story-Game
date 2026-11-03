@@ -7,9 +7,9 @@ const DOCUMENTS := [
 	{
 		"id": &"observatory-work-record",
 		"title": "WORK RECORD",
-		"body": "Grand Archive — Castle Observation Station\n\nTrial 18: basket service; direction dial.\n\nEarlier estimate crossed out. Keep the measured result.\n\nSigned: Kath · Erin",
+		"body": "Grand Archive — Castle Observation Station\n\nTrial 18: basket service; direction dial.\n\nColumns: mass / weight / rope pull / speed change.\n\nEarlier estimate crossed out. Keep the measured result.\n\nSigned: Kath · Erin",
 		"note_title": "A signed castle record",
-		"note_body": "A Castle Observation Station work record carries Kath's and Erin's signatures. It lists basket maintenance and direction tests under the Grand Archive heading. Its filing marks match the old library records.",
+		"note_body": "A Castle Observation Station record signed by Kath and Erin lists basket and direction trials. Its separate columns for mass, weight, rope pull and speed change were partly crossed out. The filing marks match the old library; the columns do not by themselves tell me how those quantities relate.",
 		"reaction": "Those are our signatures. The castle and my library used the same Grand Archive records."
 	},
 	{
@@ -63,6 +63,7 @@ func _ready() -> void:
 	telescope_pivot.rotation_degrees = -6.0 if state.flags.get("observatory_scope_angled", false) else 0.0
 	document_modal.visible = false
 	sound_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(sound_player)
 	sound_player.stream = CLICK_SOUND
 	sound_player.volume_db = -15.0
 	add_child(sound_player)
@@ -109,11 +110,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -123,7 +130,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			document_index = posmod(document_index + (-1 if event.is_action_pressed("move_left") else 1), DOCUMENTS.size())
 			_show_document(document_index)
-		elif event.is_action_pressed("advance_dialogue") or event.is_action_pressed("interact"):
+		elif event.is_action_pressed("advance_dialogue"):
 			get_viewport().set_input_as_handled()
 			_record_document()
 	elif mode == &"stitch" and event.is_action_pressed("advance_dialogue"):
@@ -256,11 +263,11 @@ func _stitch_page() -> void:
 	if not state.flags.get("observatory_archive_complete", false):
 		return
 	state.flags["observatory_page_stitched"] = true
-	state.add_note_once(&"observatory-page-stitched", "The missing leaf returned", "I stitched the F = ma fragment back beside this visit's rope, load, stopping-distance and castle-stop observations. The old formula is still not a complete explanation to me; the new measurements and questions stay with it.")
+	state.add_note_once(&"observatory-page-stitched", "The missing leaf returned", "I stitched F = ma beside today's rope, load, speed-change and castle-stop records. The old work sheet separates mass, weight and rope pull. My working guess: F is the net force on an object, not one rope's tension; m is mass, its resistance to acceleration; a is change of velocity over time. Weight is the downward gravitational pull here. I have not compared equal net pulls with different masses or measured friction. This model still needs tests under stated conditions.")
 	sound_player.play()
 	wick.react_to(1240.0, 420.0)
 	_close_overlay()
-	_start_dialogue(["The torn edge fits. I stitch the old page back in, beside the rope and brake notes I made today.", "The formula still asks a question I cannot answer completely. These new observations are mine to keep. I should tell Erin what the archive revealed."])
+	_start_dialogue(["The torn edge fits. I stitch the old page beside today's rope, load and braking observations.", "Maybe F is the combined pull on a moving thing, not the reading from one rope. The record separates mass and weight, but I still need a fair test of that idea.", "These observations and their limits belong in the notebook. I should tell Erin what the archive revealed."])
 
 
 func _start_dialogue(lines: Array[String]) -> void:

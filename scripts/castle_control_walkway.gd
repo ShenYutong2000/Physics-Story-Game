@@ -21,6 +21,8 @@ const STOP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop
 @onready var erin: Node2D = $Erin
 @onready var castle_wing_pivot: Node2D = $CastleWingPivot
 @onready var dial_needle_pivot: Node2D = $DialNeedlePivot
+@onready var archive_line_lamp: Polygon2D = $ArchiveLineLamp
+@onready var ring_drive_lamp: Polygon2D = $RingDriveLamp
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var hotspots: Array[Node] = [return_exit, erin_station, position_dial, return_console, lower_service_hatch]
 
@@ -44,16 +46,18 @@ func _ready() -> void:
 	kath.position = Vector2(575.0 if spawn_tag == &"from-inverted-room" else 430.0, FLOOR_Y)
 	erin.visible = state.castle_pose != &"inverted"
 	motor_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(motor_player, true)
 	motor_player.stream = MOTOR_AMBIENCE
 	motor_player.volume_db = -22.0
 	add_child(motor_player)
 	effect_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(effect_player)
 	add_child(effect_player)
 	if not state.flags.get("control_walkway_intro_seen", false):
 		state.flags["control_walkway_intro_seen"] = true
 		_start_dialogue([
 			"The fixed walkway is still standing. The supported wing is tilted inside the ring.",
-			"Erin is here. I should compare the position dial with what we can actually see."
+			"The Archive-line lamp is dark, but the ring-drive lamp is still lit. Erin is here; I should compare the dial with the wing."
 		])
 	elif spawn_tag == &"from-inverted-room":
 		ui.show_hint("Back at the fixed tower. The lower hatch remains open.", 4.0)
@@ -110,11 +114,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -178,11 +188,12 @@ func _inspect(hotspot: Node) -> void:
 		)
 	elif hotspot == position_dial:
 		if state.castle_pose == &"inverted":
-			_start_dialogue(["The pointer reached the far stop. The fixed walkway did not turn with the wing."])
+			_start_dialogue(["The pointer reached the inverted catch. The fixed walkway did not turn with the wing.", "The ring drive fell silent at the catch, but its feed is still connected. We need the isolator in the fixed core."])
 		else:
 			_start_dialogue(
 				["The pointer marks the same tilt I can see in the ring.",
-				"I'll watch both during the return test. A pointer alone cannot tell me what the whole wing is doing."],
+				"The Archive-line lamp is dark. The Castle's ring-drive lamp is lit. Stopping one has not isolated the other.",
+				"I'll watch both dial and wing during the return test. A pointer alone cannot tell me what the whole wing is doing."],
 				[],
 				&"dial_checked"
 			)
@@ -193,8 +204,8 @@ func _inspect(hotspot: Node) -> void:
 			_start_dialogue(["Before trying the controls, I need Erin's account and a reading of the position dial."])
 		else:
 			_start_dialogue(
-				["I'll take the service stair to the inner lock. Watch the wing and the dial from here.",
-				"I'll stay on the fixed walkway and call out if they disagree."],
+				["The Archive line is off; this brief return test uses the Castle's own ring drive. Its home contact should stop the motor. The independent isolator is inside the fixed core.",
+				"I'll stay on the fixed walkway and compare the dial, lamps and wing. Keep the test slow."],
 				[&"erin", &"kath"],
 				&"begin_return_test"
 			)
@@ -260,6 +271,8 @@ func _apply_pose_from_state() -> void:
 	# The source artwork is painted at 12 degrees. Only the wing rotates;
 	# the support ring, fixed tower and walkway remain in place.
 	castle_wing_pivot.rotation = state.castle_pose_angle_radians() - SOURCE_WING_POSE_ANGLE
+	archive_line_lamp.color = Color("465866") if state.flags.get("incident_drive_stopped", false) else Color("e9ad61")
+	ring_drive_lamp.color = Color("76343a") if state.castle_pose == &"inverted" else Color("efaa53")
 	match state.castle_pose:
 		&"upright", &"restored":
 			dial_needle_pivot.rotation = deg_to_rad(-12.0)
@@ -294,14 +307,16 @@ func _begin_return_test() -> void:
 	erin.visible = false
 	_play_effect(LEVER_SOUND)
 	motor_player.play()
-	ui.show_hint("The wing is moving back toward level.", 2.0)
+	ring_drive_lamp.color = Color("ffd078")
+	ui.show_hint("CASTLE RING DRIVE ON · WING MOVING TOWARD HOME", 2.0)
 	var return_motion := create_tween().set_parallel(true)
 	return_motion.tween_property(castle_wing_pivot, "rotation", -SOURCE_WING_POSE_ANGLE, 1.5)
 	return_motion.tween_property(dial_needle_pivot, "rotation", deg_to_rad(-12.0), 1.5)
 	await return_motion.finished
-	ui.show_hint("The pointer passed home. The wing did not stop.", 2.4)
+	ui.show_hint("HOME SIGNAL DARK · RING DRIVE STILL ON", 2.4)
 	await get_tree().create_timer(0.45).timeout
 	_play_effect(STOP_SOUND)
+	ui.show_hint("Kath releases the test lever. The ring-drive lamp stays lit.", 2.8)
 	wick.react_to(1530.0, 440.0)
 	var run_on := create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	# Continue in the same direction past level, ending at -180 degrees.
@@ -310,16 +325,18 @@ func _begin_return_test() -> void:
 	run_on.tween_property(dial_needle_pivot, "rotation", deg_to_rad(40.0), 3.0)
 	await run_on.finished
 	motor_player.stop()
+	ring_drive_lamp.color = Color("76343a")
 	if not state.transition_castle_pose(&"inverted"):
 		_set_mode(&"roam")
 		return
 	_apply_pose_from_state()
 	lower_service_hatch_art.visible = true
 	state.flags["control_inversion_complete"] = true
+	state.flags["castle_overload_tripped"] = true
 	state.add_note_once(
 		&"castle-on-site-inversion",
 		"The wing passed its stop",
-		"During the return test, the wing moved toward level, passed the intended stop, and continued to the inverted position. The fixed tower stayed upright. Erin reached an inner maintenance ledge; the cause is not yet known."
+		"The Archive feed was dark while the Castle ring drive ran. On the return test, the wing passed home with its stop lamp dark. Erin released the selector, but the motor kept running until the separate inverted catch held the wing; then it fell silent. The fixed tower stayed upright. The failed home stop still needs tracing."
 	)
 	_start_dialogue(
 		["Erin? I saw the wing pass level and keep turning.",

@@ -27,7 +27,8 @@ func _run() -> void:
 	state.flags["control_inversion_complete"] = true
 	control.lower_service_hatch_art.visible = true
 	control.kath.position.x = 615.0
-	control._unhandled_input(_key(KEY_E))
+	control._process(0.0)
+	control._unhandled_input(_key(KEY_F))
 	await process_frame
 	var room = current_scene
 	if room == null or room.name != "Chapter1InvertedRoom":
@@ -37,8 +38,19 @@ func _run() -> void:
 		_fail("Room entry dialogue or floor spawn is wrong.")
 		return
 	room._unhandled_input(_key(KEY_ESCAPE))
-	if room.mode != &"roam" or room.nearest_hotspot(490.0) != null:
+	if room.mode != &"roam" or room.nearest_hotspot(350.0) != null:
 		_fail("There is no free walking space between the entrance and observations.")
+		return
+	room._inspect(room.chalk_patch)
+	room._unhandled_input(_key(KEY_ESCAPE))
+	if state.flags.has("room_down_guess"):
+		_fail("Cancelling the chalk prediction recorded a guess.")
+		return
+	room._inspect(room.chalk_patch)
+	room._unhandled_input(_key(KEY_LEFT))
+	room._unhandled_input(_key(KEY_ENTER))
+	if state.flags.get("room_down_guess", "") != "old_floor" or not room.chalk_stroke.visible or room.chalk_stroke.points.size() != 5:
+		_fail("The marked prediction was not visible and persistent.")
 		return
 	room._inspect(room.shaft_ladder)
 	room._advance_dialogue()
@@ -72,6 +84,10 @@ func _run() -> void:
 	if not state.flags.get("castle_down_confirmed", false) or not state.has_note(&"castle-down-confirmed"):
 		_fail("The completed comparison was not recorded.")
 		return
+	var down_note: Dictionary = state.notes.filter(func(note: Dictionary) -> bool: return note["id"] == &"castle-down-confirmed")[0]
+	if not String(down_note["body"]).contains("corrected it"):
+		_fail("The water and plumb observations did not correct the wrong prediction.")
+		return
 	room._inspect(room.shaft_ladder)
 	room._advance_dialogue()
 	room._advance_dialogue()
@@ -86,7 +102,8 @@ func _run() -> void:
 		_fail("Repeated observation created duplicate notes.")
 		return
 	room.kath.position.x = 145.0
-	room._unhandled_input(_key(KEY_E))
+	room._process(0.0)
+	room._unhandled_input(_key(KEY_F))
 	await process_frame
 	var reentry = current_scene
 	if reentry == null or reentry.name != "CastleControlWalkway" or not reentry.lower_service_hatch_art.visible:

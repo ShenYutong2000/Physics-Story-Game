@@ -64,12 +64,14 @@ func _ready() -> void:
 	gate.frame = 1 if state.flags.get("service_gate_open", false) else 0
 
 	ambient_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(ambient_player, true)
 	ambient_player.name = "ServiceRoadAmbience"
 	ambient_player.stream = AMBIENCE
 	ambient_player.volume_db = -15.0
 	add_child(ambient_player)
 	ambient_player.play()
 	effects_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(effects_player)
 	effects_player.name = "ServiceRoadEffects"
 	add_child(effects_player)
 
@@ -105,7 +107,7 @@ func _process(_delta: float) -> void:
 		action = "RETURN"
 		prompt_y = kath.position.y - 470.0
 	elif closest == $ServiceGate:
-		action = "OPEN GATE" if not state.flags.get("service_gate_open", false) else "GATE OPEN"
+		action = "OPEN GATE" if not state.flags.get("service_gate_open", false) else "INSPECT"
 		prompt_y = kath.position.y - 170.0
 	elif closest == $RoadSign:
 		prompt_y = 650.0
@@ -133,17 +135,27 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
-			if state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
+			if event.is_action_pressed("world_action") and state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
 				and (state.castle_pose == &"inverted" or state.castle_pose == &"restored"):
 				_set_mode(&"travel")
 				ui.hide_modals()
 				state.travel_to(CONTROL_WALKWAY_SCENE, &"from-service-road")
 				return
+			if event.is_action_pressed("interact") and state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
+				and (state.castle_pose == &"inverted" or state.castle_pose == &"restored"):
+				ui.examine_named_prompt()
+				return
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

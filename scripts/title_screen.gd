@@ -4,6 +4,7 @@ extends Node2D
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var new_game: Label = $Menu/NewGame
 @onready var continue_game: Label = $Menu/ContinueGame
+@onready var settings: Label = $Menu/Settings
 @onready var help: Label = $Menu/Help
 
 var selection := 0
@@ -26,12 +27,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		_refresh()
 	elif event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
 		get_viewport().set_input_as_handled()
-		if not confirming_new_game and has_save:
-			selection = 1 - selection
+		if not confirming_new_game:
+			if has_save:
+				selection = posmod(selection + (-1 if event.is_action_pressed("move_up") else 1), 3)
+			else:
+				selection = 2 if selection == 0 else 0
+			get_node("/root/GameSettings").play_ui_tick()
 		_refresh()
 	elif event.is_action_pressed("advance_dialogue"):
 		get_viewport().set_input_as_handled()
-		if selection == 1 and has_save and not confirming_new_game:
+		if selection == 2 and not confirming_new_game:
+			get_node("/root/GameSettings").play_ui_tick()
+			get_node("/root/GameSettings").open_menu()
+		elif selection == 1 and has_save and not confirming_new_game:
 			if not state.resume_checkpoint():
 				has_save = false
 				selection = 0
@@ -49,10 +57,11 @@ func _unhandled_input(event: InputEvent) -> void:
 func _refresh() -> void:
 	new_game.text = ("›  " if selection == 0 else "   ") + "NEW GAME"
 	continue_game.text = ("›  " if selection == 1 else "   ") + "CONTINUE"
+	settings.text = ("›  " if selection == 2 else "   ") + "SETTINGS"
 	continue_game.modulate = Color.WHITE if has_save else Color(0.53, 0.55, 0.62)
 	if confirming_new_game:
 		help.text = "Replace the current journey?\nENTER CONFIRM  ·  ESC BACK"
 	elif has_save:
-		help.text = "↑ / ↓ SELECT  ·  ENTER START\nContinue resumes at a safe room entrance."
+		help.text = "↑ / ↓ SELECT  ·  ENTER OPEN\nContinue resumes at a safe room entrance."
 	else:
-		help.text = "ENTER START\nProgress saves at safe checkpoints."
+		help.text = "↑ / ↓ SELECT  ·  ENTER OPEN\nProgress saves at safe checkpoints."

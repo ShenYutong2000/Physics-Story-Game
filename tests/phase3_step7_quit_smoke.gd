@@ -13,6 +13,8 @@ func _run() -> void:
 	var state: Node = root.get_node("PrologueState")
 	state.save_path_override = TEST_SAVE
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".tmp"))
 	state.persistence_enabled = true
 	var hall = HALL.instantiate()
 	root.add_child(hall)
@@ -27,6 +29,8 @@ func _run() -> void:
 		quit(1)
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".tmp"))
 	state.persistence_enabled = false
 	state.save_path_override = ""
 	current_scene = null

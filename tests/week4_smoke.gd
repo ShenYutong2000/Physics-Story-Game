@@ -38,8 +38,9 @@ func _run() -> void:
 	for note_id in state.HALL_NOTE_IDS:
 		state.add_note_once(note_id, String(note_id), "Observation")
 	state.flags["machine_baseline_recorded"] = true
+	state.add_note_once(&"machine-reading", "Machine-room reading", "The needle is one division above its previous mark.")
 	hall.kath.position.x = 1530.0
-	await _tap_key(KEY_E)
+	await _tap_key(KEY_F)
 	var upper = current_scene
 	if upper == null or upper.name != "UpperStacks" or upper.kath.position.y != FLOOR_Y:
 		_fail("The Hall did not enter the Upper Stacks at the correct floor height.")
@@ -52,16 +53,21 @@ func _run() -> void:
 
 	# Roof inspection, cancellable note additions, and the leak response.
 	upper.kath.position.x = 1400.0
+	upper._process(0.0)
 	upper._unhandled_input(_key(KEY_E))
 	if upper.mode != &"dialogue" or not upper.leak_inspected:
 		_fail("The roof seam did not produce its inspection dialogue.")
 		return
 	upper._close_dialogue(false)
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if not state.flags.get("stacks_bucket_moved", false) or not state.has_note(&"leak-observation"):
 		_fail("Moving the bucket did not persist its state and add one observation.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	upper._process(0.4)
+	if not upper.rain_drop.visible or upper.ripple.position.y >= FLOOR_Y - 30.0:
+		_fail("The leak stopped visually instead of continuing into the bucket.")
+		return
+	_act(upper)
 	if state.notes.filter(func(note: Dictionary) -> bool: return note["id"] == &"leak-observation").size() != 1:
 		_fail("Repeating the bucket interaction duplicated its note.")
 		return
@@ -69,7 +75,7 @@ func _run() -> void:
 
 	# A misaligned ladder cannot reach the case; pushing and locking aligns it.
 	upper.kath.position.x = LADDER_START_X - 72.0
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"push":
 		_fail("The rolling ladder did not enter push mode.")
 		return
@@ -78,11 +84,11 @@ func _run() -> void:
 		await physics_frame
 	Input.action_release("move_left")
 	await process_frame
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"walk" or absf(upper.ladder.position.x - LADDER_START_X) < 1.0:
 		_fail("Locking the ladder did not preserve its deliberately misaligned position.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"climb":
 		_fail("A locked but misaligned ladder could not be climbed.")
 		return
@@ -90,7 +96,7 @@ func _run() -> void:
 	for i in 200:
 		await physics_frame
 	Input.action_release("move_up")
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.case_open:
 		_fail("A horizontally misaligned ladder allowed the case to open.")
 		return
@@ -102,7 +108,7 @@ func _run() -> void:
 	if upper.kath.locomotion_mode != &"walk":
 		_fail("Descending from a misaligned ladder did not return Kath to the floor.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"push":
 		_fail("Kath could not unlock the misaligned ladder for repositioning.")
 		return
@@ -114,11 +120,11 @@ func _run() -> void:
 	if absf(upper.ladder.position.x - CASE_X) > 5.0:
 		_fail("A/D or arrow movement did not roll the ladder beneath the case.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"walk" or absf(upper.ladder.position.x - CASE_X) > 5.0:
 		_fail("Locking the aligned ladder did not preserve its position.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.kath.locomotion_mode != &"climb":
 		_fail("An aligned, locked ladder did not allow climbing.")
 		return
@@ -126,7 +132,7 @@ func _run() -> void:
 	for i in 120:
 		await physics_frame
 	Input.action_release("move_up")
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.case_open or upper.mode != &"roam":
 		_fail("The box opened before Kath climbed high enough.")
 		return
@@ -140,12 +146,12 @@ func _run() -> void:
 	for i in 20:
 		await physics_frame
 	Input.action_release("move_up")
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if not upper.case_open or upper.case_sprite.frame != 1:
 		_fail("The reachable wooden case did not open into its note state.")
 		return
 	upper._close_dialogue(false)
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	if upper.mode != &"paper" or not upper.ui.torn_page.visible:
 		_fail("The note close-up did not open.")
 		return
@@ -157,7 +163,7 @@ func _run() -> void:
 	if state.has_note(&"newton-note") or upper.case_sprite.frame != 1 or upper.mode != &"roam":
 		_fail("Escaping the note close-up incorrectly collected or removed the page.")
 		return
-	upper._unhandled_input(_key(KEY_E))
+	_act(upper)
 	upper._unhandled_input(_key(KEY_ENTER))
 	if not state.has_note(&"newton-note") or upper.case_sprite.frame != 2 or not state.flags.get("stacks_page_collected", false):
 		_fail("Confirming the page did not record it and empty the case.")
@@ -169,6 +175,9 @@ func _run() -> void:
 	upper._unhandled_input(_key(KEY_J))
 	if upper.mode != &"journal" or not upper.ui.journal_progress.text.contains("UPPER STACKS  2 / 2"):
 		_fail("Notes did not show the separate completed Upper Stacks checklist.")
+		return
+	if not upper.ui.journal_progress.text.contains("OBSERVATION THREAD") or not upper.ui.journal_progress.text.contains("Needle:") or not upper.ui.journal_progress.text.contains("Leak:") or not upper.ui.journal_progress.text.contains("Torn page:"):
+		_fail("Notes did not connect the machine reading, leak and torn page as observations.")
 		return
 	upper._unhandled_input(_key(KEY_ENTER))
 	if upper.mode != &"paper":
@@ -193,12 +202,12 @@ func _run() -> void:
 		_fail("Reaching floor level did not automatically end the climb.")
 		return
 	upper.kath.position.x = 500.0
-	await _tap_key(KEY_E)
+	await _tap_key(KEY_F)
 	hall = current_scene
 	if hall == null or hall.name != "LibraryHall" or hall.kath.position.x != 1530.0:
 		_fail("The Upper Stacks exit did not return to the Hall stairway.")
 		return
-	await _tap_key(KEY_E)
+	await _tap_key(KEY_F)
 	upper = current_scene
 	if upper == null or upper.name != "UpperStacks" or upper.mode != &"roam":
 		_fail("Returning to the Upper Stacks replayed the introduction or blocked entry.")
@@ -206,6 +215,9 @@ func _run() -> void:
 	if not state.flags.get("stacks_bucket_moved", false) or upper.case_sprite.frame != 2 \
 		or absf(upper.ladder.position.x - CASE_X) > 5.0:
 		_fail("Bucket, ladder, or page state was lost after a round trip.")
+		return
+	if not upper.rain_drop.visible or upper.ripple.position.y >= FLOOR_Y - 30.0:
+		_fail("The caught leak did not remain visible after re-entering the stacks.")
 		return
 	print("WEEK4_SMOKE_OK: gated entry, leak, ladder, climb, page cancel/collect/revisit, return state")
 	upper.queue_free()
@@ -223,7 +235,13 @@ func _key(code: int) -> InputEventKey:
 	return event
 
 
+func _act(room: Node) -> void:
+	room._process(0.0)
+	room._unhandled_input(_key(KEY_F))
+
+
 func _tap_key(code: int) -> void:
+	await process_frame
 	Input.parse_input_event(_key(code))
 	await process_frame
 	var release := _key(code)

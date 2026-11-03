@@ -1,5 +1,8 @@
 extends CanvasLayer
-## Keyboard-only, mutually exclusive overlays for the Library Hall prototype.
+## Shared story UI for the prologue and Chapter I.
+
+const InteractionGuide = preload("res://scripts/interaction_guide.gd")
+const StoryGuide = preload("res://scripts/story_guide.gd")
 
 const NOTEBOOK_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/ui/notebook-panel.png")
 const SHEET_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/maintenance-sheet.png")
@@ -35,6 +38,7 @@ var notebook_comparison: Control
 var chapter1_notebook: Control
 var shaft_winch: Control
 var shaft_winch_status: Label
+var shaft_winch_measure: Label
 var shaft_winch_instruction: Label
 var shaft_winch_fill: ColorRect
 var shaft_winch_path: Label
@@ -56,7 +60,15 @@ var castle_rotation: Control
 var chapter_end: Control
 var chapter1_end: Control
 var pause_menu: Control
+var pause_save_error: Label
 var hint_deadline: int = 0
+var prompt_name := ""
+var prompt_has_world_action := false
+var objective_id := ""
+var objective_idle_seconds := 0.0
+var objective_reminder_shown := false
+var hint_level := 0
+var hint_is_guide := false
 
 
 func _ready() -> void:
@@ -67,15 +79,18 @@ func _ready() -> void:
 	canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(canvas)
 
-	prompt = _label(canvas, Rect2(0, 0, 320, 52), "", 27, CREAM)
+	prompt = _label(canvas, Rect2(0, 0, 480, 74), "", 22, CREAM)
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt.add_theme_color_override("font_shadow_color", Color(0.02, 0.04, 0.1, 1.0))
 	prompt.add_theme_constant_override("shadow_offset_x", 2)
 	prompt.add_theme_constant_override("shadow_offset_y", 3)
 	prompt.visible = false
 
-	hint = _label(canvas, Rect2(1160, 60, 410, 48), "", 25, GOLD)
+	hint = _label(canvas, Rect2(1040, 54, 550, 128), "", 22, GOLD)
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hint.add_theme_color_override("font_shadow_color", Color(0.02, 0.04, 0.1, 0.95))
+	hint.add_theme_constant_override("shadow_offset_x", 2)
+	hint.add_theme_constant_override("shadow_offset_y", 3)
 	hint.visible = false
 
 	dialogue = Control.new()
@@ -284,7 +299,7 @@ func _ready() -> void:
 	_texture(chapter1_notebook, NEWTON_NOTE_TEXTURE, Rect2(360, 270, 390, 397))
 	_label(chapter1_notebook, Rect2(370, 683, 420, 56), "F = ma  ·  Kath's old hand", 24, INK)
 	_label(chapter1_notebook, Rect2(870, 204, 440, 50), "NOTES FROM THIS VISIT", 29, INK)
-	_label(chapter1_notebook, Rect2(880, 276, 420, 394), "The basket used a second rope\npath when Erin rode inside.\n\nHer load moved the needle.\nShe needed room to stop.\n\nThe wet rod missed the\ncastle's home stop.\n\nWhat else did F = ma mean?", 24, INK)
+	_label(chapter1_notebook, Rect2(880, 276, 420, 415), "Same empty basket: two support\nstrands used more rope per rise.\n\nWith Erin aboard, rope tension\nchanged. Weight pulls downward;\nthe dial reads neither mass nor\nweight directly.\n\nBraking changed our speed.\nCould F be net force?\nFriction remains unmeasured.", 21, INK)
 	_label(chapter1_notebook, Rect2(875, 708, 420, 35), "ENTER  STITCH PAGE     ·     ESC  CLOSE", 18, INK)
 	chapter1_notebook.visible = false
 
@@ -323,8 +338,9 @@ func _ready() -> void:
 	winch_panel.add_child(shaft_winch_fill)
 	_label(winch_panel, Rect2(93, 190, 300, 37), "LOWER BERTH", 19, GOLD)
 	_label(winch_panel, Rect2(650, 190, 200, 37), "ERIN'S LEDGE", 19, GOLD)
-	shaft_winch_status = _label(winch_panel, Rect2(80, 290, 780, 70), "", 26, CREAM)
-	shaft_winch_instruction = _label(winch_panel, Rect2(80, 385, 780, 50), "", 22, CREAM)
+	shaft_winch_status = _label(winch_panel, Rect2(80, 290, 780, 62), "", 26, CREAM)
+	shaft_winch_measure = _label(winch_panel, Rect2(80, 351, 780, 36), "", 20, GOLD)
+	shaft_winch_instruction = _label(winch_panel, Rect2(80, 393, 780, 50), "", 22, CREAM)
 	shaft_winch_footer = _label(winch_panel, Rect2(80, 450, 780, 38), "ESC  CLOSE  ·  Release keys to hold position", 19, GOLD)
 	shaft_winch.visible = false
 
@@ -349,7 +365,7 @@ func _ready() -> void:
 	_label(load_panel, Rect2(65, 93, 850, 68), "The rope is taut. Check what still supports the occupied basket before Erin releases the catch.", 23, CREAM)
 	shaft_load_selection = _label(load_panel, Rect2(78, 188, 830, 202), "", 27, CREAM)
 	shaft_load_detail = _label(load_panel, Rect2(78, 404, 830, 67), "", 22, GOLD)
-	_label(load_panel, Rect2(78, 510, 830, 36), "← / →  SELECT     ·     E  CHECK     ·     ENTER  CONFIRM     ·     ESC  CANCEL", 18, GOLD)
+	_label(load_panel, Rect2(78, 510, 830, 36), "← / →  SELECT     ·     F  CHECK     ·     ENTER  CONFIRM     ·     ESC  CANCEL", 18, GOLD)
 	shaft_load_check.visible = false
 
 	shaft_rigging = Control.new()
@@ -424,12 +440,12 @@ func _ready() -> void:
 	emergency_panel.add_theme_stylebox_override("panel", emergency_style)
 	emergency_console.add_child(emergency_panel)
 	_label(emergency_panel, Rect2(70, 38, 860, 55), "EMERGENCY LINE CONTROL", 31, INK)
-	_label(emergency_panel, Rect2(70, 105, 860, 92), "Maintenance card: open return lever 2 and isolate lever 4. If the needle keeps rising, stop the local drive.", 25, INK)
+	_label(emergency_panel, Rect2(70, 105, 860, 92), "Archive auxiliary line only: open return lever 2 and isolate lever 4. If the needle keeps rising, stop this drive.", 25, INK)
 	emergency_selection = _label(emergency_panel, Rect2(100, 238, 800, 70), "‹  LEVER 2 · RETURN  ›", 31, INK)
 	emergency_selection.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	emergency_status = _label(emergency_panel, Rect2(90, 340, 820, 90), "Lever 2: pending     ·     Lever 4: pending     ·     Drive: running", 24, INK)
 	emergency_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label(emergency_panel, Rect2(100, 470, 800, 44), "← / →  SELECT     ·     E  OPERATE     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(emergency_panel, Rect2(100, 470, 800, 44), "← / →  SELECT     ·     F  OPERATE     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	emergency_console.visible = false
 
 	castle_rotation = Control.new()
@@ -465,7 +481,11 @@ func _ready() -> void:
 	_dim(pause_menu)
 	_label(pause_menu, Rect2(630, 340, 415, 76), "PAUSED", 49, CREAM).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label(pause_menu, Rect2(540, 445, 595, 65), "ENTER / ESC   RESUME", 29, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label(pause_menu, Rect2(540, 510, 595, 65), "Q   SAVE & QUIT", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(pause_menu, Rect2(540, 510, 595, 65), "S   SETTINGS", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(pause_menu, Rect2(540, 573, 595, 65), "Q   SAVE & QUIT", 25, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pause_save_error = _label(pause_menu, Rect2(360, 650, 950, 70), "SAVE FAILED · CHECK STORAGE AND TRY AGAIN", 23, CREAM)
+	pause_save_error.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	pause_save_error.visible = false
 	pause_menu.visible = false
 
 	chapter_end = Control.new()
@@ -517,31 +537,115 @@ func _ready() -> void:
 	chapter1_end.visible = false
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if hint.visible and Time.get_ticks_msec() >= hint_deadline:
 		hint.visible = false
+	var objective := _sync_objective()
+	var scene := get_parent()
+	if objective.is_empty() or scene == null or scene.get("mode") != &"roam" or objective["id"] == "complete":
+		return
+	objective_idle_seconds += delta
+	get_node("/root/PrologueState").guide_idle_seconds = objective_idle_seconds
+	if get_node("/root/GameSettings").hints_enabled and not objective_reminder_shown and hint_level == 0 and objective_idle_seconds >= 75.0:
+		objective_reminder_shown = true
+		get_node("/root/PrologueState").guide_reminder_shown = true
+		var wick_pointed := _point_wick(objective)
+		show_hint("Wick circles a nearby lead. Press H for an optional hint, or J to review the objective." if wick_pointed else "Need a lead? Press H for an optional hint, or J to review the objective.", 7.0)
+		hint_is_guide = true
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not get_node("/root/GameSettings").hints_enabled or not event.is_action_pressed("request_hint") or (event is InputEventKey and event.echo):
+		return
+	var scene := get_parent()
+	if scene == null or scene.get("mode") != &"roam":
+		return
+	var objective := _sync_objective()
+	if objective.is_empty():
+		return
+	get_viewport().set_input_as_handled()
+	hint_level = mini(hint_level + 1, 3)
+	objective_reminder_shown = true
+	var story_state: Node = get_node("/root/PrologueState")
+	story_state.guide_hint_level = hint_level
+	story_state.guide_reminder_shown = true
+	show_hint("HINT %d/3 · %s" % [hint_level, objective["hints"][hint_level - 1]], 11.0)
+	hint_is_guide = true
+	_point_wick(objective)
+
+
+func _sync_objective() -> Dictionary:
+	var story_state: Node = get_node_or_null("/root/PrologueState")
+	if story_state == null:
+		return {}
+	var objective: Dictionary = StoryGuide.current(story_state)
+	if story_state.guide_objective_id != objective["id"]:
+		story_state.reset_guide_progress()
+		story_state.guide_objective_id = objective["id"]
+	if objective_id != objective["id"]:
+		if hint_is_guide:
+			hint.visible = false
+			hint_is_guide = false
+		objective_id = objective["id"]
+	objective_idle_seconds = story_state.guide_idle_seconds
+	objective_reminder_shown = story_state.guide_reminder_shown
+	hint_level = story_state.guide_hint_level
+	return objective
+
+
+func _point_wick(objective: Dictionary) -> bool:
+	var scene := get_parent()
+	if scene == null or scene.scene_file_path != objective["focus_scene"]:
+		return false
+	var focus: Vector2 = objective["focus_position"]
+	if focus.x < 0.0:
+		return false
+	var wick: Node = scene.get_node_or_null("Wick")
+	if wick != null:
+		wick.react_to(focus.x, focus.y)
+		return true
+	return false
+
+
+func is_action_prompt() -> bool:
+	return prompt.visible and prompt_has_world_action
+
+
+func examine_hotspot(hotspot: Node) -> void:
+	show_hint(InteractionGuide.examination(hotspot), 6.0)
+
+
+func examine_named_prompt() -> void:
+	show_hint(InteractionGuide.examination_named(prompt_name), 6.0)
 
 
 func show_prompt(name: String, screen_x: float, action: String = "INSPECT", screen_y: float = 415.0) -> void:
-	prompt.text = "E  %s  ·  %s" % [action, name.to_upper()]
-	prompt.position = Vector2(clampf(screen_x - 160.0, 24.0, 1328.0), clampf(screen_y, 24.0, 865.0))
+	prompt_name = name
+	prompt_has_world_action = InteractionGuide.is_action_label(action)
+	prompt.text = ("%s  EXAMINE  ·  %s\n%s  %s" % [get_node("/root/GameSettings").key_label("interact"), name.to_upper(), get_node("/root/GameSettings").key_label("world_action"), action]) if prompt_has_world_action else "%s  %s  ·  %s" % [get_node("/root/GameSettings").key_label("interact"), action, name.to_upper()]
+	prompt.position = Vector2(clampf(screen_x - 240.0, 24.0, 1168.0), clampf(screen_y, 24.0, 850.0))
 	prompt.visible = true
 
 
 func hide_prompt() -> void:
 	prompt.visible = false
+	prompt_has_world_action = false
 
 
 func show_hint(message: String, seconds: float = 4.0) -> void:
-	hint.text = message
+	hint.text = get_node("/root/GameSettings").control_text(message)
 	hint_deadline = Time.get_ticks_msec() + int(seconds * 1000.0)
 	hint.visible = true
+	hint_is_guide = false
 
 
 func show_dialogue(line: String, speaker_position: Vector2, beside_high_speaker: bool = false) -> void:
 	hide_modals()
 	dialogue_text.text = line
-	var bubble_size := Vector2(760, 190)
+	var body_height := maxi(122, dialogue_text.get_line_count() * dialogue_text.get_line_height() + 12)
+	dialogue_text.size.y = body_height
+	var bubble_size := Vector2(760, maxi(190, body_height + 68))
+	dialogue_continue.position.y = bubble_size.y - 45
 	if beside_high_speaker:
 		var side_position := Vector2(clampf(speaker_position.x - 930.0, 24.0, 888.0), 35.0)
 		dialogue_panel.position = side_position
@@ -549,22 +653,22 @@ func show_dialogue(line: String, speaker_position: Vector2, beside_high_speaker:
 		var tail_tip := Vector2(speaker_position.x - side_position.x - 55.0, speaker_position.y - side_position.y - 175.0)
 		dialogue_tail.position = side_position
 		dialogue_tail.polygon = PackedVector2Array([
-			Vector2(bubble_size.x - 3.0, 125.0),
-			Vector2(bubble_size.x - 3.0, 166.0),
+			Vector2(bubble_size.x - 3.0, bubble_size.y - 65.0),
+			Vector2(bubble_size.x - 3.0, bubble_size.y - 24.0),
 			tail_tip
 		])
 		dialogue_tail_outline.position = side_position
 		dialogue_tail_outline.points = PackedVector2Array([
-			Vector2(bubble_size.x - 3.0, 125.0),
+			Vector2(bubble_size.x - 3.0, bubble_size.y - 65.0),
 			tail_tip,
-			Vector2(bubble_size.x - 3.0, 166.0)
+			Vector2(bubble_size.x - 3.0, bubble_size.y - 24.0)
 		])
 		dialogue.visible = true
 		hide_prompt()
 		return
 	var bubble_position := Vector2(
 		clampf(speaker_position.x - bubble_size.x * 0.5, 24.0, 888.0),
-		clampf(speaker_position.y - 520.0, 35.0, 570.0)
+		clampf(speaker_position.y - 520.0, 35.0, 890.0 - bubble_size.y)
 	)
 	dialogue_panel.position = bubble_position
 	dialogue_panel.size = bubble_size
@@ -605,6 +709,7 @@ func show_gauge_inspection(recorded: bool) -> void:
 
 func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false, room_compared: bool = false, incident_complete: bool = false, room_prepared: bool = false, incident_active: bool = false, service_gate_open: bool = false, service_road_end_reached: bool = false) -> void:
 	hide_modals()
+	var objective := _sync_objective()
 	var discovered: Dictionary = {}
 	for entry in entries:
 		discovered[entry["id"]] = true
@@ -653,6 +758,28 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 		]
 		if discovered.has(&"chapter1-departure"):
 			journal_progress.text += "\n\nCHAPTER I  COMPLETE"
+	var thread_text := ""
+	if discovered.has(&"machine-reading") or discovered.has(&"leak-observation") or discovered.has(&"newton-note"):
+		var thread := PackedStringArray(["OBSERVATION THREAD"])
+		if discovered.has(&"machine-reading"):
+			thread.append("• Needle: one division above the old mark, still below red.")
+		if discovered.has(&"leak-observation"):
+			thread.append("• Leak: the water still falls; the bucket changes where it lands.")
+		if discovered.has(&"newton-note"):
+			thread.append("• Torn page: F = ma and an unfinished basket sketch in my hand.")
+		if discovered.has(&"machine-reading") and discovered.has(&"leak-observation"):
+			thread.append("Compare: both are observations before any cause is known.")
+		if discovered.has(&"newton-note"):
+			thread.append("The formula's meaning is still unknown. Keep the page for comparison.")
+		thread_text = "\n".join(thread) + "\n\n"
+	if not objective.is_empty():
+		var story_state: Node = get_node("/root/PrologueState")
+		var clues: PackedStringArray = StoryGuide.discovered_clues(story_state, objective)
+		var clue_text := "\n• ".join(clues) if not clues.is_empty() else "No related observation recorded yet."
+		var hint_status := "%s  OPTIONAL HINT" % get_node("/root/GameSettings").key_label("request_hint") if get_node("/root/GameSettings").hints_enabled else "OPTIONAL HINTS OFF"
+		journal_progress.text = "CURRENT OBJECTIVE\n%s\nNEXT RELEVANT AREA  %s\n\nDISCOVERED CLUES\n• %s\n\n%s\n\n" % [objective["title"], objective["next_area"], clue_text, hint_status] + thread_text + journal_progress.text
+	else:
+		journal_progress.text = thread_text + journal_progress.text
 	var progress_lines: int = maxi(journal_progress.get_line_count(), journal_progress.text.count("\n") + 1)
 	var progress_height: float = maxf(390.0, float(progress_lines) * 37.0 + 24.0)
 	journal_progress.custom_minimum_size.y = progress_height
@@ -660,7 +787,7 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	var lines := PackedStringArray()
 	for entry in entries:
 		lines.append("• %s\n%s" % [entry["title"], entry["body"]])
-	journal_entries.text = "\n\n".join(lines) if not lines.is_empty() else "Nothing recorded yet.\n\nLook around the hall and press E near an object."
+	journal_entries.text = "\n\n".join(lines) if not lines.is_empty() else get_node("/root/GameSettings").control_text("Nothing recorded yet.\n\nLook around the hall and press E to examine an object.")
 	journal_scroll.scroll_vertical = 0
 	journal_progress_scroll.scroll_vertical = 0
 	journal.visible = true
@@ -696,18 +823,22 @@ func show_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool 
 func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: bool = false, operation: StringName = &"", speed: float = 0.0, tension_level: float = 0.0, safety_stop: bool = false) -> void:
 	shaft_winch_fill.size.x = 700.0 * clampf(progress, 0.0, 1.0)
 	shaft_winch_footer.text = "ESC  CLOSE  ·  Closing engages the brake" if operation == &"passenger_descent" else "ESC  CLOSE  ·  Release keys to hold position"
+	shaft_winch_measure.text = "Rope marks: ~%d  ·  Basket marks: %d" % [roundi(progress * (200.0 if passenger_test else 100.0)), roundi(progress * 100.0)]
 	if operation == &"load_tension":
+		shaft_winch_measure.text = "Indicator: empty mark → occupied mark (rope tension, not mass)"
 		shaft_winch_fill.size.x = 700.0 * clampf(tension_level, 0.0, 1.0)
 		shaft_winch_path.text = "Erin is inside. The upper catch stays secured while the winch takes up slack."
 		shaft_winch_status.text = "Rope tension: %s" % ("stable" if tension_level >= 0.995 else "increasing" if tension_level > 0.01 else "not yet checked")
-		shaft_winch_instruction.text = "The brake held. Close this view, then E at the winch to check the load." if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
+		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("The brake held. Close this view, then F at the winch to check the load.") if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
 		return
 	if operation == &"passenger_descent":
+		shaft_winch_measure.text = "Two supporting strands · brake before the lower berth"
 		shaft_winch_path.text = "Erin: The lower berth is close. Leave room to brake." if progress <= 0.25 else "Erin is aboard. The rope supports the basket; the upper catch is released."
 		shaft_winch_status.text = "Travel left: %d%%  ·  Descent: %s" % [roundi(progress * 100.0), "stopped" if speed < 0.002 else "slow" if speed < 0.055 else "gaining speed"]
 		shaft_winch_instruction.text = "Safety catch engaged. Press Space to reset, then lower carefully." if safety_stop else "Brake early: allow room to stop." if progress <= 0.2 else "Hold ↓ to pay out rope. Release to slow; Space brakes harder."
 		return
 	if operation == &"passenger_raise":
+		shaft_winch_measure.text = "Same empty basket: ~2 rope marks per basket mark of rise"
 		shaft_winch_path.text = "The empty basket runs on two supporting strands. Bring it level with Erin's ledge."
 		shaft_winch_status.text = "Empty basket: %d%% of the full lift" % roundi(progress * 100.0)
 		shaft_winch_instruction.text = "Basket level: release the key, close this view, then call Erin." if progress >= 0.995 else "Hold ↑ to raise or ↓ to lower. Release to stop."
@@ -719,12 +850,13 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 	else:
 		shaft_winch_path.text = "One cable crosses the fixed pulley and holds the basket."
 		shaft_winch_status.text = "Basket position: %d%% of the lift" % roundi(progress * 100.0)
+		shaft_winch_measure.text = "One support strand · fixed wheel redirects the pull"
 	if passenger_test:
 		return
 	if rail_removed:
 		shaft_winch_instruction.text = "Hold ↓ to lower the empty basket."
 	elif progress >= 0.995:
-		shaft_winch_instruction.text = "Basket at Erin's ledge. E to dock and pass the tools."
+		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("Basket at Erin's ledge. F to dock and pass the tools.")
 	else:
 		shaft_winch_instruction.text = "Hold ↑ to reel in. Hold ↓ to lower."
 
@@ -749,7 +881,7 @@ func update_shaft_load_check(checked: Array[StringName], selected: int) -> void:
 	for index in 4:
 		lines.append("%s  %s  %s" % ["›" if index == selected else " ", "✓" if checked.has(ids[index]) else "○", titles[index]])
 	shaft_load_selection.text = "\n".join(lines)
-	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else "E to compare: " + details[selected]
+	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else get_node("/root/GameSettings").control_text("F to compare: ") + details[selected]
 
 
 func show_shaft_rigging(step: int) -> void:
@@ -764,7 +896,7 @@ func show_engine_maintenance(title: String, body: String, status: String, footer
 	engine_title.text = title
 	engine_body.text = body
 	engine_status.text = status
-	engine_footer.text = footer
+	engine_footer.text = get_node("/root/GameSettings").control_text(footer)
 	engine_panel.visible = true
 	hide_prompt()
 
@@ -772,7 +904,7 @@ func show_engine_maintenance(title: String, body: String, status: String, footer
 func update_engine_maintenance(status: String, footer: String = "") -> void:
 	engine_status.text = status
 	if footer != "":
-		engine_footer.text = footer
+		engine_footer.text = get_node("/root/GameSettings").control_text(footer)
 
 
 func update_shaft_rigging(step: int) -> void:
@@ -793,7 +925,7 @@ func show_emergency_console(valve_two_open: bool, valve_four_open: bool, drive_s
 
 
 func update_emergency_console(valve_two_open: bool, valve_four_open: bool, drive_stopped: bool, selected_lever: int) -> void:
-	var selected_name := "LEVER 2 · RETURN" if selected_lever == 2 else "LEVER 4 · ISOLATION"
+	var selected_name := "LEVER 2 · RETURN" if selected_lever == 2 else "LEVER 4 · ARCHIVE ISOLATION"
 	emergency_selection.text = "‹  %s  ›" % selected_name
 	emergency_status.text = "Lever 2: %s     ·     Lever 4: %s     ·     Drive: %s" % [
 		"open" if valve_two_open else "pending",
@@ -824,8 +956,13 @@ func scroll_journal(direction: int) -> void:
 
 func show_pause() -> void:
 	hide_modals()
+	pause_save_error.visible = false
 	pause_menu.visible = true
 	hide_prompt()
+
+
+func show_save_error() -> void:
+	pause_save_error.visible = true
 
 
 func show_chapter_end() -> void:
@@ -922,7 +1059,8 @@ func _page_sketch_stroke(parent: Node2D, points: PackedVector2Array) -> void:
 
 func _label(parent: Control, rect: Rect2, value: String, font_size: int, color: Color) -> Label:
 	var result := Label.new()
-	result.text = value
+	result.text = get_node("/root/GameSettings").control_text(value)
+	result.set_meta("control_base_text", value)
 	result.position = rect.position
 	result.size = rect.size
 	result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

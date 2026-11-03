@@ -31,6 +31,9 @@ func _run() -> void:
 	if engine == null or engine.name != "Chapter1EngineRoom" or engine.kath.position.y != 725.0:
 		_fail("The formal engine room did not open at a safe floor position.")
 		return
+	if engine.drive_isolator_lamp.color.r < 0.8:
+		_fail("The Castle feed did not appear connected before isolation.")
+		return
 	_dismiss(engine)
 	engine._inspect(engine.maintenance_drive)
 	if engine.mode != &"dialogue":
@@ -52,8 +55,42 @@ func _run() -> void:
 		engine._inspect(hotspot)
 		_dismiss(engine)
 	_dismiss(engine)
+	if not state.has_note(&"engine-feed-evidence"):
+		_fail("The dark home signal did not preserve evidence distinguishing the two drives.")
+		return
+	if state.flags.get("engine_fault_traced", false):
+		_fail("The fault chain was recorded before the player compared its clues.")
+		return
+	engine._inspect(engine.wall_chart)
+	if engine.mode != &"hypothesis":
+		_fail("The wall chart did not offer the clue comparison.")
+		return
+	engine._unhandled_input(_key(KEY_RIGHT))
+	engine._unhandled_input(_key(KEY_ENTER))
+	_dismiss(engine)
+	if state.flags.get("engine_fault_traced", false):
+		_fail("The signal-first sequence was accepted despite the mechanical linkage evidence.")
+		return
+	engine._inspect(engine.wall_chart)
+	engine._unhandled_input(_key(KEY_LEFT))
+	engine._unhandled_input(_key(KEY_ENTER))
+	if engine.mode != &"repair_order":
+		_fail("The causal comparison did not lead to a repair-order decision.")
+		return
+	engine._unhandled_input(_key(KEY_RIGHT))
+	engine._unhandled_input(_key(KEY_ENTER))
+	_dismiss(engine)
+	if state.flags.get("engine_fault_traced", false):
+		_fail("Unsafe repair order was accepted.")
+		return
+	engine._inspect(engine.wall_chart)
+	engine._unhandled_input(_key(KEY_LEFT))
+	engine._unhandled_input(_key(KEY_ENTER))
+	engine._unhandled_input(_key(KEY_LEFT))
+	engine._unhandled_input(_key(KEY_ENTER))
+	_dismiss(engine)
 	if not state.flags.get("engine_fault_traced", false) or not state.has_note(&"engine-fault-chain"):
-		_fail("Independent observations did not establish the fault chain.")
+		_fail("Confirmed clue comparison did not establish the fault chain.")
 		return
 	engine._inspect(engine.obstruction)
 	_dismiss(engine)
@@ -62,13 +99,16 @@ func _run() -> void:
 		return
 	engine._inspect(engine.isolator)
 	_dismiss(engine)
+	if engine.drive_isolator_lamp.color.r > 0.6:
+		_fail("The Castle feed lamp did not change when the drive was isolated.")
+		return
 	engine._inspect(engine.obstruction)
 	_dismiss(engine)
 	if not state.flags.get("engine_jam_cleared", false) or engine.jam_debris.visible:
 		_fail("The isolated linkage did not clear visually and in shared state.")
 		return
 	engine._inspect(engine.linkage)
-	engine._unhandled_input(_key(KEY_E))
+	engine._unhandled_input(_key(KEY_F))
 	engine._unhandled_input(_key(KEY_ESCAPE))
 	if state.flags.get("engine_checks_verified", false) or state.has_note(&"engine-home-stop-test"):
 		_fail("Cancelling the dry run committed a partial check.")
@@ -77,7 +117,7 @@ func _run() -> void:
 	for index in [2, 0, 1]:
 		while engine.check_selection != index:
 			engine._unhandled_input(_key(KEY_D))
-		engine._unhandled_input(_key(KEY_E))
+		engine._unhandled_input(_key(KEY_F))
 	engine._unhandled_input(_key(KEY_ENTER))
 	_dismiss(engine)
 	if not state.flags.get("engine_checks_verified", false):
@@ -132,7 +172,8 @@ func _run() -> void:
 	observatory._unhandled_input(_key(KEY_ESCAPE))
 	observatory._unhandled_input(_key(KEY_ENTER))
 	observatory.kath.position.x = 1490.0
-	observatory._unhandled_input(_key(KEY_E))
+	observatory._process(0.0)
+	observatory._unhandled_input(_key(KEY_F))
 	await process_frame
 	engine = current_scene
 	if engine == null or engine.name != "Chapter1EngineRoom" or engine.kath.position.x < 1300.0 or state.notes.size() != note_count:

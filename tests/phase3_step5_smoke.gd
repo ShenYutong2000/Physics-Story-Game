@@ -95,6 +95,9 @@ func _run() -> void:
 	if peak < 0.2 or peak > shaft.EMPTY_TEST_LIMIT + 0.001 or float(state.flags.get("shaft_empty_test_peak", 0.0)) < 0.2 or mark_before.distance_to(shaft.rope_mark_near.position) < 10.0:
 		_fail("The passenger rig did not make a bounded short lift.")
 		return
+	if not shaft.ui.shaft_winch_measure.text.contains("Rope marks: ~") or shaft.sound_player.pitch_scale >= 1.0:
+		_fail("The two-strand lift did not show a rope-mark and winch-sound comparison.")
+		return
 	shaft._process_winch(0.1)
 	if not state.flags.get("shaft_empty_test_held", false) or not is_equal_approx(shaft.basket_progress, peak):
 		_fail("Releasing the winch failed to hold the empty basket.")

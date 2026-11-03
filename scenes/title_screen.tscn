@@ -81,12 +81,22 @@ theme_override_colors/font_color = Color(0.98, 0.88, 0.66, 1)
 theme_override_font_sizes/font_size = 34
 text = "   CONTINUE"
 
+[node name="Settings" type="Label" parent="Menu"]
+layout_mode = 0
+offset_left = 350.0
+offset_top = 518.0
+offset_right = 770.0
+offset_bottom = 573.0
+theme_override_colors/font_color = Color(0.98, 0.88, 0.66, 1)
+theme_override_font_sizes/font_size = 34
+text = "   SETTINGS"
+
 [node name="Help" type="Label" parent="Menu"]
 layout_mode = 0
 offset_left = 170.0
-offset_top = 552.0
+offset_top = 597.0
 offset_right = 882.0
-offset_bottom = 638.0
+offset_bottom = 670.0
 theme_override_colors/font_color = Color(0.89, 0.9, 0.93, 1)
 theme_override_font_sizes/font_size = 22
 text = "ENTER START"
