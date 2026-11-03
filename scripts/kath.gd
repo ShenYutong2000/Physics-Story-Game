@@ -10,9 +10,9 @@ const IDLE_SOURCE_HEIGHT: float = 771.0
 const WALK_SOURCE_HEIGHT: float = 484.0
 const CLIMB_SOURCE_HEIGHT: float = 753.0
 
-@export var walk_speed: float = 230.0
-@export var acceleration: float = 900.0
-@export var deceleration: float = 1200.0
+@export var walk_speed: float = 299.0
+@export var acceleration: float = 1170.0
+@export var deceleration: float = 1560.0
 @export var push_speed: float = 150.0
 @export var climb_speed: float = 145.0
 @export var floor_y: float = 778.0
@@ -115,6 +115,7 @@ func stop_climbing() -> void:
 
 func _set_animation(walking: bool) -> void:
 	var frames: SpriteFrames = WALK_FRAMES if walking else IDLE_FRAMES
+	animated_sprite.speed_scale = 1.3 if walking else 1.0
 	if animated_sprite.sprite_frames == frames:
 		is_walking = walking
 		return
@@ -128,6 +129,7 @@ func _set_animation(walking: bool) -> void:
 
 func _set_climb_animation() -> void:
 	is_walking = false
+	animated_sprite.speed_scale = 1.0
 	if animated_sprite.sprite_frames != CLIMB_FRAMES:
 		animated_sprite.sprite_frames = CLIMB_FRAMES
 		animated_sprite.scale = Vector2.ONE * (DISPLAY_HEIGHT / CLIMB_SOURCE_HEIGHT)
