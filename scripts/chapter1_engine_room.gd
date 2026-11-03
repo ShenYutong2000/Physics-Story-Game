@@ -24,6 +24,7 @@ const OBSERVATION_FLAGS := ["engine_chart_seen", "engine_jam_seen", "engine_link
 @onready var brake_pawl: Sprite2D = $BrakePawl
 @onready var stop_signal: Sprite2D = $StopSignal
 @onready var jam_debris: Sprite2D = $JamDebris
+@onready var drive_isolator_lamp: Polygon2D = $DriveIsolatorLamp
 @onready var shaft_return: Node2D = $ShaftReturn
 @onready var wall_chart: Node2D = $WallChart
 @onready var isolator: Node2D = $Isolator
@@ -42,6 +43,8 @@ var dialogue_index := 0
 var dialogue_speaker := Vector2.ZERO
 var pending_action: StringName = &""
 var check_selection := 0
+var hypothesis_selection := -1
+var repair_selection := -1
 var pending_checks: Array[StringName] = []
 var return_progress := 0.0
 var sound_player: AudioStreamPlayer
@@ -57,13 +60,14 @@ func _ready() -> void:
 	kath.position = Vector2(1450.0 if spawn_tag == &"from-observatory" else 265.0, FLOOR_Y)
 	return_progress = clampf(float(state.flags.get("engine_return_progress", 0.0)), 0.0, 1.0)
 	sound_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(sound_player)
 	sound_player.stream = CLICK_SOUND
 	sound_player.volume_db = -14.0
 	add_child(sound_player)
 	_refresh_art()
 	if spawn_tag == &"from-maintenance-shaft" and not state.flags.get("engine_intro_seen", false):
 		state.flags["engine_intro_seen"] = true
-		_start_dialogue(["Erin: This is the fixed service core. The wing turned past its normal stop, but the inverted catch held it.", "Kath: Let's follow the parts that should have stopped it. I want to know what actually failed."], &"", erin.global_position)
+		_start_dialogue(["Erin: This fixed core houses the Castle's ring drive. Its overload tripped when the inverted catch held the wing, but the feed is still connected.", "Kath: The Archive's drive was already off. Let's inspect this separate home stop before touching the Castle's isolator."], &"", erin.global_position)
 	elif state.castle_pose == &"restored":
 		ui.show_hint("The wing is secured at home. The observatory passage is open.", 5.0)
 	elif state.flags.get("engine_checks_verified", false):
@@ -99,6 +103,8 @@ func _process(delta: float) -> void:
 		action = "TEST"
 	elif closest == maintenance_drive and state.flags.get("engine_checks_verified", false) and state.castle_pose != &"restored":
 		action = "OPERATE"
+	elif closest == wall_chart and _observations_complete() and not state.flags.get("engine_fault_traced", false):
+		action = "COMPARE CLUES"
 	ui.show_prompt(closest.display_name, closest.approach_x, action, 315.0)
 
 
@@ -114,11 +120,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -126,12 +138,43 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
 		get_viewport().set_input_as_handled()
 		_advance_dialogue()
+	elif mode == &"hypothesis":
+		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			get_viewport().set_input_as_handled()
+			hypothesis_selection = 0 if event.is_action_pressed("move_left") else 1
+			_update_hypothesis()
+		elif event.is_action_pressed("advance_dialogue"):
+			get_viewport().set_input_as_handled()
+			if hypothesis_selection < 0:
+				_update_hypothesis()
+			elif hypothesis_selection == 0:
+				repair_selection = -1
+				_set_mode(&"repair_order")
+				_update_repair_order()
+			else:
+				_close_overlay()
+				_start_dialogue(["A failed signal alone would not keep the mechanical brake pawl out of its seat. The jammed rod can explain both the dark signal and the missed brake.", "I should compare the linkage and brake again before choosing a repair sequence."])
+	elif mode == &"repair_order":
+		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			get_viewport().set_input_as_handled()
+			repair_selection = 0 if event.is_action_pressed("move_left") else 1
+			_update_repair_order()
+		elif event.is_action_pressed("advance_dialogue"):
+			get_viewport().set_input_as_handled()
+			if repair_selection < 0:
+				_update_repair_order()
+			elif repair_selection == 0:
+				_close_overlay()
+				_confirm_fault_chain()
+			else:
+				_close_overlay()
+				_start_dialogue(["That order would put my hands beside a rod that the live drive can still move. Isolate the drive first, then clear and test the stop path."])
 	elif mode == &"verification":
 		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 			get_viewport().set_input_as_handled()
 			check_selection = posmod(check_selection + (-1 if event.is_action_pressed("move_left") else 1), 3)
 			_update_check_panel()
-		elif event.is_action_pressed("interact"):
+		elif event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var check_id: StringName = CHECK_IDS[check_selection]
 			if not pending_checks.has(check_id):
@@ -201,7 +244,12 @@ func _inspect(hotspot: Node) -> void:
 		elif state.flags.get("observatory_page_stitched", false) and state.flags.get("observatory_archive_complete", false) and state.castle_pose == &"restored":
 			_start_dialogue(["Kath: The castle record has both our names. The Floating Isles station was waiting for a comparison from us.", "Erin: I'll keep this castle running and try to restore the station link. Follow the unfinished comparison.", "Kath: If one page could help us, imagine what the rest might hold."], &"finish_chapter", erin.global_position)
 	elif hotspot == wall_chart:
-		_start_dialogue(["The castle tests orientation by turning one wing. The central tower stays upright.", "The inverted maintenance catch is separate from the normal-position linkage."], &"observe_chart")
+		if _observations_complete() and not state.flags.get("engine_fault_traced", false):
+			hypothesis_selection = -1
+			_set_mode(&"hypothesis")
+			_update_hypothesis()
+		else:
+			_start_dialogue(["This chart keeps the central tower fixed while one observatory wing turns in its ring.", "The Archive line supplies an auxiliary signal, not the Castle ring motor. Its local home rod trips the signal and brake; an inverted catch is separate."], &"observe_chart")
 	elif hotspot == obstruction:
 		if state.flags.get("engine_jam_cleared", false):
 			_start_dialogue(["The travel slot is clear. There are still damp marks where the broken seal let water and grit collect."])
@@ -219,14 +267,14 @@ func _inspect(hotspot: Node) -> void:
 	elif hotspot == brake_assembly:
 		_start_dialogue(["The home rod is stuck, so the normal brake pawl cannot reach its seat.", "A separate bolt holds the wing at the inverted maintenance mark. It stopped the wing here."], &"observe_brake")
 	elif hotspot == stop_indicator:
-		_start_dialogue(["The normal-position signal never lit when the wing passed home.", "The library drive was already off. That alone could not engage the castle's own brake."], &"observe_signal")
+		_start_dialogue(["The home signal stayed dark as the wing passed level. The ring-drive lamp remained lit after Kath released the test lever.", "At the inverted catch the motor fell silent and the overload tripped. The Castle feed is still connected; the Archive drive was already off."], &"observe_signal")
 	elif hotspot == isolator:
 		if state.flags.get("engine_drive_isolated", false):
-			_start_dialogue(["The automatic drive remains isolated. The separate maintenance drive can be used only after the stop path is tested."])
+			_start_dialogue(["The ring-drive feed lamp is dark: the automatic circuit is isolated. The separate maintenance drive can be used only after the stop path is tested."])
 		elif state.flags.get("engine_fault_traced", false):
-			_start_dialogue(["Erin: The backup catch holds the wing. I'll isolate the automatic drive; then we can clear the jammed rod without unexpected movement."], &"isolate_drive", erin.global_position)
+			_start_dialogue(["Erin: The overload stopped the motor, but that is not a safe isolator. I'll disconnect the automatic ring drive before we clear the jammed rod."], &"isolate_drive", erin.global_position)
 		else:
-			_start_dialogue(["This switch isolates the automatic drive. First I should trace the stop signal, the rod and the backup catch so we know what we are handling."])
+			_start_dialogue(["The red feed lamp shows the automatic ring-drive circuit remains connected. First I should trace the rod, signal, brake and backup catch; then isolate it before touching the track."])
 	elif hotspot == maintenance_drive:
 		if state.castle_pose == &"restored":
 			_start_dialogue(["The dial reads home. The brake and normal lock hold the wing; the maintenance drive is stopped."])
@@ -269,7 +317,7 @@ func _complete_dialogue_action(action: StringName) -> void:
 	match action:
 		&"observe_chart":
 			state.flags["engine_chart_seen"] = true
-			state.add_note_once(&"engine-orientation-chart", "Why the castle turns", "A fixed tower supports a rotating observatory wing. The inverted maintenance catch and normal-position lock are separate mechanisms.")
+			state.add_note_once(&"engine-orientation-chart", "Two drives, one rotating wing", "The tower and service core are fixed. The Castle's own ring motor turns the observatory wing; the Archive line is an auxiliary signal and drive, not its sole power. The normal home stop and inverted catch are separate.")
 		&"observe_jam":
 			state.flags["engine_jam_seen"] = true
 			state.add_note_once(&"engine-jammed-track", "Wet track", "Water marks, grit and a loose fragment are wedged in the normal-position linkage. The route by which the water arrived is not confirmed.")
@@ -279,10 +327,12 @@ func _complete_dialogue_action(action: StringName) -> void:
 			state.flags["engine_brake_seen"] = true
 		&"observe_signal":
 			state.flags["engine_signal_seen"] = true
+			state.add_note_once(&"engine-feed-evidence", "Castle drive evidence", "The Archive drive was stopped before arrival. During the Castle's return test, its ring-drive lamp stayed lit after the selector was released and the home signal stayed dark. At the inverted catch, the motor fell silent, but the feed isolator remained connected. The two controls are distinct.")
 		&"isolate_drive":
 			if state.flags.get("engine_fault_traced", false):
 				state.flags["engine_drive_isolated"] = true
 				sound_player.play()
+				_refresh_art()
 				ui.show_hint("Automatic drive isolated. Clear the blocked track.", 5.0)
 		&"clear_jam":
 			if state.flags.get("engine_drive_isolated", false):
@@ -306,19 +356,41 @@ func _complete_dialogue_action(action: StringName) -> void:
 func _maybe_trace_fault() -> void:
 	if state.flags.get("engine_fault_traced", false):
 		return
+	if not _observations_complete():
+		return
+	if not state.flags.get("engine_compare_prompt_seen", false):
+		state.flags["engine_compare_prompt_seen"] = true
+		ui.show_hint("The marks form a sequence. Compare them at the wall chart.", 6.0)
+
+
+func _observations_complete() -> bool:
 	for flag in OBSERVATION_FLAGS:
 		if not state.flags.get(flag, false):
-			return
+			return false
+	return true
+
+
+func _update_hypothesis() -> void:
+	var selected := "Choose with ← / →" if hypothesis_selection < 0 else "A selected" if hypothesis_selection == 0 else "B selected"
+	ui.show_engine_maintenance("TRACE THE HOME STOP", "The Castle motor ran after the selector was released. The home rod is jammed, its signal stayed dark, and the brake missed its seat. Which order fits?", "← A  Rod jams → signal/brake miss → catch holds\n→ B  Signal fails → rod jams → brake misses\n\n%s" % selected, "← / → CHOOSE   ·   ENTER TEST   ·   ESC CANCEL")
+
+
+func _update_repair_order() -> void:
+	var selected := "Choose with ← / →" if repair_selection < 0 else "A selected" if repair_selection == 0 else "B selected"
+	ui.show_engine_maintenance("PLAN A SAFE REPAIR", "The inverted catch currently holds the wing. The automatic drive is still connected, and the normal stop rod is jammed. What should we do first?", "← A  Isolate → clear → dry-run test → return\n→ B  Clear → return → test → isolate\n\n%s" % selected, "← / → CHOOSE   ·   ENTER CONFIRM   ·   ESC CANCEL")
+
+
+func _confirm_fault_chain() -> void:
 	state.flags["engine_fault_traced"] = true
-	state.add_note_once(&"engine-fault-chain", "Missed home stop", "The normal-position rod was blocked by wet debris. Its stop signal and brake did not engage as the wing crossed home. After the remote drive stopped, the moving wing continued until the separate inverted catch held it. The water's source still needs checking.")
-	_start_dialogue(["Kath: The blocked rod kept the home signal and brake from engaging.", "Kath: The wing kept turning after the drive stopped, until the inverted catch held it.", "Erin: The positions match. Isolate this drive, clear the track, then test each part of the home stop."], &"", erin.global_position)
+	state.add_note_once(&"engine-fault-chain", "Missed home stop", "The jammed home rod explains why the signal and brake missed the home position while the Castle's ring drive kept turning. The inverted catch held the wing and tripped the motor overload. This is the best explanation for this test, not proof of where the water entered. We chose to isolate, clear and dry-run the stop path before returning the wing.")
+	_start_dialogue(["Kath: The jammed rod explains the dark home signal and the missed brake. The Archive shutdown did not stop this Castle motor.", "Erin: The inverted catch and overload held it here. Isolate the ring drive, clear the track, then test the stop path before a slow return."], &"", erin.global_position)
 
 
 func _start_verification() -> void:
 	pending_checks.clear()
 	check_selection = 0
 	_set_mode(&"verification")
-	ui.show_engine_maintenance("HOME LINKAGE · ISOLATED DRY RUN", "Erin turns the handwheel through its normal-position travel while the automatic drive is isolated. Check each response before a powered return.", _check_status(), "← / → SELECT   ·   E CHECK   ·   ENTER CONFIRM   ·   ESC CANCEL")
+	ui.show_engine_maintenance("HOME LINKAGE · ISOLATED DRY RUN", "Erin turns the handwheel through its normal-position travel while the automatic drive is isolated. Check each response before a powered return.", _check_status(), "← / → SELECT   ·   F CHECK   ·   ENTER CONFIRM   ·   ESC CANCEL")
 
 
 func _check_status() -> String:
@@ -379,7 +451,7 @@ func _complete_restoration() -> void:
 	return_progress = 1.0
 	state.flags["engine_return_progress"] = 1.0
 	state.flags["engine_restored"] = true
-	state.add_note_once(&"engine-wing-restored", "Wing returned to home", "After the wet obstruction was cleared and the stop path passed a dry run, the maintenance drive returned the wing slowly. At home, the stop signal changed, the brake engaged and the normal lock seated. The passage to the observatory is aligned again.")
+	state.add_note_once(&"engine-wing-restored", "Wing returned to home", "With the automatic ring drive isolated, the cleared stop path passed a dry run. The separate maintenance drive returned the wing slowly; at home, the signal changed, brake engaged and normal lock seated. This return worked under today's load and speed. The water's route and long-term reliability still need checking.")
 	sound_player.play()
 	_refresh_art()
 	_start_dialogue(["The dial reaches home. The signal changes, the brake catches, and the normal lock seats.", "The wing stays still when Kath releases the drive.", "Erin: The observatory passage lines up again. We should check its work records next."])
@@ -394,6 +466,7 @@ func _refresh_art() -> void:
 	var progress: float = 1.0 if restored else return_progress
 	window_wing_pivot.rotation = lerpf(state.castle_pose_angle_radians(&"inverted"), state.castle_pose_angle_radians(&"restored"), progress)
 	jam_debris.visible = not cleared and not restored
+	drive_isolator_lamp.color = Color("526b69") if state.flags.get("engine_drive_isolated", false) or restored else Color("e97d4a")
 	normal_linkage.position = Vector2(852.0 + (25.0 if restored else 12.0 if cleared else 0.0), 460.0)
 	backup_lock.position.y = 250.0 if restored or progress > 0.01 else 310.0
 	brake_wheel.modulate = Color.WHITE if verified or restored else Color(0.72, 0.74, 0.82, 1.0)

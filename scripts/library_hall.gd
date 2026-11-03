@@ -36,9 +36,11 @@ func _ready() -> void:
 	archive_door.exit_requested.connect(_on_exit_requested)
 	upper_stacks_entry.exit_requested.connect(_on_exit_requested)
 	one_shot_audio = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(one_shot_audio)
 	one_shot_audio.name = "OneShotAudio"
 	add_child(one_shot_audio)
 	var ambience := AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "HallAmbience"
 	ambience.stream = AMBIENCE
 	ambience.volume_db = -17.0
@@ -117,12 +119,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			# An exit removes this scene immediately, so consume the key first.
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

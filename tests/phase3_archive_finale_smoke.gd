@@ -69,6 +69,9 @@ func _run() -> void:
 	if not state.has_note(&"observatory-work-record") or not state.notes[-1]["body"].contains("Kath"):
 		_fail("The signed Grand Archive work record was not preserved.")
 		return
+	if not String(state.notes[-1]["body"]).contains("mass") or not String(state.notes[-1]["body"]).contains("rope pull"):
+		_fail("The work record did not distinguish the measured quantities.")
+		return
 	room._inspect(room.records)
 	room._unhandled_input(_key(KEY_D))
 	room._unhandled_input(_key(KEY_ENTER))
@@ -97,6 +100,9 @@ func _run() -> void:
 	_dismiss(room)
 	if not state.flags.get("observatory_page_stitched", false) or not state.has_note(&"observatory-page-stitched"):
 		_fail("Enter did not restore the leaf to Kath's notebook.")
+		return
+	if not String(state.notes[-1]["body"]).contains("net force") or not String(state.notes[-1]["body"]).contains("friction"):
+		_fail("Kath's final interpretation lacks an explicit condition or uncertainty.")
 		return
 	room._show_journal()
 	if not room.ui.journal_progress.text.contains("OBSERVATORY  4 / 4"):

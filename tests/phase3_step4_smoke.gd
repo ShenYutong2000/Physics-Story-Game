@@ -83,7 +83,8 @@ func _run() -> void:
 		return
 	shaft._unhandled_input(_key(KEY_J))
 	shaft.kath.position.x = 190.0
-	shaft._unhandled_input(_key(KEY_E))
+	shaft._process(0.0)
+	shaft._unhandled_input(_key(KEY_F))
 	await process_frame
 	if current_scene == shaft:
 		_fail("The shaft return route failed during a partial lift.")
@@ -102,13 +103,13 @@ func _run() -> void:
 	if shaft.basket_progress > 1.0 or shaft.basket_progress < 0.995:
 		_fail("The raised basket missed the upper limit.")
 		return
-	shaft._unhandled_input(_key(KEY_E))
+	shaft._unhandled_input(_key(KEY_F))
 	shaft._unhandled_input(_key(KEY_ESCAPE))
 	if state.flags.get("shaft_rail_removed", false):
 		_fail("Cancelling the handoff removed Erin's rail.")
 		return
 	shaft._inspect(shaft.winch_console)
-	shaft._unhandled_input(_key(KEY_E))
+	shaft._unhandled_input(_key(KEY_F))
 	shaft._unhandled_input(_key(KEY_ENTER))
 	shaft._unhandled_input(_key(KEY_ENTER))
 	if not state.flags.get("shaft_rail_removed", false) or shaft.bent_rail.visible or not shaft.open_rail.visible:

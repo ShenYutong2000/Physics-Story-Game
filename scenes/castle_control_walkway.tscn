@@ -69,6 +69,18 @@ texture = ExtResource("15_hatch")
 scale = Vector2(0.25, 0.25)
 visible = false
 
+[node name="ArchiveLineLamp" type="Polygon2D" parent="."]
+position = Vector2(617, 457)
+z_index = -5
+color = Color(0.3, 0.37, 0.43, 1)
+polygon = PackedVector2Array(0, -8, 6, -6, 8, 0, 6, 6, 0, 8, -6, 6, -8, 0, -6, -6)
+
+[node name="RingDriveLamp" type="Polygon2D" parent="."]
+position = Vector2(649, 457)
+z_index = -5
+color = Color(0.94, 0.62, 0.28, 1)
+polygon = PackedVector2Array(0, -8, 6, -6, 8, 0, 6, 6, 0, 8, -6, 6, -8, 0, -6, -6)
+
 [node name="ReturnExit" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(150, 755)
 interaction_id = &"castle-control-return"

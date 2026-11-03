@@ -13,6 +13,8 @@ func _run() -> void:
 	var state: Node = root.get_node("PrologueState")
 	state.save_path_override = TEST_SAVE
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".tmp"))
 	var title = TITLE.instantiate()
 	root.add_child(title)
 	current_scene = title
@@ -98,13 +100,15 @@ func _run() -> void:
 	var file := FileAccess.open(TEST_SAVE, FileAccess.WRITE)
 	file.store_string("{\"version\":999,\"scene\":\"res://scenes/library_hall.tscn\"}")
 	file.close()
-	if state.has_checkpoint() or state.resume_checkpoint() or state.notes.size() != before_notes:
-		_fail("An invalid save was offered or altered the current journey.")
+	if not state.has_checkpoint() or not state.resume_checkpoint() or state.notes.size() != before_notes:
+		_fail("A damaged primary save did not recover the last valid backup.")
 		return
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".bak"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE + ".tmp"))
 	state.save_path_override = ""
 	state.persistence_enabled = false
-	print("PHASE3_STEP7_CHECKPOINT_OK: new game, shaft resume, archive state, timer and invalid-save guard")
+	print("PHASE3_STEP7_CHECKPOINT_OK: new game, shaft resume, archive state, timer and backup recovery")
 	quit(0)
 
 

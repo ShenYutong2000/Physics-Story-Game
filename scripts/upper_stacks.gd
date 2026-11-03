@@ -65,17 +65,20 @@ func _ready() -> void:
 	ripple_setup()
 
 	var ambience := AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "UpperStacksAmbience"
 	ambience.stream = AMBIENCE
 	ambience.volume_db = -16.0
 	add_child(ambience)
 	ambience.play()
 	drip_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(drip_player, true)
 	drip_player.name = "DripAudio"
 	drip_player.stream = DRIP_SOUND
 	drip_player.volume_db = -11.0
 	add_child(drip_player)
 	effects_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(effects_player)
 	effects_player.name = "EffectsAudio"
 	add_child(effects_player)
 	if spawn_tag == &"from-hall" and not state.flags.get("stacks_intro_seen", false):
@@ -94,12 +97,12 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
-	if not state.flags.get("stacks_bucket_moved", false):
-		drop_elapsed = fposmod(drop_elapsed + delta, 1.25)
-		rain_drop.position = Vector2(LEAK_X, 282.0 + (drop_elapsed / 1.25) * 352.0)
-		rain_drop.modulate.a = 1.0 if drop_elapsed < 1.12 else 1.0 - (drop_elapsed - 1.12) / 0.13
-	else:
-		rain_drop.visible = false
+	# The bucket changes the landing place, not the direction of the rain.
+	drop_elapsed = fposmod(drop_elapsed + delta, 1.25)
+	rain_drop.visible = true
+	var catch_y := FLOOR_Y - 88.0 if state.flags.get("stacks_bucket_moved", false) else FLOOR_Y - 20.0
+	rain_drop.position = Vector2(LEAK_X, lerpf(282.0, catch_y, drop_elapsed / 1.25))
+	rain_drop.modulate.a = 1.0 if drop_elapsed < 1.12 else 1.0 - (drop_elapsed - 1.12) / 0.13
 	if kath.locomotion_mode == &"push":
 		ladder.position.x = clampf(kath.position.x + 72.0, LADDER_MIN_X, LADDER_MAX_X)
 		state.flags["stacks_ladder_x"] = ladder.position.x
@@ -111,11 +114,11 @@ func _process(delta: float) -> void:
 		kath.stop_climbing()
 		has_climbed_above_floor = false
 		_play_effect(LADDER_SOUND)
-	if not state.flags.get("stacks_bucket_moved", false):
-		drip_timer -= delta
-		if drip_timer <= 0.0 and not drip_player.playing:
-			drip_player.play()
-			drip_timer = 1.7
+	drip_timer -= delta
+	if drip_timer <= 0.0 and not drip_player.playing:
+		drip_player.volume_db = -18.0 if state.flags.get("stacks_bucket_moved", false) else -11.0
+		drip_player.play()
+		drip_timer = 1.7
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
@@ -133,8 +136,8 @@ func _process(delta: float) -> void:
 		ui.show_prompt("Kath's Room", 100.0, "ENTER", 255.0)
 	elif absf(feet_x - RETURN_X) <= 112.0:
 		ui.show_prompt("Stairway to Hall", RETURN_X, "RETURN", 260.0)
-	elif absf(feet_x - LEAK_X) <= 125.0 and not state.flags.get("stacks_bucket_moved", false):
-		ui.show_prompt("Roof seam", LEAK_X, "MOVE BUCKET" if leak_inspected else "INSPECT", 238.0)
+	elif absf(feet_x - LEAK_X) <= 125.0:
+		ui.show_prompt("Roof seam", LEAK_X, "CHECK CATCH" if state.flags.get("stacks_bucket_moved", false) else "MOVE BUCKET" if leak_inspected else "INSPECT", 238.0)
 	elif absf(feet_x - ladder.position.x) <= 112.0:
 		var ladder_aligned := absf(ladder.position.x - CASE_X) <= 80.0
 		var can_climb: bool = bool(state.flags.get("stacks_ladder_locked", true)) \
@@ -166,9 +169,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
-			_handle_interact()
+			if kath.locomotion_mode == &"push":
+				if event.is_action_pressed("world_action"):
+					_handle_interact()
+			elif ui.is_action_prompt():
+				if event.is_action_pressed("world_action"):
+					_handle_interact()
+				else:
+					ui.examine_named_prompt()
+			elif event.is_action_pressed("interact"):
+				_handle_interact()
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()
@@ -219,14 +231,17 @@ func _handle_interact() -> void:
 	if absf(x - RETURN_X) <= 112.0 and kath.locomotion_mode == &"walk":
 		state.travel_to(HALL_SCENE, &"from-upper-stacks")
 		return
-	if absf(x - LEAK_X) <= 125.0 and not state.flags.get("stacks_bucket_moved", false):
-		if not leak_inspected:
+	if absf(x - LEAK_X) <= 125.0:
+		if state.flags.get("stacks_bucket_moved", false):
+			_start_dialogue(["The seam is still leaking. The drops now strike the bucket instead of the boards; the floor is no longer being soaked."])
+		elif not leak_inspected:
 			leak_inspected = true
 			wick.react_to(LEAK_X - 20.0, 342.0)
 			_start_dialogue(["The water is falling in a narrow line from that split in the roof.", "The bucket is close enough to slide beneath it."])
 		else:
 			state.flags["stacks_bucket_moved"] = true
 			bucket.position = Vector2(LEAK_X, FLOOR_Y - 48.0)
+			ripple_setup()
 			state.add_note_once(&"leak-observation", "A leak contained", LEAK_NOTE)
 			_play_effect(DRIP_SOUND)
 			wick.react_to(LEAK_X, FLOOR_Y - 125.0)
@@ -249,7 +264,7 @@ func _begin_ladder_push() -> void:
 	state.flags["stacks_ladder_locked"] = false
 	kath.begin_pushing(ladder.position.x, LADDER_MIN_X, LADDER_MAX_X, 72.0)
 	_play_effect(LADDER_SOUND)
-	ui.show_hint("A / D OR ← / →  MOVE  ·  E  LOCK", 5.0)
+	ui.show_hint("A / D OR ← / →  MOVE  ·  F  LOCK", 5.0)
 
 
 func _end_ladder_push() -> void:
@@ -272,7 +287,7 @@ func _begin_climb() -> void:
 	state.flags["stacks_ladder_ready_to_climb"] = false
 	has_climbed_above_floor = false
 	_play_effect(LADDER_SOUND)
-	ui.show_hint("W / S OR ↑ / ↓  CLIMB  ·  E  OPEN CASE", 4.0)
+	ui.show_hint("W / S OR ↑ / ↓  CLIMB  ·  F  OPEN CASE", 4.0)
 
 
 func _can_open_case() -> bool:
@@ -364,8 +379,8 @@ func _play_effect(stream: AudioStream) -> void:
 
 
 func ripple_setup() -> void:
-	# Keep the ripples beneath the bucket so the catch remains legible at a glance.
-	ripple.position = Vector2(LEAK_X, FLOOR_Y - 20.0)
+	# The splash visibly shifts from the floor to the bucket on return visits too.
+	ripple.position = Vector2(LEAK_X, FLOOR_Y - 86.0 if state.flags.get("stacks_bucket_moved", false) else FLOOR_Y - 20.0)
 	ripple.scale = Vector2(0.45, 0.45)
 	ripple.modulate = Color(0.8, 0.87, 0.93, 0.58)
 	ripple.visible = true

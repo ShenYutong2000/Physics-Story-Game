@@ -51,12 +51,14 @@ func _ready() -> void:
 	if state.flags.get("dawn_reached", false):
 		night_tint.color = Color.WHITE
 	ambient_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(ambient_player, true)
 	ambient_player.name = "RoomAmbience"
 	ambient_player.stream = AMBIENCE
 	ambient_player.volume_db = -16.0
 	add_child(ambient_player)
 	ambient_player.play()
 	effects_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(effects_player)
 	effects_player.name = "RoomEffects"
 	add_child(effects_player)
 	if not state.flags.get("room_intro_seen", false):
@@ -125,9 +127,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
-			_interact()
+			if ui.is_action_prompt():
+				if event.is_action_pressed("world_action"):
+					_interact()
+				else:
+					ui.examine_named_prompt()
+			elif event.is_action_pressed("interact"):
+				_interact()
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

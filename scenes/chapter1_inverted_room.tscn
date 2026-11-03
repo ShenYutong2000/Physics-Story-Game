@@ -88,6 +88,13 @@ display_name = "Lower Hatch"
 approach_x = 145.0
 reach_radius = 85.0
 
+[node name="ChalkPatch" parent="." instance=ExtResource("15_hotspot")]
+position = Vector2(500, 806)
+interaction_id = &"room-chalk-patch"
+display_name = "Chalk Mark"
+approach_x = 500.0
+reach_radius = 90.0
+
 [node name="PlumbWeight" parent="." instance=ExtResource("15_hotspot")]
 position = Vector2(704, 806)
 interaction_id = &"room-plumb-weight"

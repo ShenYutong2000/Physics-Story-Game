@@ -68,6 +68,7 @@ var dialogue_beside_erin := false
 var pending_dialogue_action: StringName = &""
 var basket_progress := 0.0
 var winch_motion_direction := 0.0
+var winch_click_clock := 0.0
 var rigging_step := 0
 var load_check_selection := 0
 var pending_load_checks: Array[StringName] = []
@@ -85,6 +86,7 @@ func _ready() -> void:
 	kath.position = Vector2(704.0 if spawn_tag == &"from-engine-room" else 300.0, FLOOR_Y)
 	basket_progress = clampf(float(state.flags.get("shaft_basket_progress", 0.0)), 0.0, 1.0)
 	sound_player = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(sound_player)
 	sound_player.stream = CLICK_SOUND
 	sound_player.volume_db = -14.0
 	add_child(sound_player)
@@ -187,11 +189,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact"):
+		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				_inspect(closest)
+				if ui.is_action_prompt():
+					if event.is_action_pressed("world_action"):
+						_inspect(closest)
+					else:
+						ui.examine_hotspot(closest)
+				elif event.is_action_pressed("interact"):
+					_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -207,7 +215,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			load_check_selection = posmod(load_check_selection + (-1 if event.is_action_pressed("move_left") else 1), 4)
 			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
-		elif event.is_action_pressed("interact"):
+		elif event.is_action_pressed("world_action"):
 			get_viewport().set_input_as_handled()
 			var check_ids: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
 			if not pending_load_checks.has(check_ids[load_check_selection]):
@@ -219,7 +227,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_complete_load_check()
 			else:
 				ui.shaft_load_detail.text = "Check all four observations before confirming."
-	elif mode == &"winch" and event.is_action_pressed("interact"):
+	elif mode == &"winch" and event.is_action_pressed("world_action"):
 		get_viewport().set_input_as_handled()
 		if basket_progress >= 0.995 and not state.flags.get("shaft_rail_removed", false):
 			erin.set_repairing(true)
@@ -443,9 +451,14 @@ func _process_winch(delta: float) -> void:
 	if direction != winch_motion_direction:
 		brake_lever.rotation = -0.22 if direction != 0.0 else 0.0
 		if direction != 0.0:
-			sound_player.play()
+			winch_click_clock = 0.0
 		winch_motion_direction = direction
 	if direction != 0.0:
+		winch_click_clock -= delta
+		if winch_click_clock <= 0.0:
+			sound_player.pitch_scale = 0.82 if passenger_test or passenger_raise else 1.0
+			sound_player.play()
+			winch_click_clock = 0.65 if passenger_test or passenger_raise else 0.42
 		var speed := WINCH_SPEED * (0.5 if passenger_test or passenger_raise else 1.0)
 		basket_progress = clampf(basket_progress + direction * speed * delta, 0.0, EMPTY_TEST_LIMIT if passenger_test else 1.0)
 		state.flags["shaft_basket_progress"] = basket_progress
@@ -457,9 +470,9 @@ func _process_winch(delta: float) -> void:
 		state.flags["shaft_lower_dock_locked"] = true
 		state.flags["shaft_empty_test_complete"] = true
 		state.flags["shaft_rescue_phase"] = &"passenger_raise"
-		state.add_note_once(&"shaft-empty-passenger-test", "Empty passenger test", "The new rope stayed in both wheels during a short empty lift and return. Two strands supported the basket; the winch took in more rope for the same rise. A person's load remains untested. Less force. More rope.")
+		state.add_note_once(&"shaft-empty-passenger-test", "Empty passenger test", "With the same empty basket, the two-strand path drew in roughly two rope marks for one basket mark of rise. The brake held at rest. Two supporting strands could reduce the ideal pull at the winch, but friction and the force at my hand were not measured; a person's load remains untested.")
 		_update_rig_visuals()
-		_start_dialogue(["The brake held, and the empty basket returned to its berth. Less force. More rope.", "That test did not carry Erin. I still need to check what changes when someone boards."])
+		_start_dialogue(["The brake held. For the same empty basket, I drew in about two rope marks for each mark it rose.", "That suggests a trade-off in pull and distance, but I haven't measured the hand force or friction. Erin's load still needs its own check."])
 
 
 func _winch_phase() -> StringName:
@@ -538,9 +551,9 @@ func _complete_load_check() -> void:
 		return
 	state.flags["shaft_load_verified"] = true
 	state.flags["shaft_rescue_phase"] = &"load_verified"
-	state.add_note_once(&"shaft-occupied-load", "Check the load", "Erin entered the secured basket. The rope tightened, the indicator settled at a new position, both runs stayed in their wheels, the top anchor stayed closed, and the brake held when I stopped winding. The still basket still needs support.")
+	state.add_note_once(&"shaft-occupied-load", "Check the load", "Erin entered the secured basket. After the winch took up slack, the rope-tension indicator settled at a new position, both runs stayed in their wheels, the top anchor stayed closed, and the brake held. The dial reads pull in the rope, not Erin's mass or weight directly; a still basket still needs support.")
 	_close_overlay()
-	_start_dialogue(["The occupied basket is still, but the rope is supporting a different load than it did in the empty test.", "The checks held. I can ask Erin to release the upper catch, then lower her carefully."])
+	_start_dialogue(["The occupied basket is still, but its rope indicator moved. It measures the pull in this rope, not Erin's mass directly.", "The checks held under this load. I can ask Erin to release the upper catch, then lower her carefully."])
 
 
 func _update_rig_visuals() -> void:
@@ -661,7 +674,7 @@ func _complete_dialogue_action(action: StringName) -> void:
 			state.add_note_once(&"shaft-erin-rail", "Erin's landing", "Erin is safe on the fixed upper ledge, but a bent rail blocks the basket entrance. She needs tools to remove it.")
 		&"inspect_rig":
 			state.flags["shaft_rig_inspected"] = true
-			state.add_note_once(&"shaft-direct-rope", "The first rope path", "The basket hangs from a single cable over a fixed pulley to the hand winch. The automatic drive is still; the crank can move the basket.")
+			state.add_note_once(&"shaft-direct-rope", "The first rope path", "The basket hangs from one cable over a fixed pulley to the hand winch. The fixed wheel redirects the pull; one cable segment supports the basket. This hand crank is separate from the Castle's automatic ring drive.")
 		&"load_tools":
 			_start_tool_transfer()
 			return
@@ -673,7 +686,7 @@ func _complete_dialogue_action(action: StringName) -> void:
 			ui.show_hint("Lower the empty basket to the berth.", 5.0)
 		&"finish_tool_trip":
 			state.flags["shaft_tool_trip_complete"] = true
-			state.add_note_once(&"shaft-tool-trip", "Tools delivered", "The hand winch lifted the tool chest to Erin. She removed the bent rail and returned the empty basket. Its present rope path has not been checked for carrying a person.")
+			state.add_note_once(&"shaft-tool-trip", "Tools delivered", "The hand winch lifted the tool chest to Erin; its rope-tension needle shifted with the tools aboard. She removed the bent rail and returned the empty basket. This direct rope path has not been tested with a person.")
 			ui.show_hint("The next step is to inspect the basket's second pulley.", 5.0)
 			_update_rig_visuals()
 		&"inspect_passenger_rig":
@@ -751,7 +764,7 @@ func _start_tool_transfer() -> void:
 	state.flags["shaft_tools_loaded"] = true
 	_update_rig_visuals()
 	_set_mode(&"roam")
-	ui.show_hint("The tools are secured. E at the winch, then hold Up to lift.", 5.0)
+	ui.show_hint("The tools are secured. F at the winch, then hold Up to lift.", 5.0)
 
 
 func _start_boarding() -> void:
@@ -789,10 +802,10 @@ func _help_erin_out() -> void:
 	erin_at_lower.set_walking(false)
 	state.flags["shaft_rescue_complete"] = true
 	state.flags["shaft_rescue_phase"] = &"rescued"
-	state.add_note_once(&"shaft-rescue", "Erin reached the lower platform", "Erin's load changed the rope reading. During descent, paying out rope increased the basket's speed; braking before the lower berth gave it room to stop. I locked the basket, then Erin crossed to the fixed platform.")
+	state.add_note_once(&"shaft-rescue", "Erin reached the lower platform", "Under Erin's load and the same two-strand rope path, the basket gained downward speed while rope was paid out and slowed when I braked. A change in velocity is acceleration; the changing net pull on the basket may explain it, though I did not measure each force. Braking early left room to stop before the lower berth.")
 	_update_rig_visuals()
 	wick.react_to(325.0, 545.0)
-	_start_dialogue(["Erin steps from the locked basket, across the loading spur, onto the fixed platform.", "Kath: The load changed, and so did the way the basket moved. I needed room to stop it.", "Erin: We can trace the rotation fault in the engine room now."], &"", erin_at_lower.global_position)
+	_start_dialogue(["Erin steps from the locked basket, across the loading spur, onto the fixed platform.", "Kath: The basket's speed changed while it moved. Braking changed it again, so I needed room to stop.", "Erin: We can trace the rotation fault in the engine room now."], &"", erin_at_lower.global_position)
 
 
 func _show_journal() -> void:

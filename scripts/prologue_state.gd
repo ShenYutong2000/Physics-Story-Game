@@ -35,6 +35,10 @@ var save_path_override := ""
 var play_seconds := 0.0
 var chapter1_start_seconds := -1.0
 var chapter1_finish_seconds := -1.0
+var guide_objective_id := ""
+var guide_hint_level := 0
+var guide_idle_seconds := 0.0
+var guide_reminder_shown := false
 var _checkpoint_timer := 0.0
 var _last_checkpoint_signature := ""
 
@@ -70,8 +74,12 @@ func _input(event: InputEvent) -> void:
 	if scene == null or not STORY_SCENES.has(scene.scene_file_path) or scene.get("mode") != &"paused":
 		return
 	get_viewport().set_input_as_handled()
-	save_checkpoint(scene.scene_file_path)
-	get_tree().quit()
+	if save_checkpoint(scene.scene_file_path):
+		get_tree().quit()
+	else:
+		var ui := scene.get_node_or_null("HallUI")
+		if ui != null:
+			ui.show_save_error()
 
 
 func start_new_game() -> void:
@@ -82,9 +90,11 @@ func start_new_game() -> void:
 	play_seconds = 0.0
 	chapter1_start_seconds = -1.0
 	chapter1_finish_seconds = -1.0
+	reset_guide_progress()
 	_checkpoint_timer = 0.0
 	_last_checkpoint_signature = ""
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(_save_path()))
+	for suffix in ["", ".bak", ".tmp"]:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(_save_path() + suffix))
 	persistence_enabled = true
 	travel_to(STORY_SCENES[0], &"")
 
@@ -108,6 +118,7 @@ func resume_checkpoint() -> bool:
 	play_seconds = float(saved["play_seconds"])
 	chapter1_start_seconds = float(saved["chapter1_start_seconds"])
 	chapter1_finish_seconds = float(saved["chapter1_finish_seconds"])
+	reset_guide_progress()
 	pending_spawn_tag = StringName(saved["spawn_tag"])
 	_checkpoint_timer = 0.0
 	_last_checkpoint_signature = ""
@@ -119,6 +130,13 @@ func resume_checkpoint() -> bool:
 		push_error("Unable to resume scene '%s' (error %d)." % [saved["scene"], error])
 		return false
 	return true
+
+
+func reset_guide_progress() -> void:
+	guide_objective_id = ""
+	guide_hint_level = 0
+	guide_idle_seconds = 0.0
+	guide_reminder_shown = false
 
 
 func chapter1_elapsed_seconds() -> float:
@@ -149,23 +167,57 @@ func save_checkpoint(scene_path: String, spawn_tag: StringName = &"") -> bool:
 		"chapter1_finish_seconds": chapter1_finish_seconds,
 	}
 	var encoded := JSON.stringify(snapshot)
-	if encoded == _last_checkpoint_signature:
+	if encoded == _last_checkpoint_signature and FileAccess.file_exists(_save_path()):
 		return true
-	var file := FileAccess.open(_save_path(), FileAccess.WRITE)
+	var temporary_path := _save_path() + ".tmp"
+	var file := FileAccess.open(temporary_path, FileAccess.WRITE)
 	if file == null:
 		push_error("Could not write story checkpoint (error %d)." % FileAccess.get_open_error())
 		return false
 	file.store_string(encoded)
 	file.flush()
+	var write_error := file.get_error()
 	file.close()
+	if write_error != OK:
+		push_error("Could not finish story checkpoint (error %d)." % write_error)
+		return false
+	var target := ProjectSettings.globalize_path(_save_path())
+	var temporary := ProjectSettings.globalize_path(temporary_path)
+	var backup := ProjectSettings.globalize_path(_save_path() + ".bak")
+	if FileAccess.file_exists(_save_path()):
+		if _read_checkpoint_path(_save_path()).is_empty():
+			# Keep the last good backup when replacing a damaged primary.
+			var damaged_error := DirAccess.remove_absolute(target)
+			if damaged_error != OK:
+				push_error("Could not replace damaged checkpoint (error %d)." % damaged_error)
+				return false
+		else:
+			DirAccess.remove_absolute(backup)
+			var backup_error := DirAccess.rename_absolute(target, backup)
+			if backup_error != OK:
+				push_error("Could not protect previous checkpoint (error %d)." % backup_error)
+				return false
+	var replace_error := DirAccess.rename_absolute(temporary, target)
+	if replace_error != OK:
+		if FileAccess.file_exists(_save_path() + ".bak"):
+			DirAccess.rename_absolute(backup, target)
+		push_error("Could not replace story checkpoint (error %d)." % replace_error)
+		return false
 	_last_checkpoint_signature = encoded
 	return true
 
 
 func _read_checkpoint() -> Dictionary:
-	if not FileAccess.file_exists(_save_path()):
+	var primary := _read_checkpoint_path(_save_path())
+	if not primary.is_empty():
+		return primary
+	return _read_checkpoint_path(_save_path() + ".bak")
+
+
+func _read_checkpoint_path(path: String) -> Dictionary:
+	if not FileAccess.file_exists(path):
 		return {}
-	var file := FileAccess.open(_save_path(), FileAccess.READ)
+	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {}
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
@@ -177,9 +229,22 @@ func _read_checkpoint() -> Dictionary:
 		return {}
 	if not parsed.get("flags") is Dictionary or not parsed.get("notes") is Array:
 		return {}
+	for key in parsed["flags"]:
+		if not key is String or typeof(parsed["flags"][key]) not in [TYPE_BOOL, TYPE_INT, TYPE_FLOAT, TYPE_STRING]:
+			return {}
+	for progress_key in ["shaft_basket_progress", "shaft_load_preload", "engine_return_progress"]:
+		if parsed["flags"].has(progress_key):
+			var progress: Variant = parsed["flags"][progress_key]
+			if typeof(progress) not in [TYPE_INT, TYPE_FLOAT] or float(progress) < 0.0 or float(progress) > 1.0:
+				return {}
 	for entry in parsed["notes"]:
 		if not entry is Dictionary or not entry.get("id") is String or not entry.get("title") is String or not entry.get("body") is String:
 			return {}
+	var seen_notes := {}
+	for entry in parsed["notes"]:
+		if seen_notes.has(entry["id"]):
+			return {}
+		seen_notes[entry["id"]] = true
 	for field in ["play_seconds", "chapter1_start_seconds", "chapter1_finish_seconds"]:
 		if not parsed.get(field) is float and not parsed.get(field) is int:
 			return {}
