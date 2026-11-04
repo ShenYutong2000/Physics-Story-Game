@@ -25,7 +25,9 @@ func _run() -> void:
 	hall._close_dialogue(false)
 	hall._record(&"archive-door")
 	hall._record(&"clock-housing")
-	hall._record(&"maintenance-sheet")
+	hall._record(&"duty-keys")
+	state.flags["hall_round_filed"] = true
+	hall._maybe_finish_hall()
 	if not state.hall_checks_complete() or hall.mode != &"dialogue":
 		_fail("Three hall observations did not unlock the machine-room lead.")
 		return

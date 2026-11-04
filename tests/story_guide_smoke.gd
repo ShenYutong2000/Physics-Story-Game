@@ -70,11 +70,17 @@ func _run() -> void:
 	state.add_note_once(&"clock-housing", "Old clock", "Observation")
 	hall.ui._process(0.0)
 	var remaining_target: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), hall.scene_file_path, hall.kath.position.x)
-	if hall.ui.hint_level != 0 or hall.ui.objective_reminder_shown or remaining_target["id"] != &"maintenance-sheet":
+	if hall.ui.hint_level != 0 or hall.ui.objective_reminder_shown or remaining_target["id"] != &"duty-keys":
 		_fail("Progress inside the same objective did not reset hints and select an unfinished object.")
 		return
-	for note_id in [&"archive-door", &"maintenance-sheet"]:
+	for note_id in [&"archive-door", &"duty-keys"]:
 		state.add_note_once(note_id, String(note_id), "Observation")
+	hall.ui._process(0.0)
+	if not _expect(state, "hall") or StoryGuide.focus_target(state, StoryGuide.current(state), hall.scene_file_path, hall.kath.position.x)["id"] != &"maintenance-sheet":
+		_fail("Three finished checks did not point to the unstamped round book.")
+		return
+	state.flags["hall_round_filed"] = true
+	state.add_note_once(&"evening-round-filed", "Evening round filed", "The page was stamped.")
 	hall.ui._process(0.0)
 	if not _expect(state, "baseline") or hall.ui.hint_level != 0 or hall.ui.guide_bubble.visible:
 		_fail("A new objective did not reset the hint level.")

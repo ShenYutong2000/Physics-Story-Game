@@ -1,7 +1,7 @@
 extends Node
 ## Story state, single-slot checkpoints, and first-play timing.
 
-const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"maintenance-sheet"]
+const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"duty-keys"]
 const UPPER_STACKS_NOTE_IDS := [&"leak-observation", &"newton-note"]
 const ROOM_NOTE_IDS := [&"notebook-match", &"castle-alarm"]
 const CASTLE_POSE_ORDER := [&"upright", &"tilted", &"inverted", &"restored"]
@@ -296,6 +296,11 @@ func has_note(note_id: StringName) -> bool:
 
 
 func hall_checks_complete() -> bool:
+	# A patrol from the earlier build may already have reached the machine room.
+	if flags.get("machine_baseline_recorded", false):
+		return true
+	if not flags.get("hall_round_filed", false):
+		return false
 	for note_id in HALL_NOTE_IDS:
 		if not has_note(note_id):
 			return false

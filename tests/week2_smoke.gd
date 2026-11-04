@@ -26,7 +26,7 @@ func _run() -> void:
 	if hall.mode != &"dialogue" or kath.controls_enabled or not ui.dialogue.visible:
 		_fail("Opening dialogue did not lock movement.")
 		return
-	if ui.dialogue_text.text != "Evening rounds. Secure the door and high window, then check the clock and maintenance sheet.":
+	if ui.dialogue_text.text != "Evening rounds. Secure the door and high window, wind the clock, check the duty keys, then file the round book.":
 		_fail("Opening dialogue text was cleared by the scene-change settings refresh.")
 		return
 	await _tap_key(KEY_ENTER)
@@ -76,34 +76,33 @@ func _run() -> void:
 		_fail("Escape did not close the journal.")
 		return
 
-	# Inspect the sheet first: closes into Kath's response, then saves one note.
+	# The emergency page can be read before any checks and re-read without another note.
 	kath.position.x = 1212.0
 	await _tap_key(KEY_E)
-	if hall.mode != &"inspection" or not ui.sheet.visible or kath.controls_enabled:
-		_fail("The readable sheet view did not open exclusively.")
+	if hall.mode != &"round_book" or not hall.round_book.screen.visible or kath.controls_enabled:
+		_fail("The round book did not open exclusively.")
 		return
 	hall._unhandled_input(_key(KEY_J))
-	if hall.mode != &"inspection" or ui.journal.visible:
-		_fail("Notes opened over the sheet.")
+	if hall.mode != &"round_book" or ui.journal.visible:
+		_fail("Notes opened over the round book.")
 		return
-	hall._close_sheet()
-	if hall.notes.size() != 1:
-		_fail("Closing the sheet did not immediately record its observation.")
+	hall._unhandled_input(_key(KEY_RIGHT))
+	if hall.notes.size() != 1 or hall.notes[0]["id"] != &"emergency-procedure":
+		_fail("The early emergency page was not recorded once.")
 		return
-	hall._advance_dialogue()
-	if hall.notes.size() != 1 or hall.notes[0]["id"] != &"maintenance-sheet" or not ui.hint.visible:
-		_fail("The first observation or J hint was not recorded.")
-		return
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 	hall._unhandled_input(_key(KEY_J))
-	if hall.mode != &"journal" or not ui.journal_entries.text.contains("Maintenance sheet"):
+	if hall.mode != &"journal" or not ui.journal_entries.text.contains("Emergency page"):
 		_fail("The first note did not appear in the journal.")
 		return
 	hall._unhandled_input(_key(KEY_J))
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	hall._close_sheet()
-	hall._advance_dialogue()
+	hall._unhandled_input(_key(KEY_RIGHT))
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 	if hall.notes.size() != 1:
-		_fail("Repeating a sheet inspection duplicated its note.")
+		_fail("Repeating the red-tab inspection duplicated its note.")
 		return
 
 	kath.position.x = 967.0
@@ -159,8 +158,28 @@ func _run() -> void:
 	await create_timer(0.2).timeout
 	hall._advance_dialogue()
 	if hall.notes.size() != 3 or hall.notes[2]["id"] != &"archive-door" \
+		or hall.completion_played or hall.mode != &"roam":
+		_fail("The door-and-window check should wait for the duty keys and filing.")
+		return
+	kath.position.x = 1370.0
+	hall._inspect(hall.nearest_hotspot(kath.position.x))
+	await create_timer(0.3).timeout
+	hall._sort_duty_key()
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
+	hall._advance_dialogue()
+	if hall.notes.size() != 4 or hall.notes[3]["id"] != &"duty-keys" or hall.completion_played:
+		_fail("Sorting the duty keys did not leave the stamp as the final action.")
+		return
+	kath.position.x = 1212.0
+	hall._inspect(hall.nearest_hotspot(kath.position.x))
+	hall._unhandled_input(_key(KEY_E))
+	await create_timer(1.2).timeout
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
+	if hall.notes.size() != 5 or hall.notes[4]["id"] != &"evening-round-filed" \
 		or not hall.completion_played or hall.mode != &"dialogue":
-		_fail("Three inspections did not trigger the final line exactly once.")
+		_fail("Filing the completed round did not trigger the final line once.")
 		return
 	hall._advance_dialogue()
 	kath.position.x = 967.0
@@ -171,8 +190,8 @@ func _run() -> void:
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
 	await create_timer(0.2).timeout
-	if hall.notes.size() != 3 or hall.mode != &"roam":
-		_fail("Repeating the final inspection replayed completion or duplicated notes.")
+	if hall.notes.size() != 5 or hall.mode != &"roam":
+		_fail("Repeating the final inspection replayed completion or duplicated notes (mode=%s, notes=%d)." % [hall.mode, hall.notes.size()])
 		return
 
 	hall._unhandled_input(_key(KEY_ESCAPE))

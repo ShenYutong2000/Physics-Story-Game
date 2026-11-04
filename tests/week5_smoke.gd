@@ -17,6 +17,7 @@ func _run() -> void:
 	state.pending_spawn_tag = &"from-upper-stacks"
 	for note_id in state.HALL_NOTE_IDS:
 		state.add_note_once(note_id, String(note_id), "Checked")
+	state.flags["hall_round_filed"] = true
 	state.add_note_once(&"newton-note", "A torn page", "F = ma")
 	state.flags["machine_baseline_recorded"] = true
 	state.flags["stacks_page_collected"] = true

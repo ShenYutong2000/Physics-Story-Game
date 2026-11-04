@@ -51,7 +51,10 @@ const FOCUS_IDS := {
 static func current(state: Node) -> Dictionary:
 	var f: Dictionary = state.flags
 	if not state.hall_checks_complete():
-		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Secure the door and high window, wind the clock, then check the sheet.", "The archive door is left of the tall windows; the clock and sheet are farther right.", "Use E twice to fasten each latch. At the clock, hold E for about a second to wind it.", [&"archive-door", &"clock-housing", &"maintenance-sheet"], 1040.0, 510.0)
+		var checks_done: bool = state.has_note(&"archive-door") and state.has_note(&"clock-housing") and state.has_note(&"duty-keys")
+		if checks_done:
+			return _step("hall", "File the completed evening round", "Library Hall", "Library Hall", "The three checks are complete; the round book is on the duty desk.", "Open the round book beside the key rack to review the three checked tasks.", "Press E on the task page to stamp ROUND FILED. The red tab can also be opened with Left or Right.", [&"archive-door", &"clock-housing", &"duty-keys"], 1212.0, 510.0)
+		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Secure the door and high window, wind the clock, and check the duty keys.", "The door is left of the tall window; the clock, round book, and key rack are at the duty desk.", "Use E to fasten each latch and return the east key. Hold E at the clock for about a second.", [&"archive-door", &"clock-housing", &"duty-keys"], 1212.0, 510.0)
 	if not f.get("machine_baseline_recorded", false):
 		return _step("baseline", "Record the machine reading", "Machine Room", "Machine Room", "The instrument has a mark from the last reading.", "Enter through the hall's archive door and find the large gauge.", "Press E at the gauge, compare its pointer with the old mark, then press Enter to record it.", [&"archive-door"], 1136.0, 420.0)
 	if not f.get("stacks_bucket_moved", false):
@@ -172,9 +175,11 @@ static func focus_candidates(state: Node, objective: Dictionary) -> Array[Dictio
 				result.append(_candidate(&"archive-door", Vector2(120, 515), "archive door"))
 			if not f.get("hall_window_fixed", false) and not state.has_note(&"archive-door"):
 				result.append(_candidate(&"high-window", Vector2(476, 500), "high window"))
-			for item in [[&"clock-housing", Vector2(967, 530), "old clock"], [&"maintenance-sheet", Vector2(1212, 510), "maintenance sheet"]]:
+			for item in [[&"clock-housing", Vector2(967, 530), "old clock"], [&"duty-keys", Vector2(1370, 506), "duty keys"]]:
 				if not state.has_note(item[0]):
 					result.append(_candidate(item[0], item[1], item[2]))
+			if result.is_empty() and not f.get("hall_round_filed", false):
+				result.append(_candidate(&"maintenance-sheet", Vector2(1212, 510), "round book"))
 		"control_checks":
 			if not f.get("control_dial_checked", false):
 				result.append(_candidate(&"castle-position-dial", Vector2(438, 465), "position dial"))

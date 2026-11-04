@@ -4,12 +4,11 @@ extends CanvasLayer
 const StoryGuide = preload("res://scripts/story_guide.gd")
 
 const NOTEBOOK_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/ui/notebook-panel.png")
-const SHEET_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/maintenance-sheet.png")
 const GAUGE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/gauge-face.png")
 const NEWTON_NOTE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/newton-note.png")
 const CASTLE_WING_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/castle-wing-upright.png")
 const SERVICE_ROAD_FAR: Texture2D = preload("res://prologue-asset-pack-v1/far/05-service-road-far.png")
-const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"maintenance-sheet"]
+const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"duty-keys"]
 const INK := Color("2b304c")
 const CREAM := Color("fff4db")
 const GOLD := Color("f5dba6")
@@ -26,7 +25,6 @@ var dialogue_tail: Polygon2D
 var dialogue_tail_outline: Line2D
 var dialogue_text: Label
 var dialogue_continue: Label
-var sheet: Control
 var gauge_inspection: Control
 var gauge_status: Label
 var gauge_instruction: Label
@@ -149,23 +147,6 @@ func _ready() -> void:
 	dialogue_continue = _label(dialogue_panel, Rect2(490, 145, 234, 28), "ENTER  ›", 18, INK)
 	dialogue_continue.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	dialogue.visible = false
-
-	sheet = Control.new()
-	sheet.name = "SheetInspection"
-	sheet.size = Vector2(1672, 941)
-	sheet.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(sheet)
-	_dim(sheet)
-	var cropped_sheet := AtlasTexture.new()
-	cropped_sheet.atlas = SHEET_TEXTURE
-	cropped_sheet.region = Rect2(344, 73, 714, 978)
-	_texture(sheet, cropped_sheet, Rect2(556, 67, 560, 805))
-	_label(sheet, Rect2(661, 226, 370, 57), "EVENING CHECKS", 30, INK)
-	var items := ["Lamps", "Pipes", "Pressure", "Doors", "Upper Shelves"]
-	for i in items.size():
-		_label(sheet, Rect2(682, 298 + i * 97, 352, 48), items[i], 29, INK)
-	_label(sheet, Rect2(615, 790, 440, 40), "ESC / ENTER   CLOSE", 20, INK)
-	sheet.visible = false
 
 	gauge_inspection = Control.new()
 	gauge_inspection.name = "GaugeInspection"
@@ -806,12 +787,6 @@ func show_dialogue(line: String, speaker_position: Vector2, beside_high_speaker:
 	hide_prompt()
 
 
-func show_sheet() -> void:
-	hide_modals()
-	sheet.visible = true
-	hide_prompt()
-
-
 func show_gauge_inspection(recorded: bool) -> void:
 	hide_modals()
 	if recorded:
@@ -837,13 +812,14 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	var hall_state: Node = get_node("/root/PrologueState")
 	var door_done: bool = bool(hall_state.flags.get("hall_door_latched", false)) or discovered.has(&"archive-door")
 	var window_done: bool = bool(hall_state.flags.get("hall_window_fixed", false)) or discovered.has(&"archive-door")
-	journal_progress.text = "HALL PATROL  %d / 3\n%s  Doors and windows (door %s · window %s)\n%s  Old clock\n%s  Maintenance sheet\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
+	journal_progress.text = "HALL PATROL  %d / 3\n%s  Doors and windows (door %s · window %s)\n%s  Old clock\n%s  Duty keys\n%s  Round book filed\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
 		hall_count,
 		"[x]" if discovered.has(&"archive-door") else "[ ]",
 		"set" if door_done else "loose",
 		"fixed" if window_done else "loose",
 		"[x]" if discovered.has(&"clock-housing") else "[ ]",
-		"[x]" if discovered.has(&"maintenance-sheet") else "[ ]",
+		"[x]" if discovered.has(&"duty-keys") else "[ ]",
+		"[x]" if hall_state.flags.get("hall_round_filed", false) or discovered.has(&"evening-round-filed") else "[ ]",
 		"1 / 1  Reading recorded" if machine_recorded else "0 / 1  Reading pending",
 		int(leak_contained) + int(page_collected),
 		"[x]" if leak_contained else "[ ]",
@@ -1107,7 +1083,6 @@ func show_chapter1_end() -> void:
 
 func hide_modals() -> void:
 	dialogue.visible = false
-	sheet.visible = false
 	gauge_inspection.visible = false
 	journal.visible = false
 	torn_page.visible = false

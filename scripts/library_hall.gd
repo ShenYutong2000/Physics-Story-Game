@@ -15,24 +15,29 @@ const WINDOW_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/ha
 const CLOCK_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/clock-winding-detail-states.png")
 const KEYS_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/duty-keys-states.png")
 const KEY_HOOK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
+const PAGE_TURN_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
 
 const INSPECTIONS := {
 	"archive-door": {"title": "Doors and windows", "body": "The archive-door bolt and high-window catch are both fastened before the storm."},
 	"clock-housing": {"title": "Hall clock", "body": "The winding handle was turned until the spring caught. The pendulum and ticking settled into a regular rhythm."},
 	"duty-keys": {"title": "Duty keys", "body": "All three keys are present. I returned the east service key from a temporary nail to its labelled hook. The reverse of its tag reads OBSERVATORY CASTLE."},
-	"maintenance-sheet": {"title": "Maintenance sheet", "body": "Five checks are listed, with no reasons given."}
+	"evening-round-filed": {"title": "Evening round filed", "body": "The doors and windows, hall clock, and duty keys were checked. I stamped the completed page; the current task page is blank."},
+	"emergency-procedure": {"title": "Emergency page", "body": "The red tab says: if the upper needle crosses the red line, pull lever 2, then lever 4. Check the needle again."},
+	"maintenance-sheet": {"title": "Old maintenance sheet", "body": "An earlier checklist used different labels."}
 }
 
 @onready var kath: CharacterBody2D = $Kath
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var focus: CanvasLayer = $HallPropFocus
+@onready var round_book: CanvasLayer = $HallRoundBook
 @onready var archive_door: Node2D = $ArchiveDoor
 @onready var high_window: Node2D = $HighWindow
 @onready var door_bolt_world: Node2D = $DoorBoltWorld
 @onready var window_catch_world: Node2D = $WindowCatchWorld
 @onready var clock_motion: Node2D = $OldClock/ClockMotion
 @onready var key_rack_world: Sprite2D = $DutyKeys/RackVisual
+@onready var round_book_world: Sprite2D = $MaintenanceSheet/Sprite2D
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
 @onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $DutyKeys, $UpperStacksEntry]
@@ -62,6 +67,9 @@ func _ready() -> void:
 	archive_door.exit_requested.connect(_on_exit_requested)
 	upper_stacks_entry.exit_requested.connect(_on_exit_requested)
 	focus.dismissed.connect(_on_focus_dismissed)
+	round_book.dismissed.connect(_on_round_book_dismissed)
+	round_book.stamped.connect(_on_round_book_stamped)
+	round_book.page_turned.connect(_on_round_book_page_turned)
 	one_shot_audio = AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(one_shot_audio)
 	one_shot_audio.name = "OneShotAudio"
@@ -90,6 +98,7 @@ func _ready() -> void:
 	clock_motion.set_winding_progress(clock_winding_progress)
 	_refresh_world_latches(false)
 	key_rack_world.set_sorted(_key_is_sorted(), false)
+	round_book_world.set_filed(bool(state.flags.get("hall_round_filed", false)), false)
 	var ambience := AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "HallAmbience"
@@ -126,7 +135,7 @@ func _ready() -> void:
 			_start_dialogue(["That alarm is coming from the machine room! The gauge was still below the red sector last night.", "I need to get back to the controls."])
 	elif not state.flags.get("hall_intro_seen", false):
 		state.flags["hall_intro_seen"] = true
-		_start_dialogue(["Evening rounds. Secure the door and high window, then check the clock and maintenance sheet."])
+		_start_dialogue(["Evening rounds. Secure the door and high window, wind the clock, check the duty keys, then file the round book."])
 
 
 func _exit_tree() -> void:
@@ -191,6 +200,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			clock_winding_held = false
 			_set_mode(&"focus_closing")
 			focus.close_view()
+		elif mode == &"round_book":
+			_set_mode(&"focus_closing")
+			round_book.close_view()
 		else:
 			_close_modal()
 		get_viewport().set_input_as_handled()
@@ -224,9 +236,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
 			get_viewport().set_input_as_handled()
-	elif mode == &"inspection" and event.is_action_pressed("advance_dialogue"):
-		_close_sheet()
-		get_viewport().set_input_as_handled()
+	elif mode == &"round_book":
+		if event.is_action_pressed("interact"):
+			round_book.act()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			round_book.turn(-1 if event.is_action_pressed("move_left") else 1)
+			get_viewport().set_input_as_handled()
 	elif mode == &"journal" and event.is_action_pressed("toggle_journal"):
 		_close_modal()
 		get_viewport().set_input_as_handled()
@@ -291,9 +307,12 @@ func _inspect(hotspot: Node) -> void:
 			wick.react_to(1370.0, 482.0)
 			_open_keys_focus()
 		&"sheet":
+			pending_inspection = &""
 			wick.react_to(1212.0, 450.0)
-			_set_mode(&"inspection")
-			ui.show_sheet()
+			ui.hide_modals()
+			ui.hide_prompt()
+			_set_mode(&"round_book")
+			round_book.open_view(_door_is_latched(), _window_is_fixed(), _clock_is_wound(), _key_is_sorted(), bool(state.flags.get("hall_round_filed", false)))
 		_:
 			pending_inspection = &""
 
@@ -479,6 +498,29 @@ func _on_focus_dismissed() -> void:
 	_show_pending_note_hint()
 
 
+func _on_round_book_stamped() -> void:
+	if state.flags.get("hall_round_filed", false):
+		return
+	state.flags["hall_round_filed"] = true
+	round_book_world.set_filed(true)
+	one_shot_audio.stream = KEY_HOOK_SOUND
+	one_shot_audio.play()
+	_record(&"evening-round-filed", false)
+
+
+func _on_round_book_page_turned(page_name: StringName) -> void:
+	one_shot_audio.stream = PAGE_TURN_SOUND
+	one_shot_audio.play()
+	if page_name == &"emergency" and not state.has_note(&"emergency-procedure"):
+		_record(&"emergency-procedure", false)
+
+
+func _on_round_book_dismissed() -> void:
+	_set_mode(&"roam")
+	_maybe_finish_hall()
+	_show_pending_note_hint()
+
+
 func _start_dialogue(lines: Array[String]) -> void:
 	dialogue_lines = lines
 	dialogue_index = 0
@@ -505,17 +547,7 @@ func _close_dialogue(completed: bool) -> void:
 	_show_pending_note_hint()
 
 
-func _close_sheet() -> void:
-	var inspected_id := pending_inspection
-	pending_inspection = &""
-	_record(inspected_id, false)
-	_start_dialogue(["Wick, you noticed the last line too. I'll record the machine reading before I climb to the upper shelves."])
-
-
 func _close_modal() -> void:
-	if mode == &"inspection":
-		_close_sheet()
-		return
 	if mode == &"dialogue":
 		pending_inspection = &""
 	ui.hide_modals()
@@ -547,7 +579,7 @@ func _maybe_finish_hall() -> void:
 	if state.hall_checks_complete() and not completion_played:
 		completion_played = true
 		state.flags["hall_complete_line_seen"] = true
-		_start_dialogue(["The hall is checked. I should record the machine-room reading before I investigate the upper shelves."])
+		_start_dialogue(["The round is filed. I should record the machine-room reading before I investigate the upper shelves."])
 
 
 func _show_pending_note_hint() -> void:

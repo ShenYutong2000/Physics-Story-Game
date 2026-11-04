@@ -1,6 +1,6 @@
 # Grand Archive Hall — close-up art and playable props
 
-The archive door, high window, hall clock, and duty keys are now playable in the hall. The round book and optional prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
+The archive door, high window, hall clock, duty keys, and round book are now playable in the hall. The optional prop sheets are art assets for a later step. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
 
 ## Scene and main props
 
@@ -44,10 +44,16 @@ Live Godot captures at 1280 × 720: [hall before](review-captures/interactive-ha
 
 ## Duty keys (Step 6)
 
-Stand near the duty desk's key rack and press E. The close-up shows three keys: the machine-room and upper-stacks keys already hang on their hooks, while the east service key hangs on the spare nail. Press E to return that key to its labelled third hook. Its tag turns and reveals `OBSERVATORY CASTLE` in a readable magnified card. The rack changes in the hall and retains its arrangement after scene changes and checkpoint restore. Esc before moving the key leaves it unsorted; repeating the action cannot add a second note. The patrol-book completion gate still follows the existing three checks until Step 7 connects the redesigned checklist and stamp.
+Stand near the duty desk's key rack and press E. The close-up shows three keys: the machine-room and upper-stacks keys already hang on their hooks, while the east service key hangs on the spare nail. Press E to return that key to its labelled third hook. Its tag turns and reveals `OBSERVATORY CASTLE` in a readable magnified card. The rack changes in the hall and retains its arrangement after scene changes and checkpoint restore. Esc before moving the key leaves it unsorted; repeating the action cannot add a second note.
 
 Live 1280 × 720 captures: [keys before](review-captures/interactive-keys-before-1280x720.png) · [keys after](review-captures/interactive-keys-after-1280x720.png) · [hall before](review-captures/interactive-keys-hall-before-1280x720.png) · [hall after](review-captures/interactive-keys-hall-after-1280x720.png). Matching 1672 × 941 captures are in the same folder.
 
 ## Hall clock (Step 5)
 
 Stand by the clock and press E to focus. Hold E for about one second to wind it. Releasing E early keeps the visible spring progress; Esc can close and reopen the close-up without falsely completing the check. The handle and pendulum change in the close-up, while the room-scale handle turns and the pendulum and ticking settle into a regular rhythm. The completed state persists on later hall visits and produces only one journal entry. Review the live [unwound view](review-captures/interactive-clock-before-1280x720.png), [partial winding](review-captures/interactive-clock-partial-1280x720.png), [wound view](review-captures/interactive-clock-after-1280x720.png), and [hall after winding](review-captures/interactive-clock-hall-after-1280x720.png); 1672 × 941 versions are alongside them.
+
+## Round book and red tab (Step 7)
+
+The book now rests on the duty desk. Press E near it to see the three live checks: doors and windows count together, followed by the clock and duty keys. Before the round is complete, press Left or Right to open the red emergency tab; its instruction can be read early. Once all three checks are done, press E on the task page to lower the stamp. The checked page briefly shows `ROUND FILED`, then the current task page clears. Left/Right can revisit the filed page and the emergency page. Esc during the stamp's descent cancels it; after the impression appears, the result is committed. The machine-room door opens only after the filed round. The same progress and emergency wording appear in Kath's notes and optional hints.
+
+Live captures at 1280 × 720: [unchecked page](review-captures/interactive-book-unchecked-1280x720.png) · [ready to stamp](review-captures/interactive-book-ready-1280x720.png) · [stamp motion](review-captures/interactive-book-stamping-1280x720.png) · [filed record](review-captures/interactive-book-archive-1280x720.png) · [blank current page](review-captures/interactive-book-blank-1280x720.png) · [emergency page](review-captures/interactive-book-emergency-1280x720.png) · [hall book before](review-captures/interactive-book-hall-1280x720.png) · [hall book after](review-captures/interactive-book-hall-after-1280x720.png). Matching 1672 × 941 frames are alongside them.
