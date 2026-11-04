@@ -120,7 +120,16 @@ func _run() -> void:
 
 	kath.position.x = 120.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	hall._advance_dialogue()
+	if hall.mode != &"focus" or not hall.focus.is_open():
+		_fail("The archive door did not open its playable close-up.")
+		return
+	await create_timer(0.3).timeout
+	hall._secure_door_bolt()
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
+	if hall.mode != &"dialogue":
+		_fail("Completing and leaving the door close-up did not restore Kath's response.")
+		return
 	hall._advance_dialogue()
 	if hall.notes.size() != 3 or hall.notes[2]["id"] != &"archive-door" \
 		or not hall.completion_played or hall.mode != &"dialogue":

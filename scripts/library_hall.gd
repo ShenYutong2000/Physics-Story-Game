@@ -5,9 +5,11 @@ const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/wate
 const WARNING_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop-switch.wav")
 const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-library.wav")
+const DOOR_LATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/gate-latch.wav")
+const DOOR_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/door-latch-states.png")
 
 const INSPECTIONS := {
-	"archive-door": {"title": "Archive door", "body": "Its old handle sequence still works."},
+	"archive-door": {"title": "Archive door", "body": "The loose bolt now sits flush in its keeper."},
 	"clock-housing": {"title": "Old clock", "body": "Wick heard a rattle, though the clock still runs."},
 	"maintenance-sheet": {"title": "Maintenance sheet", "body": "Five checks are listed, with no reasons given."}
 }
@@ -15,6 +17,7 @@ const INSPECTIONS := {
 @onready var kath: CharacterBody2D = $Kath
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
+@onready var focus: CanvasLayer = $HallPropFocus
 @onready var archive_door: Node2D = $ArchiveDoor
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
@@ -29,12 +32,14 @@ var pending_inspection: StringName = &""
 var first_note_hint_pending := false
 var one_shot_audio: AudioStreamPlayer
 var completion_played := false
+var door_reaction_pending := false
 
 
 func _ready() -> void:
 	completion_played = bool(state.flags.get("hall_complete_line_seen", false))
 	archive_door.exit_requested.connect(_on_exit_requested)
 	upper_stacks_entry.exit_requested.connect(_on_exit_requested)
+	focus.dismissed.connect(_on_focus_dismissed)
 	one_shot_audio = AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(one_shot_audio)
 	one_shot_audio.name = "OneShotAudio"
@@ -110,10 +115,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		if mode == &"roam":
 			_set_mode(&"paused")
 			ui.show_pause()
+		elif mode == &"focus_closing":
+			pass
 		elif mode == &"dialogue":
 			_close_dialogue(false)
 		elif mode == &"paper":
 			_return_from_saved_page()
+		elif mode == &"focus":
+			_set_mode(&"focus_closing")
+			focus.close_view()
 		else:
 			_close_modal()
 		get_viewport().set_input_as_handled()
@@ -132,6 +142,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
 		_advance_dialogue()
 		get_viewport().set_input_as_handled()
+	elif mode == &"focus":
+		if event.is_action_pressed("interact"):
+			if focus.selected_action() == &"secure_door_bolt":
+				_secure_door_bolt()
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
+			get_viewport().set_input_as_handled()
 	elif mode == &"inspection" and event.is_action_pressed("advance_dialogue"):
 		_close_sheet()
 		get_viewport().set_input_as_handled()
@@ -185,7 +203,8 @@ func _inspect(hotspot: Node) -> void:
 	pending_inspection = hotspot.interaction_id
 	match hotspot.content_key:
 		&"door":
-			_start_dialogue(["The archive door catches on the third turn.", "The service stairs behind it lead down to the machine room."])
+			pending_inspection = &""
+			_open_door_focus()
 		&"clock":
 			wick.react_to(967.0, 490.0)
 			_start_dialogue(["Still ticking. I wound it this morning.", "You heard that little rattle too, Wick? I'll note it down."])
@@ -195,6 +214,44 @@ func _inspect(hotspot: Node) -> void:
 			ui.show_sheet()
 		_:
 			pending_inspection = &""
+
+
+func _open_door_focus() -> void:
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "ARCHIVE DOOR · LATCH",
+		"texture": DOOR_FOCUS_TEXTURE,
+		"before_region": Rect2(0, 0, 887, 887),
+		"after_region": Rect2(887, 0, 887, 887),
+		"source": Vector2(106, 521),
+		"before_text": "The bolt has slipped short of its keeper.",
+		"after_text": "The bolt now sits flush in its keeper.",
+		"verb": "SLIDE BOLT",
+		"parts": [{"label": "Door bolt", "action": "secure_door_bolt"}],
+	}, bool(state.flags.get("hall_door_latched", false)) or state.has_note(&"archive-door"))
+
+
+func _secure_door_bolt() -> void:
+	if bool(state.flags.get("hall_door_latched", false)) or state.has_note(&"archive-door"):
+		return
+	state.flags["hall_door_latched"] = true
+	focus.set_completed()
+	one_shot_audio.stream = DOOR_LATCH_SOUND
+	one_shot_audio.play()
+	_record(&"archive-door", false)
+	door_reaction_pending = true
+
+
+func _on_focus_dismissed() -> void:
+	_set_mode(&"roam")
+	if door_reaction_pending:
+		door_reaction_pending = false
+		_start_dialogue(["The bolt caught. The door should hold when the wind rises."])
+	else:
+		_maybe_finish_hall()
+	_show_pending_note_hint()
 
 
 func _start_dialogue(lines: Array[String]) -> void:

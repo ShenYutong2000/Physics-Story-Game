@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/maintenance-sheet.png" id="8_sheet"]
 [ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="9_wick"]
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="10_ui"]
+[ext_resource type="PackedScene" path="res://scenes/hall_prop_focus.tscn" id="11_focus"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
@@ -91,3 +92,5 @@ texture = ExtResource("4_front")
 centered = false
 
 [node name="HallUI" parent="." instance=ExtResource("10_ui")]
+
+[node name="HallPropFocus" parent="." instance=ExtResource("11_focus")]
