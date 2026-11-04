@@ -89,7 +89,7 @@ func _run() -> void:
 	control._close_overlay()
 	control.kath.position.x = 150.0
 	control._process(0.0)
-	control._unhandled_input(_key(KEY_F))
+	control._unhandled_input(_key(KEY_E))
 	await process_frame
 	var road = current_scene
 	if road == null or road.name != "ServiceRoad" or state.castle_pose != &"inverted":
@@ -117,7 +117,7 @@ func _run() -> void:
 	if road.mode != &"roam" or not road.ui.prompt.visible or road.ui.chapter_end.visible:
 		_fail("The inverted road still reopened the Prologue Complete card.")
 		return
-	road._unhandled_input(_key(KEY_F))
+	road._unhandled_input(_key(KEY_E))
 	await process_frame
 	var reentry = current_scene
 	if reentry == null or reentry.name != "CastleControlWalkway":

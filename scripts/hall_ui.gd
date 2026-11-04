@@ -1,7 +1,6 @@
 extends CanvasLayer
 ## Shared story UI for the prologue and Chapter I.
 
-const InteractionGuide = preload("res://scripts/interaction_guide.gd")
 const StoryGuide = preload("res://scripts/story_guide.gd")
 
 const NOTEBOOK_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/ui/notebook-panel.png")
@@ -17,6 +16,10 @@ const GOLD := Color("f5dba6")
 
 var prompt: Label
 var hint: Label
+var discovery_markers: Array[Control] = []
+var guide_bubble: Panel
+var guide_text: Label
+var guide_deadline := 0
 var dialogue: Control
 var dialogue_panel: Panel
 var dialogue_tail: Polygon2D
@@ -62,13 +65,10 @@ var chapter1_end: Control
 var pause_menu: Control
 var pause_save_error: Label
 var hint_deadline: int = 0
-var prompt_name := ""
-var prompt_has_world_action := false
 var objective_id := ""
 var objective_idle_seconds := 0.0
 var objective_reminder_shown := false
 var hint_level := 0
-var hint_is_guide := false
 
 
 func _ready() -> void:
@@ -92,6 +92,31 @@ func _ready() -> void:
 	hint.add_theme_constant_override("shadow_offset_x", 2)
 	hint.add_theme_constant_override("shadow_offset_y", 3)
 	hint.visible = false
+
+	for i in 2:
+		var marker := _make_discovery_marker(canvas)
+		marker.visible = false
+		discovery_markers.append(marker)
+	guide_bubble = Panel.new()
+	guide_bubble.size = Vector2(590, 140)
+	guide_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var thought_style := StyleBoxFlat.new()
+	thought_style.bg_color = CREAM
+	thought_style.border_color = INK
+	thought_style.set_border_width_all(3)
+	thought_style.set_corner_radius_all(17)
+	thought_style.shadow_color = Color(INK, 0.35)
+	thought_style.shadow_size = 6
+	guide_bubble.add_theme_stylebox_override("panel", thought_style)
+	canvas.add_child(guide_bubble)
+	var thought_tail := Polygon2D.new()
+	thought_tail.position = Vector2(58, 137)
+	thought_tail.polygon = PackedVector2Array([Vector2(0, 0), Vector2(25, 0), Vector2(8, 20)])
+	thought_tail.color = CREAM
+	thought_tail.antialiased = true
+	guide_bubble.add_child(thought_tail)
+	guide_text = _label(guide_bubble, Rect2(22, 10, 546, 120), "", 21, INK)
+	guide_bubble.visible = false
 
 	dialogue = Control.new()
 	dialogue.name = "Dialogue"
@@ -365,7 +390,7 @@ func _ready() -> void:
 	_label(load_panel, Rect2(65, 93, 850, 68), "The rope is taut. Check what still supports the occupied basket before Erin releases the catch.", 23, CREAM)
 	shaft_load_selection = _label(load_panel, Rect2(78, 188, 830, 202), "", 27, CREAM)
 	shaft_load_detail = _label(load_panel, Rect2(78, 404, 830, 67), "", 22, GOLD)
-	_label(load_panel, Rect2(78, 510, 830, 36), "← / →  SELECT     ·     F  CHECK     ·     ENTER  CONFIRM     ·     ESC  CANCEL", 18, GOLD)
+	_label(load_panel, Rect2(78, 510, 830, 36), "← / →  SELECT     ·     E  CHECK     ·     ENTER  CONFIRM     ·     ESC  CANCEL", 18, GOLD)
 	shaft_load_check.visible = false
 
 	shaft_rigging = Control.new()
@@ -445,7 +470,7 @@ func _ready() -> void:
 	emergency_selection.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	emergency_status = _label(emergency_panel, Rect2(90, 340, 820, 90), "Lever 2: pending     ·     Lever 4: pending     ·     Drive: running", 24, INK)
 	emergency_status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label(emergency_panel, Rect2(100, 470, 800, 44), "← / →  SELECT     ·     F  OPERATE     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label(emergency_panel, Rect2(100, 470, 800, 44), "← / →  SELECT     ·     E  OPERATE     ·     ESC  CLOSE", 20, INK).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	emergency_console.visible = false
 
 	castle_rotation = Control.new()
@@ -540,18 +565,31 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if hint.visible and Time.get_ticks_msec() >= hint_deadline:
 		hint.visible = false
+	if guide_bubble.visible and Time.get_ticks_msec() >= guide_deadline:
+		guide_bubble.visible = false
 	var objective := _sync_objective()
 	var scene := get_parent()
-	if objective.is_empty() or scene == null or scene.get("mode") != &"roam" or objective["id"] == "complete":
+	if objective.is_empty() or scene == null or scene.get("mode") != &"roam":
+		_hide_discovery()
+		guide_bubble.visible = false
+		return
+	_update_discovery(scene, objective)
+	if not get_node("/root/GameSettings").hints_enabled:
+		guide_bubble.visible = false
+		return
+	var kath: Node2D = scene.get_node_or_null("Kath")
+	if kath != null and kath.get("locomotion_mode") != &"walk":
+		return
+	if objective["id"] == "complete":
 		return
 	objective_idle_seconds += delta
 	get_node("/root/PrologueState").guide_idle_seconds = objective_idle_seconds
-	if get_node("/root/GameSettings").hints_enabled and not objective_reminder_shown and hint_level == 0 and objective_idle_seconds >= 75.0:
+	if not objective_reminder_shown and hint_level == 0 and objective_idle_seconds >= 75.0:
 		objective_reminder_shown = true
 		get_node("/root/PrologueState").guide_reminder_shown = true
-		var wick_pointed := _point_wick(objective)
-		show_hint("Wick circles a nearby lead. Press H for an optional hint, or J to review the objective." if wick_pointed else "Need a lead? Press H for an optional hint, or J to review the objective.", 7.0)
-		hint_is_guide = true
+		_point_wick(objective)
+		var area_lead := " Try %s." % objective["next_area"] if scene.scene_file_path != objective["focus_scene"] else ""
+		_show_guide("Still looking? %s.%s Press H for a closer hint, or J for your notes." % [objective["title"], area_lead], 7.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -569,8 +607,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	var story_state: Node = get_node("/root/PrologueState")
 	story_state.guide_hint_level = hint_level
 	story_state.guide_reminder_shown = true
-	show_hint("HINT %d/3 · %s" % [hint_level, objective["hints"][hint_level - 1]], 11.0)
-	hint_is_guide = true
+	var kath: Node2D = scene.get_node_or_null("Kath")
+	var kath_x := kath.position.x if kath != null else 0.0
+	_show_guide("HINT %d/3 · %s" % [hint_level, StoryGuide.hint_text(story_state, objective, hint_level, scene.scene_file_path, kath_x)], 11.0)
 	_point_wick(objective)
 
 
@@ -582,10 +621,15 @@ func _sync_objective() -> Dictionary:
 	if story_state.guide_objective_id != objective["id"]:
 		story_state.reset_guide_progress()
 		story_state.guide_objective_id = objective["id"]
+	var progress_signature: String = StoryGuide.progress_signature(story_state)
+	if story_state.guide_progress_signature != progress_signature:
+		story_state.guide_progress_signature = progress_signature
+		story_state.guide_idle_seconds = 0.0
+		story_state.guide_reminder_shown = false
+		story_state.guide_hint_level = 0
+		guide_bubble.visible = false
 	if objective_id != objective["id"]:
-		if hint_is_guide:
-			hint.visible = false
-			hint_is_guide = false
+		guide_bubble.visible = false
 		objective_id = objective["id"]
 	objective_idle_seconds = story_state.guide_idle_seconds
 	objective_reminder_shown = story_state.guide_reminder_shown
@@ -595,11 +639,22 @@ func _sync_objective() -> Dictionary:
 
 func _point_wick(objective: Dictionary) -> bool:
 	var scene := get_parent()
-	if scene == null or scene.scene_file_path != objective["focus_scene"]:
+	if scene == null:
 		return false
-	var focus: Vector2 = objective["focus_position"]
-	if focus.x < 0.0:
+	var kath: Node2D = scene.get_node_or_null("Kath")
+	if kath == null:
 		return false
+	var target: Dictionary = StoryGuide.focus_target(get_node("/root/PrologueState"), objective, scene.scene_file_path, kath.position.x)
+	if target.is_empty():
+		return false
+	var focus: Vector2 = target["position"]
+	if objective["id"] == "page" and kath.get("locomotion_mode") == &"climb":
+		focus = Vector2(1012, 315)
+	if scene.scene_file_path == objective["focus_scene"]:
+		for child in scene.get_children():
+			if child.has_method("marker_position") and child.interaction_id == target["id"]:
+				focus = child.marker_position()
+				break
 	var wick: Node = scene.get_node_or_null("Wick")
 	if wick != null:
 		wick.react_to(focus.x, focus.y)
@@ -607,36 +662,98 @@ func _point_wick(objective: Dictionary) -> bool:
 	return false
 
 
-func is_action_prompt() -> bool:
-	return prompt.visible and prompt_has_world_action
+func _show_guide(message: String, seconds: float) -> void:
+	var scene := get_parent()
+	var kath: Node2D = scene.get_node_or_null("Kath") if scene != null else null
+	if kath == null:
+		return
+	hint.visible = false
+	guide_text.text = get_node("/root/GameSettings").control_text(message)
+	guide_bubble.position = Vector2(clampf(kath.position.x - 295.0, 24.0, 1058.0), clampf(kath.position.y - 425.0, 42.0, 665.0))
+	guide_deadline = Time.get_ticks_msec() + int(seconds * 1000.0)
+	guide_bubble.visible = true
 
 
-func examine_hotspot(hotspot: Node) -> void:
-	show_hint(InteractionGuide.examination(hotspot), 6.0)
+func _make_discovery_marker(canvas: Control) -> Control:
+	var marker := Control.new()
+	marker.size = Vector2(34, 34)
+	marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(marker)
+	var diamond := Polygon2D.new()
+	diamond.position = Vector2(17, 17)
+	diamond.polygon = PackedVector2Array([Vector2(0, -8), Vector2(7, 0), Vector2(0, 8), Vector2(-7, 0)])
+	diamond.color = CREAM
+	diamond.antialiased = true
+	marker.add_child(diamond)
+	var ink := Line2D.new()
+	ink.position = Vector2(17, 17)
+	ink.points = PackedVector2Array([Vector2(0, -12), Vector2(10, 0), Vector2(0, 12), Vector2(-10, 0), Vector2(0, -12)])
+	ink.width = 1.8
+	ink.default_color = INK
+	ink.antialiased = true
+	marker.add_child(ink)
+	return marker
 
 
-func examine_named_prompt() -> void:
-	show_hint(InteractionGuide.examination_named(prompt_name), 6.0)
+func _hide_discovery() -> void:
+	for marker in discovery_markers:
+		marker.visible = false
+
+
+func _update_discovery(scene: Node, objective: Dictionary) -> void:
+	var kath: Node2D = scene.get_node_or_null("Kath")
+	if kath == null or kath.get("locomotion_mode") == &"push" or (kath.get("locomotion_mode") == &"climb" and not scene.has_method("discovery_candidates")):
+		_hide_discovery()
+		return
+	var nearby: Array[Dictionary] = []
+	var focus: Dictionary = StoryGuide.focus_target(get_node("/root/PrologueState"), objective, scene.scene_file_path, kath.position.x)
+	var focus_id: StringName = focus.get("id", &"")
+	for child in [] if kath.get("locomotion_mode") == &"climb" else scene.get_children():
+		if not child.has_method("marker_position"):
+			continue
+		# A marker must never promise an E action that nearest_hotspot would reject.
+		if scene.has_method("nearest_hotspot") and scene.nearest_hotspot(child.approach_x) != child:
+			continue
+		var distance: float = absf(kath.position.x - child.approach_x)
+		if distance <= 260.0:
+			nearby.append({"distance": distance, "position": child.marker_position(), "id": child.interaction_id})
+	if scene.has_method("discovery_candidates"):
+		for item in scene.discovery_candidates():
+			var distance: float = absf(kath.position.x - float(item["x"]))
+			if distance <= 260.0:
+				nearby.append({"distance": distance, "position": item["position"], "id": item.get("id", &"")})
+	nearby.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		if a["id"] == focus_id and b["id"] != focus_id:
+			return true
+		if b["id"] == focus_id and a["id"] != focus_id:
+			return false
+		return a["distance"] < b["distance"])
+	for i in discovery_markers.size():
+		var marker := discovery_markers[i]
+		if i >= nearby.size():
+			marker.visible = false
+			continue
+		var anchor: Vector2 = nearby[i]["position"]
+		marker.position = Vector2(clampf(anchor.x - 17.0, 8.0, 1630.0), clampf(anchor.y - 17.0 + sin(Time.get_ticks_msec() * 0.004 + i) * 3.0, 35.0, 830.0))
+		marker.modulate.a = clampf((260.0 - float(nearby[i]["distance"])) / 75.0, 0.0, 1.0) * 0.9
+		marker.visible = marker.modulate.a > 0.02
 
 
 func show_prompt(name: String, screen_x: float, action: String = "INSPECT", screen_y: float = 415.0) -> void:
-	prompt_name = name
-	prompt_has_world_action = InteractionGuide.is_action_label(action)
-	prompt.text = ("%s  EXAMINE  ·  %s\n%s  %s" % [get_node("/root/GameSettings").key_label("interact"), name.to_upper(), get_node("/root/GameSettings").key_label("world_action"), action]) if prompt_has_world_action else "%s  %s  ·  %s" % [get_node("/root/GameSettings").key_label("interact"), action, name.to_upper()]
+	prompt.text = "%s  %s  ·  %s" % [get_node("/root/GameSettings").key_label("interact"), action, name.to_upper()]
 	prompt.position = Vector2(clampf(screen_x - 240.0, 24.0, 1168.0), clampf(screen_y, 24.0, 850.0))
 	prompt.visible = true
 
 
 func hide_prompt() -> void:
 	prompt.visible = false
-	prompt_has_world_action = false
 
 
 func show_hint(message: String, seconds: float = 4.0) -> void:
+	guide_bubble.visible = false
 	hint.text = get_node("/root/GameSettings").control_text(message)
 	hint_deadline = Time.get_ticks_msec() + int(seconds * 1000.0)
 	hint.visible = true
-	hint_is_guide = false
 
 
 func show_dialogue(line: String, speaker_position: Vector2, beside_high_speaker: bool = false) -> void:
@@ -829,7 +946,7 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 		shaft_winch_fill.size.x = 700.0 * clampf(tension_level, 0.0, 1.0)
 		shaft_winch_path.text = "Erin is inside. The upper catch stays secured while the winch takes up slack."
 		shaft_winch_status.text = "Rope tension: %s" % ("stable" if tension_level >= 0.995 else "increasing" if tension_level > 0.01 else "not yet checked")
-		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("The brake held. Close this view, then F at the winch to check the load.") if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
+		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("The brake held. Close this view, then E at the winch to check the load.") if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
 		return
 	if operation == &"passenger_descent":
 		shaft_winch_measure.text = "Two supporting strands · brake before the lower berth"
@@ -856,7 +973,7 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 	if rail_removed:
 		shaft_winch_instruction.text = "Hold ↓ to lower the empty basket."
 	elif progress >= 0.995:
-		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("Basket at Erin's ledge. F to dock and pass the tools.")
+		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("Basket at Erin's ledge. E to dock and pass the tools.")
 	else:
 		shaft_winch_instruction.text = "Hold ↑ to reel in. Hold ↓ to lower."
 
@@ -881,7 +998,7 @@ func update_shaft_load_check(checked: Array[StringName], selected: int) -> void:
 	for index in 4:
 		lines.append("%s  %s  %s" % ["›" if index == selected else " ", "✓" if checked.has(ids[index]) else "○", titles[index]])
 	shaft_load_selection.text = "\n".join(lines)
-	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else get_node("/root/GameSettings").control_text("F to compare: ") + details[selected]
+	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else get_node("/root/GameSettings").control_text("E to compare: ") + details[selected]
 
 
 func show_shaft_rigging(step: int) -> void:
@@ -1061,6 +1178,7 @@ func _label(parent: Control, rect: Rect2, value: String, font_size: int, color: 
 	var result := Label.new()
 	result.text = get_node("/root/GameSettings").control_text(value)
 	result.set_meta("control_base_text", value)
+	result.set_meta("control_rendered_text", result.text)
 	result.position = rect.position
 	result.size = rect.size
 	result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

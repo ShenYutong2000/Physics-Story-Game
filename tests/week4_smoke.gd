@@ -40,7 +40,7 @@ func _run() -> void:
 	state.flags["machine_baseline_recorded"] = true
 	state.add_note_once(&"machine-reading", "Machine-room reading", "The needle is one division above its previous mark.")
 	hall.kath.position.x = 1530.0
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	var upper = current_scene
 	if upper == null or upper.name != "UpperStacks" or upper.kath.position.y != FLOOR_Y:
 		_fail("The Hall did not enter the Upper Stacks at the correct floor height.")
@@ -202,12 +202,12 @@ func _run() -> void:
 		_fail("Reaching floor level did not automatically end the climb.")
 		return
 	upper.kath.position.x = 500.0
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	hall = current_scene
 	if hall == null or hall.name != "LibraryHall" or hall.kath.position.x != 1530.0:
 		_fail("The Upper Stacks exit did not return to the Hall stairway.")
 		return
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	upper = current_scene
 	if upper == null or upper.name != "UpperStacks" or upper.mode != &"roam":
 		_fail("Returning to the Upper Stacks replayed the introduction or blocked entry.")
@@ -237,7 +237,7 @@ func _key(code: int) -> InputEventKey:
 
 func _act(room: Node) -> void:
 	room._process(0.0)
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 
 
 func _tap_key(code: int) -> void:

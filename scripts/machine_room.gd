@@ -89,7 +89,7 @@ func _process(_delta: float) -> void:
 			needle.rotation = -0.54
 			state.flags["incident_needle_rebounded"] = true
 			incident_rebound_timer = -1.0
-			ui.show_hint("THE NEEDLE IS RISING AGAIN  ·  F  OPEN EMERGENCY STOP", 6.0)
+			ui.show_hint("THE NEEDLE IS RISING AGAIN  ·  E  OPEN EMERGENCY STOP", 6.0)
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
@@ -149,23 +149,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			selected_lever = 4 if selected_lever == 2 else 2
 			_update_console()
 			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("world_action"):
+		elif event.is_action_pressed("interact"):
 			_operate_selected_lever()
 			get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			# Returning to the hall removes this scene immediately.
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				if ui.is_action_prompt():
-					if event.is_action_pressed("world_action"):
-						_inspect(closest)
-					else:
-						ui.examine_hotspot(closest)
-				elif event.is_action_pressed("interact"):
-					_inspect(closest)
+				_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

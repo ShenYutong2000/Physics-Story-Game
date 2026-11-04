@@ -4,14 +4,13 @@ extends Node
 signal changed
 
 const SETTINGS_PATH := "user://footnotes-settings.cfg"
-const REMAPPABLE := ["interact", "world_action", "toggle_journal", "request_hint"]
+const REMAPPABLE := ["interact", "toggle_journal", "request_hint"]
 const DEFAULT_KEYS := {
 	"interact": KEY_E,
-	"world_action": KEY_F,
 	"toggle_journal": KEY_J,
 	"request_hint": KEY_H,
 }
-const ROWS := ["Master volume", "Ambience", "Effects", "Text size", "Optional hints", "Examine key", "Action key", "Notes key", "Hint key", "Back"]
+const ROWS := ["Master volume", "Ambience", "Effects", "Text size", "Optional hints", "Interact key", "Notes key", "Hint key", "Back"]
 const BUS_NAMES := ["Master", "Ambience", "Effects"]
 const UI_TICK: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
 
@@ -63,7 +62,7 @@ func _input(event: InputEvent) -> void:
 			capturing = not _bind_key(REMAPPABLE[selection - 5], event.physical_keycode if event.physical_keycode != 0 else event.keycode)
 		_refresh()
 		return
-	if event.keycode in [KEY_ESCAPE, KEY_S] or (event.keycode == KEY_ENTER and selection == 9):
+	if event.keycode in [KEY_ESCAPE, KEY_S] or (event.keycode == KEY_ENTER and selection == 8):
 		close_menu()
 	elif event.keycode in [KEY_UP, KEY_W]:
 		status_message = ""
@@ -78,7 +77,7 @@ func _input(event: InputEvent) -> void:
 	elif event.keycode in [KEY_LEFT, KEY_RIGHT]:
 		_adjust(-1 if event.keycode == KEY_LEFT else 1)
 	elif event.keycode == KEY_ENTER:
-		if selection >= 5 and selection <= 8:
+		if selection >= 5 and selection <= 7:
 			capturing = true
 			status_message = ""
 		elif selection < 5:
@@ -121,8 +120,8 @@ func _adjust(direction: int) -> void:
 
 
 func _bind_key(action: String, code: int) -> bool:
-	if code < KEY_A or code > KEY_Z or code in [KEY_Q, KEY_S, KEY_W, KEY_A, KEY_D]:
-		status_message = "Choose an unused letter other than Q, S, W, A or D."
+	if code < KEY_A or code > KEY_Z or code in [KEY_Q, KEY_S, KEY_W, KEY_A, KEY_D, KEY_F]:
+		status_message = "Choose an unused letter other than F, Q, S, W, A or D."
 		return false
 	for other in key_bindings:
 		if other != action and key_bindings[other] == code:
@@ -155,7 +154,7 @@ func key_label(action: String) -> String:
 
 func control_text(value: String) -> String:
 	var result := value
-	var pairs := [["interact", "E"], ["world_action", "F"], ["toggle_journal", "J"], ["request_hint", "H"]]
+	var pairs := [["interact", "E"], ["toggle_journal", "J"], ["request_hint", "H"]]
 	for i in pairs.size():
 		var pair: Array = pairs[i]
 		var marker := "⟦KEY_%d⟧" % i
@@ -199,7 +198,12 @@ func _scene_changed() -> void:
 
 func _apply_control_labels(node: Node) -> void:
 	if node is Label and node.has_meta("control_base_text"):
-		node.text = control_text(str(node.get_meta("control_base_text")))
+		# Scene-ready dialogue and modal text may have replaced a label's template.
+		# Only refresh a label that still displays its last static rendering.
+		if node.text == str(node.get_meta("control_rendered_text", node.text)):
+			var rendered := control_text(str(node.get_meta("control_base_text")))
+			node.text = rendered
+			node.set_meta("control_rendered_text", rendered)
 	for child in node.get_children():
 		_apply_control_labels(child)
 
@@ -249,7 +253,7 @@ func load_preferences() -> void:
 	var proposed := {}
 	for action in REMAPPABLE:
 		var code := int(config.get_value("keys", action, DEFAULT_KEYS[action]))
-		if code < KEY_A or code > KEY_Z or code in [KEY_Q, KEY_S, KEY_W, KEY_A, KEY_D] or proposed.values().has(code):
+		if code < KEY_A or code > KEY_Z or code in [KEY_Q, KEY_S, KEY_W, KEY_A, KEY_D, KEY_F] or proposed.values().has(code):
 			proposed = DEFAULT_KEYS.duplicate()
 			break
 		proposed[action] = code
@@ -312,7 +316,7 @@ func _refresh() -> void:
 		"%d%%" % roundi(effects_volume * 100),
 		"%d%%" % roundi(text_scale * 100),
 		"ON" if hints_enabled else "OFF",
-		key_label("interact"), key_label("world_action"), key_label("toggle_journal"), key_label("request_hint"), ""
+		key_label("interact"), key_label("toggle_journal"), key_label("request_hint"), ""
 	]
 	var lines: Array[String] = []
 	for i in ROWS.size():

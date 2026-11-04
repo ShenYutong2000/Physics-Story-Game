@@ -8,20 +8,21 @@ Open `project.godot` in Godot 4.7.2 and press **F5**. The title screen offers **
 
 The game saves on room transitions and about every five seconds while Kath is freely exploring, paused, or viewing the chapter end card. Press **Esc** in exploration to pause, then **Q** to save and quit. A new run replaces the old slot. The file lives in Godot's `user://footnotes-chapter1-save.json`; Godot manages its actual system location. Checkpoints are written through a temporary file and retain a `.bak` copy; Continue falls back to that copy if the primary file is damaged. Direct **F6** scene previews are developer previews and do not enable disk saves.
 
-**Settings** are available on the title screen or with **S** while paused. Adjust master, ambience and effect volume; text size from 100% to 115%; optional H hints; and the examine, action, notes and hint letter keys. Story progress and preferences are separate files. Esc closes Settings and returns to the title or paused game.
+**Settings** are available on the title screen or with **S** while paused. Adjust master, ambience and effect volume; text size from 100% to 115%; optional H hints; and the interaction, notes and hint letter keys. Story progress and preferences are separate files. Esc closes Settings and returns to the title or paused game.
 
 ## Controls
 
 - **A/D** or **Left/Right**: walk; select items in certain close views.
-- **E**: examine or read a nearby object, or talk to someone.
-- **F**: take, move, operate, climb, or enter when an action is available. When both are possible, the nearby prompt shows both keys.
-- **H**: request an optional hint. Each press reveals one of three increasingly specific hints for the current objective; the level resets when the objective changes.
+- **E**: interact with a nearby object or person—examine, read, talk, take, move, operate, climb, or enter, depending on the prompt.
+- **H**: request an optional hint. Each press reveals one of three increasingly specific hints; the level resets when the objective or its evidence changes.
 - **Enter**: advance dialogue or confirm a close view.
 - **Esc**: close a view; pause while exploring. **Enter/Esc** resumes from pause.
 - **J**: open or close Notes. **Up/Down** scrolls them.
 - **W/S** or **Up/Down**: climb ladders; control the shaft winch when its view is open.
 - **Space**: apply the stronger basket brake during Erin's descent.
 - **S** on the pause screen: settings. **Q**: save and quit.
+
+Nearby inspectable objects show a small storybook mark before Kath is close enough to use E. At the original interaction distance the mark is joined by the exact E action prompt. After about 75 seconds of free exploration without a new observation or mechanism change, Wick briefly points toward an unfinished lead and Kath gets a short objective reminder. H gives more detail only when requested. Turning optional hints off removes Wick's timed guidance and H hints, while the nearby object marks and E prompts remain available.
 
 ## Play route
 

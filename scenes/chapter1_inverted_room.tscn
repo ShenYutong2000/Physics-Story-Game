@@ -91,6 +91,7 @@ reach_radius = 85.0
 [node name="ChalkPatch" parent="." instance=ExtResource("15_hotspot")]
 position = Vector2(500, 806)
 interaction_id = &"room-chalk-patch"
+discovery_anchor = Vector2(500, 695)
 display_name = "Chalk Mark"
 approach_x = 500.0
 reach_radius = 90.0
@@ -98,6 +99,7 @@ reach_radius = 90.0
 [node name="PlumbWeight" parent="." instance=ExtResource("15_hotspot")]
 position = Vector2(704, 806)
 interaction_id = &"room-plumb-weight"
+discovery_anchor = Vector2(704, 485)
 display_name = "Hanging Weight"
 approach_x = 704.0
 reach_radius = 100.0
@@ -105,6 +107,7 @@ reach_radius = 100.0
 [node name="WaterPath" parent="." instance=ExtResource("15_hotspot")]
 position = Vector2(915, 806)
 interaction_id = &"room-water-path"
+discovery_anchor = Vector2(915, 470)
 display_name = "Falling Water"
 approach_x = 915.0
 reach_radius = 100.0
@@ -119,6 +122,7 @@ reach_radius = 90.0
 [node name="ShaftLadder" parent="." instance=ExtResource("15_hotspot")]
 position = Vector2(1460, 806)
 interaction_id = &"room-shaft-ladder"
+discovery_anchor = Vector2(1460, 510)
 display_name = "Maintenance Ladder"
 approach_x = 1460.0
 reach_radius = 90.0

@@ -73,6 +73,20 @@ func _exit_tree() -> void:
 		effects_player.stop()
 
 
+func discovery_candidates() -> Array[Dictionary]:
+	var items: Array[Dictionary] = [{"x": DOOR_X, "position": Vector2(DOOR_X, 575), "id": &"room-door"}]
+	if not state.flags.get("room_lamp_on", false):
+		items.append({"x": LAMP_X, "position": Vector2(LAMP_X, 495), "id": &"room-lamp"})
+	if state.flags.get("room_lamp_on", false) and not state.flags.get("room_notebook_compared", false):
+		items.append({"x": NOTEBOOK_X, "position": Vector2(NOTEBOOK_X, 515), "id": &"room-notebook"})
+	if state.flags.get("room_notebook_compared", false) and not state.flags.get("room_rested", false):
+		items.append({"x": BED_X, "position": Vector2(BED_X, 580), "id": &"room-bed"})
+	if state.flags.get("dawn_reached", false) and not state.flags.get("room_bag_packed", false):
+		items.append({"x": BAG_X, "position": Vector2(BAG_X, 585), "id": &"room-bag"})
+	items.append({"x": COAT_X, "position": Vector2(COAT_X, 475), "id": &"room-coat"})
+	return items
+
+
 func _process(_delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
@@ -127,15 +141,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
-			if ui.is_action_prompt():
-				if event.is_action_pressed("world_action"):
-					_interact()
-				else:
-					ui.examine_named_prompt()
-			elif event.is_action_pressed("interact"):
-				_interact()
+			_interact()
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

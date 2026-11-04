@@ -87,6 +87,10 @@ func _exit_tree() -> void:
 		effects_player.stop()
 
 
+func discovery_candidates() -> Array[Dictionary]:
+	return [{"x": END_CARD_X, "position": Vector2(END_CARD_X, 555), "id": &"road-end"}] if state.flags.get("service_gate_open", false) else []
+
+
 func _process(_delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
@@ -135,27 +139,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
-			if event.is_action_pressed("world_action") and state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
+			if state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
 				and (state.castle_pose == &"inverted" or state.castle_pose == &"restored"):
 				_set_mode(&"travel")
 				ui.hide_modals()
 				state.travel_to(CONTROL_WALKWAY_SCENE, &"from-service-road")
 				return
-			if event.is_action_pressed("interact") and state.flags.get("service_gate_open", false) and kath.position.x >= END_CARD_X \
-				and (state.castle_pose == &"inverted" or state.castle_pose == &"restored"):
-				ui.examine_named_prompt()
-				return
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				if ui.is_action_prompt():
-					if event.is_action_pressed("world_action"):
-						_inspect(closest)
-					else:
-						ui.examine_hotspot(closest)
-				elif event.is_action_pressed("interact"):
-					_inspect(closest)
+				_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()

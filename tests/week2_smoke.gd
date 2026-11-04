@@ -15,13 +15,19 @@ func _run() -> void:
 		root.add_child(test_state)
 	var hall: Node2D = HALL.instantiate()
 	root.add_child(hall)
+	current_scene = hall
 	await process_frame
+	# Normal change_scene_to_file emits scene_changed after the hall's _ready() sets the intro.
+	root.get_node("GameSettings")._on_scene_changed(hall)
 	var kath: CharacterBody2D = hall.get_node("Kath")
 	var ui: CanvasLayer = hall.get_node("HallUI")
 	var wick: Node2D = hall.get_node("Wick")
 
 	if hall.mode != &"dialogue" or kath.controls_enabled or not ui.dialogue.visible:
 		_fail("Opening dialogue did not lock movement.")
+		return
+	if ui.dialogue_text.text != "Evening rounds. The door, the clock, the checklist... then the machine-room reading.":
+		_fail("Opening dialogue text was cleared by the scene-change settings refresh.")
 		return
 	await _tap_key(KEY_ENTER)
 	if hall.mode != &"roam" or not kath.controls_enabled:

@@ -24,10 +24,32 @@ func _run() -> void:
 	hall.ui._process(0.0)
 	state.guide_idle_seconds = 76.0
 	hall.ui._process(0.0)
-	if not hall.ui.objective_reminder_shown or hall.ui.hint.text.find("Press H") == -1 or hall.wick.reaction_time <= 0.0:
+	if not hall.ui.objective_reminder_shown or not hall.ui.guide_bubble.visible or hall.ui.guide_text.text.find("Press H") == -1 or hall.wick.reaction_time <= 0.0:
 		_fail("An idle player did not receive Wick's optional hint reminder.")
 		return
+	hall.kath.position.x = 800.0
+	hall._process(0.0)
+	hall.ui._process(0.0)
+	if hall.ui.prompt.visible or not hall.ui.discovery_markers[0].visible or hall.ui.discovery_markers[1].visible:
+		_fail("A nearby clock did not show one discovery mark before E was in reach.")
+		return
+	hall.kath.position.x = 967.0
+	hall._process(0.0)
+	hall.ui._process(0.0)
+	if not hall.ui.prompt.visible or not hall.ui.discovery_markers[0].visible:
+		_fail("The E prompt and discovery mark did not agree at the clock.")
+		return
+	root.get_node("GameSettings").hints_enabled = false
+	hall.ui._process(0.0)
+	if hall.ui.guide_bubble.visible or not hall.ui.discovery_markers[0].visible:
+		_fail("Turning optional hints off also hid the basic discovery mark.")
+		return
+	root.get_node("GameSettings").hints_enabled = true
 	hall._unhandled_input(_key(KEY_J))
+	hall.ui._process(0.0)
+	if hall.ui.discovery_markers[0].visible:
+		_fail("Discovery marks remained visible over the journal.")
+		return
 	if hall.ui.journal_progress.text.find("CURRENT OBJECTIVE\nComplete the evening rounds") == -1:
 		_fail("The journal has no current objective.")
 		return
@@ -38,18 +60,28 @@ func _run() -> void:
 	hall._unhandled_input(_key(KEY_J))
 	for level in range(1, 5):
 		await _tap_key(KEY_H)
-		if hall.ui.hint_level != mini(level, 3) or hall.ui.hint.text.find("HINT %d/3" % mini(level, 3)) == -1:
+		if hall.ui.hint_level != mini(level, 3) or hall.ui.guide_text.text.find("HINT %d/3" % mini(level, 3)) == -1:
 			_fail("H did not advance or cap the three hint levels.")
 			return
 	if hall.wick.reaction_time <= 0.0:
 		_fail("Wick did not point toward the current hall objective.")
 		return
 
-	for note_id in [&"archive-door", &"clock-housing", &"maintenance-sheet"]:
+	state.add_note_once(&"clock-housing", "Old clock", "Observation")
+	hall.ui._process(0.0)
+	var remaining_target: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), hall.scene_file_path, hall.kath.position.x)
+	if hall.ui.hint_level != 0 or hall.ui.objective_reminder_shown or remaining_target["id"] != &"maintenance-sheet":
+		_fail("Progress inside the same objective did not reset hints and select an unfinished object.")
+		return
+	for note_id in [&"archive-door", &"maintenance-sheet"]:
 		state.add_note_once(note_id, String(note_id), "Observation")
 	hall.ui._process(0.0)
-	if not _expect(state, "baseline") or hall.ui.hint_level != 0 or hall.ui.hint.visible:
+	if not _expect(state, "baseline") or hall.ui.hint_level != 0 or hall.ui.guide_bubble.visible:
 		_fail("A new objective did not reset the hint level.")
+		return
+	var hall_exit: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), hall.scene_file_path, hall.kath.position.x)
+	if hall_exit["id"] != &"exit" or absf(hall_exit["position"].x - 120.0) > 1.0:
+		_fail("Wick did not route the machine-room objective toward the hall exit.")
 		return
 	hall._unhandled_input(_key(KEY_J))
 	if hall.ui.journal_progress.text.find("NEXT RELEVANT AREA  Machine Room") == -1 \
@@ -97,6 +129,11 @@ func _run() -> void:
 		return
 	state.flags["control_inversion_complete"] = true
 	state.flags["room_water_observed"] = true
+	var plumb_target: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), "res://scenes/chapter1_inverted_room.tscn", 900.0)
+	if plumb_target["id"] != &"room-plumb-weight":
+		_fail("Wick pointed back to observed water instead of the unexamined weight.")
+		return
+	state.flags["room_water_observed"] = true
 	state.flags["room_plumb_observed"] = true
 	state.flags["castle_down_confirmed"] = true
 	state.flags["room_ladder_checked"] = true
@@ -120,6 +157,11 @@ func _run() -> void:
 	state.flags["shaft_empty_test_complete"] = true
 	if not _expect(state, "raise_empty"):
 		return
+	state.flags["shaft_basket_progress"] = 1.0
+	var tube_target: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), "res://scenes/chapter1_maintenance_shaft.tscn", 450.0)
+	if tube_target["id"] != &"shaft-speaking-tube":
+		_fail("The raised basket did not redirect Wick from the winch to the speaking tube.")
+		return
 	state.flags["shaft_upper_dock_locked"] = true
 	if not _expect(state, "board_erin"):
 		return
@@ -138,6 +180,12 @@ func _run() -> void:
 		return
 	state.flags["shaft_lower_dock_locked"] = true
 	state.flags["shaft_rescue_complete"] = true
+	state.flags["engine_chart_seen"] = true
+	var engine_target: Dictionary = StoryGuide.focus_target(state, StoryGuide.current(state), "res://scenes/chapter1_engine_room.tscn", 335.0)
+	if engine_target["id"] == &"engine-wall-chart":
+		_fail("Wick pointed to an engine observation already recorded.")
+		return
+	state.flags.erase("engine_chart_seen")
 	state.flags["engine_fault_traced"] = true
 	state.flags["engine_drive_isolated"] = true
 	state.flags["engine_jam_cleared"] = true

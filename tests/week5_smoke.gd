@@ -101,8 +101,8 @@ func _run() -> void:
 	if machine.mode != &"console":
 		_fail("The emergency control console did not open.")
 		return
-	machine._unhandled_input(_key(KEY_F))
-	machine._unhandled_input(_key(KEY_F))
+	machine._unhandled_input(_key(KEY_E))
+	machine._unhandled_input(_key(KEY_E))
 	if not state.flags.get("incident_valve_two_open", false) or not state.flags.get("incident_valve_four_open", false):
 		_fail("The console did not operate levers 2 and 4 in sequence.")
 		return
@@ -129,7 +129,7 @@ func _run() -> void:
 		return
 	machine.kath.position.x = 1338.0
 	machine._process(0.0)
-	machine._unhandled_input(_key(KEY_F))
+	machine._unhandled_input(_key(KEY_E))
 	if not state.flags.get("incident_drive_stopped", false):
 		_fail("The emergency stop did not stop the local drive.")
 		return
@@ -202,7 +202,7 @@ func _run() -> void:
 	control._close_overlay()
 	control.kath.position.x = 150.0
 	control._process(0.0)
-	control._unhandled_input(_key(KEY_F))
+	control._unhandled_input(_key(KEY_E))
 	for i in 3:
 		await process_frame
 	road = current_scene
@@ -226,8 +226,8 @@ func _run() -> void:
 	early_stop_machine._close_dialogue(false)
 	early_stop_machine.kath.position.x = 1136.0
 	early_stop_machine._inspect(early_stop_machine.get_node("Gauge"))
-	early_stop_machine._unhandled_input(_key(KEY_F))
-	early_stop_machine._unhandled_input(_key(KEY_F))
+	early_stop_machine._unhandled_input(_key(KEY_E))
+	early_stop_machine._unhandled_input(_key(KEY_E))
 	await create_timer(3.7).timeout
 	if not state.flags.get("incident_complete", false):
 		_fail("Operating both valves after an early stop did not complete recovery.")

@@ -39,9 +39,9 @@ func _run() -> void:
 	var note_count: int = state.notes.size()
 	room.kath.position.x = 1460.0
 	room._process(0.0)
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 	if room.kath.locomotion_mode != &"climb" or not is_equal_approx(room.kath.position.y, 776.0):
-		_fail("F at the ladder foot did not start climbing.")
+		_fail("E at the ladder foot did not start climbing.")
 		return
 	Input.action_press("move_up")
 	room.kath._physics_process(0.1)
@@ -63,7 +63,7 @@ func _run() -> void:
 	room._unhandled_input(_key(KEY_J))
 	room.kath.position.y = 475.0
 	room._process(0.0)
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 	await process_frame
 	var shaft = current_scene
 	if shaft == null or shaft.name != "Chapter1MaintenanceShaft":
@@ -85,7 +85,7 @@ func _run() -> void:
 		return
 	shaft.kath.position.x = 190.0
 	shaft._process(0.0)
-	shaft._unhandled_input(_key(KEY_F))
+	shaft._unhandled_input(_key(KEY_E))
 	await process_frame
 	room = current_scene
 	if room == null or room.name != "Chapter1InvertedRoom" or room.kath.locomotion_mode != &"climb":
@@ -101,10 +101,10 @@ func _run() -> void:
 	if room.kath.locomotion_mode != &"walk" or not is_equal_approx(room.kath.position.x, 1460.0) or not is_equal_approx(room.kath.position.y, 806.0):
 		_fail("Descending did not restore safe walking at the ladder foot.")
 		return
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 	room.kath.position.y = 475.0
 	room._process(0.0)
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 	await process_frame
 	shaft = current_scene
 	if shaft == null or shaft.name != "Chapter1MaintenanceShaft" or shaft.mode != &"roam" or state.notes.size() != note_count:
