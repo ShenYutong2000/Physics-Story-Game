@@ -1,6 +1,6 @@
 # Grand Archive Hall — close-up art review (step 2)
 
-The archive-door close-up is now playable in the hall as the Step 3 reference interaction. The other prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
+The archive-door and high-window close-ups are now playable in the hall. The other prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
 
 ## Scene and main props
 
@@ -36,6 +36,8 @@ The [capture script](../../tests/hall_art_capture.gd) renders the art with live 
 - [Keys before](review-captures/keys-before-1280x720.png) · [after](review-captures/keys-after-1280x720.png)
 - [Round book before](review-captures/book-before-1280x720.png) · [after](review-captures/book-after-1280x720.png) · [emergency page](review-captures/emergency-page-1280x720.png)
 
-## Playable close-up reference (Step 3)
+## Playable close-ups (Steps 3–4)
 
-In the hall, stand by the archive door and press E to focus on the latch. Press E again to slide the bolt; Esc returns to the hall. Esc before operating leaves the door unchecked. On a later visit, the close-up reopens in its secured state. The same focus scene supports left/right part selection for props with multiple actionable parts in later steps. The live Godot captures show the playable [before](review-captures/interactive-door-before-1280x720.png) and [after](review-captures/interactive-door-after-1280x720.png) views at 1280 × 720; corresponding 1672 × 941 captures are in the same folder. The hall-scale latch art update and the full door/window checklist gate are scheduled for Step 4.
+In the hall, stand by the archive door or high window and press E to focus. Press E again to slide the bolt or press the catch; Esc returns to the hall. Esc before operating leaves that part unchanged. The latch or catch visibly changes in the close-up and on the room-scale fixture; the window rattle stops when the catch is fixed. The combined patrol item is recorded only after both parts are secured, in either order. Both close-ups reopen in their completed state after leaving and returning to the hall. The same focus scene supports left/right part selection for props with multiple actionable parts in later steps.
+
+Live Godot captures at 1280 × 720: [hall before](review-captures/interactive-hall-before-1280x720.png) · [hall after](review-captures/interactive-hall-after-1280x720.png) · [door before](review-captures/interactive-door-before-1280x720.png) · [door after](review-captures/interactive-door-after-1280x720.png) · [window before](review-captures/interactive-window-before-1280x720.png) · [window after](review-captures/interactive-window-after-1280x720.png). Corresponding 1672 × 941 captures are in the same folder. The redesigned round book and other props remain for subsequent steps.

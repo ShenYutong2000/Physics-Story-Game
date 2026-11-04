@@ -26,7 +26,7 @@ func _run() -> void:
 	if hall.mode != &"dialogue" or kath.controls_enabled or not ui.dialogue.visible:
 		_fail("Opening dialogue did not lock movement.")
 		return
-	if ui.dialogue_text.text != "Evening rounds. The door, the clock, the checklist... then the machine-room reading.":
+	if ui.dialogue_text.text != "Evening rounds. Secure the door and high window, then check the clock and maintenance sheet.":
 		_fail("Opening dialogue text was cleared by the scene-change settings refresh.")
 		return
 	await _tap_key(KEY_ENTER)
@@ -130,6 +130,16 @@ func _run() -> void:
 	if hall.mode != &"dialogue":
 		_fail("Completing and leaving the door close-up did not restore Kath's response.")
 		return
+	hall._advance_dialogue()
+	if hall.notes.size() != 2 or hall.mode != &"roam":
+		_fail("The door alone should not complete the combined door-and-window check.")
+		return
+	kath.position.x = 476.0
+	hall._inspect(hall.nearest_hotspot(kath.position.x))
+	await create_timer(0.3).timeout
+	hall._fix_window_catch()
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 	hall._advance_dialogue()
 	if hall.notes.size() != 3 or hall.notes[2]["id"] != &"archive-door" \
 		or not hall.completion_played or hall.mode != &"dialogue":

@@ -51,7 +51,7 @@ const FOCUS_IDS := {
 static func current(state: Node) -> Dictionary:
 	var f: Dictionary = state.flags
 	if not state.hall_checks_complete():
-		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Look for the three items named in Kath's rounds.", "The archive door, old clock and maintenance sheet are all in the hall.", "Stand beside each item and press E to inspect it.", [&"archive-door", &"clock-housing", &"maintenance-sheet"], 1040.0, 510.0)
+		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Secure the door and high window, then check the clock and sheet.", "The archive door is left of the tall windows; the clock and sheet are farther right.", "Stand by the door and high window; press E to focus, then E to fasten each latch.", [&"archive-door", &"clock-housing", &"maintenance-sheet"], 1040.0, 510.0)
 	if not f.get("machine_baseline_recorded", false):
 		return _step("baseline", "Record the machine reading", "Machine Room", "Machine Room", "The instrument has a mark from the last reading.", "Enter through the hall's archive door and find the large gauge.", "Press E at the gauge, compare its pointer with the old mark, then press Enter to record it.", [&"archive-door"], 1136.0, 420.0)
 	if not f.get("stacks_bucket_moved", false):
@@ -168,7 +168,11 @@ static func focus_candidates(state: Node, objective: Dictionary) -> Array[Dictio
 	var f: Dictionary = state.flags
 	match String(objective["id"]):
 		"hall":
-			for item in [[&"archive-door", Vector2(120, 515), "archive door"], [&"clock-housing", Vector2(967, 530), "old clock"], [&"maintenance-sheet", Vector2(1212, 510), "maintenance sheet"]]:
+			if not f.get("hall_door_latched", false) and not state.has_note(&"archive-door"):
+				result.append(_candidate(&"archive-door", Vector2(120, 515), "archive door"))
+			if not f.get("hall_window_fixed", false) and not state.has_note(&"archive-door"):
+				result.append(_candidate(&"high-window", Vector2(476, 500), "high window"))
+			for item in [[&"clock-housing", Vector2(967, 530), "old clock"], [&"maintenance-sheet", Vector2(1212, 510), "maintenance sheet"]]:
 				if not state.has_note(item[0]):
 					result.append(_candidate(item[0], item[1], item[2]))
 		"control_checks":

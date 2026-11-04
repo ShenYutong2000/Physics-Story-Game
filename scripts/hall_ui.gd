@@ -834,9 +834,14 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	for note_id in HALL_NOTE_IDS:
 		if discovered.has(note_id):
 			hall_count += 1
-	journal_progress.text = "HALL PATROL  %d / 3\n%s  Archive door\n%s  Old clock\n%s  Maintenance sheet\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
+	var hall_state: Node = get_node("/root/PrologueState")
+	var door_done: bool = bool(hall_state.flags.get("hall_door_latched", false)) or discovered.has(&"archive-door")
+	var window_done: bool = bool(hall_state.flags.get("hall_window_fixed", false)) or discovered.has(&"archive-door")
+	journal_progress.text = "HALL PATROL  %d / 3\n%s  Doors and windows (door %s · window %s)\n%s  Old clock\n%s  Maintenance sheet\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
 		hall_count,
 		"[x]" if discovered.has(&"archive-door") else "[ ]",
+		"set" if door_done else "loose",
+		"fixed" if window_done else "loose",
 		"[x]" if discovered.has(&"clock-housing") else "[ ]",
 		"[x]" if discovered.has(&"maintenance-sheet") else "[ ]",
 		"1 / 1  Reading recorded" if machine_recorded else "0 / 1  Reading pending",

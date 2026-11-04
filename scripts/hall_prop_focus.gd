@@ -158,7 +158,7 @@ func _refresh_labels() -> void:
 		lines.append(("› " if index == selected_part else "  ") + String(parts[index].get("label", "")))
 	parts_label.text = "\n".join(lines)
 	if completed:
-		controls_label.text = "ESC  RETURN  ·  ALREADY SECURED"
+		controls_label.text = "ESC  RETURN  ·  %s" % config.get("done_control", "ALREADY SECURED")
 	else:
 		controls_label.text = "E  %s  ·  ESC  RETURN%s" % [config.get("verb", "OPERATE"), "  ·  ← / →  SELECT" if parts.size() > 1 else ""]
 

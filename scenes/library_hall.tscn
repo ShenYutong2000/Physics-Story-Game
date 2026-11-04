@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="9_wick"]
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="10_ui"]
 [ext_resource type="PackedScene" path="res://scenes/hall_prop_focus.tscn" id="11_focus"]
+[ext_resource type="Script" path="res://scripts/hall_latch_visual.gd" id="12_latch_visual"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
@@ -41,6 +42,26 @@ spawn_tag = "from-hall"
 position = Vector2(0, -217)
 scale = Vector2(0.321, 0.321)
 texture = ExtResource("6_door")
+
+[node name="DoorBoltWorld" type="Node2D" parent="."]
+position = Vector2(127, 519)
+z_index = -4
+script = ExtResource("12_latch_visual")
+
+[node name="HighWindow" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(476, 714)
+z_index = -5
+interaction_id = &"high-window"
+display_name = "High window"
+approach_x = 476.0
+reach_radius = 140.0
+content_key = &"window"
+
+[node name="WindowCatchWorld" type="Node2D" parent="."]
+position = Vector2(602, 501)
+z_index = -4
+script = ExtResource("12_latch_visual")
+kind = 1
 
 [node name="OldClock" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(967, 739)

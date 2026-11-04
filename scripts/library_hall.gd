@@ -6,10 +6,13 @@ const WARNING_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/s
 const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-library.wav")
 const DOOR_LATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/gate-latch.wav")
+const WINDOW_CATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
+const WINDOW_RATTLE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/step-wood.wav")
 const DOOR_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/door-latch-states.png")
+const WINDOW_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/window-catch-states.png")
 
 const INSPECTIONS := {
-	"archive-door": {"title": "Archive door", "body": "The loose bolt now sits flush in its keeper."},
+	"archive-door": {"title": "Doors and windows", "body": "The archive-door bolt and high-window catch are both fastened before the storm."},
 	"clock-housing": {"title": "Old clock", "body": "Wick heard a rattle, though the clock still runs."},
 	"maintenance-sheet": {"title": "Maintenance sheet", "body": "Five checks are listed, with no reasons given."}
 }
@@ -19,9 +22,12 @@ const INSPECTIONS := {
 @onready var ui: CanvasLayer = $HallUI
 @onready var focus: CanvasLayer = $HallPropFocus
 @onready var archive_door: Node2D = $ArchiveDoor
+@onready var high_window: Node2D = $HighWindow
+@onready var door_bolt_world: Node2D = $DoorBoltWorld
+@onready var window_catch_world: Node2D = $WindowCatchWorld
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
-@onready var hotspots: Array[Node] = [$ArchiveDoor, $OldClock, $MaintenanceSheet, $UpperStacksEntry]
+@onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $UpperStacksEntry]
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var notes: Array[Dictionary] = state.notes
 
@@ -32,7 +38,9 @@ var pending_inspection: StringName = &""
 var first_note_hint_pending := false
 var one_shot_audio: AudioStreamPlayer
 var completion_played := false
-var door_reaction_pending := false
+var focus_reaction_pending := ""
+var window_rattle_audio: AudioStreamPlayer
+var window_rattle_seconds := 1.8
 
 
 func _ready() -> void:
@@ -44,6 +52,13 @@ func _ready() -> void:
 	get_node("/root/GameSettings").configure_audio(one_shot_audio)
 	one_shot_audio.name = "OneShotAudio"
 	add_child(one_shot_audio)
+	window_rattle_audio = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(window_rattle_audio)
+	window_rattle_audio.name = "WindowRattle"
+	window_rattle_audio.stream = WINDOW_RATTLE_SOUND
+	window_rattle_audio.volume_db = -28.0
+	add_child(window_rattle_audio)
+	_refresh_world_latches(false)
 	var ambience := AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "HallAmbience"
@@ -80,7 +95,7 @@ func _ready() -> void:
 			_start_dialogue(["That alarm is coming from the machine room! The gauge was still below the red sector last night.", "I need to get back to the controls."])
 	elif not state.flags.get("hall_intro_seen", false):
 		state.flags["hall_intro_seen"] = true
-		_start_dialogue(["Evening rounds. The door, the clock, the checklist... then the machine-room reading."])
+		_start_dialogue(["Evening rounds. Secure the door and high window, then check the clock and maintenance sheet."])
 
 
 func _exit_tree() -> void:
@@ -89,9 +104,16 @@ func _exit_tree() -> void:
 	var ambience := get_node_or_null("HallAmbience") as AudioStreamPlayer
 	if ambience != null:
 		ambience.stop()
+	if is_instance_valid(window_rattle_audio):
+		window_rattle_audio.stop()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	if not _window_is_fixed() and mode == &"roam":
+		window_rattle_seconds -= delta
+		if window_rattle_seconds <= 0.0:
+			window_rattle_seconds = 4.2
+			window_rattle_audio.play()
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
@@ -144,8 +166,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 	elif mode == &"focus":
 		if event.is_action_pressed("interact"):
-			if focus.selected_action() == &"secure_door_bolt":
-				_secure_door_bolt()
+			match focus.selected_action():
+				&"secure_door_bolt":
+					_secure_door_bolt()
+				&"fix_window_catch":
+					_fix_window_catch()
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
@@ -205,6 +230,9 @@ func _inspect(hotspot: Node) -> void:
 		&"door":
 			pending_inspection = &""
 			_open_door_focus()
+		&"window":
+			pending_inspection = &""
+			_open_window_focus()
 		&"clock":
 			wick.react_to(967.0, 490.0)
 			_start_dialogue(["Still ticking. I wound it this morning.", "You heard that little rattle too, Wick? I'll note it down."])
@@ -230,25 +258,76 @@ func _open_door_focus() -> void:
 		"after_text": "The bolt now sits flush in its keeper.",
 		"verb": "SLIDE BOLT",
 		"parts": [{"label": "Door bolt", "action": "secure_door_bolt"}],
-	}, bool(state.flags.get("hall_door_latched", false)) or state.has_note(&"archive-door"))
+	}, _door_is_latched())
+
+
+func _open_window_focus() -> void:
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "HIGH WINDOW · CATCH",
+		"texture": WINDOW_FOCUS_TEXTURE,
+		"before_region": Rect2(0, 0, 768, 1024),
+		"after_region": Rect2(768, 0, 768, 1024),
+		"source": Vector2(602, 501),
+		"before_text": "The loose catch lets the frame knock in the wind.",
+		"after_text": "The catch holds. The wind still moves the branches outside.",
+		"verb": "PRESS CATCH",
+		"done_control": "ALREADY FIXED",
+		"parts": [{"label": "Window catch", "action": "fix_window_catch"}],
+	}, _window_is_fixed())
 
 
 func _secure_door_bolt() -> void:
-	if bool(state.flags.get("hall_door_latched", false)) or state.has_note(&"archive-door"):
+	if _door_is_latched():
 		return
 	state.flags["hall_door_latched"] = true
 	focus.set_completed()
+	_refresh_world_latches()
 	one_shot_audio.stream = DOOR_LATCH_SOUND
 	one_shot_audio.play()
-	_record(&"archive-door", false)
-	door_reaction_pending = true
+	_try_record_door_window()
+	focus_reaction_pending = "The bolt caught. The door should hold when the wind rises." if not _window_is_fixed() else "The bolt caught. The door and window are both secure."
+
+
+func _fix_window_catch() -> void:
+	if _window_is_fixed():
+		return
+	state.flags["hall_window_fixed"] = true
+	focus.set_completed()
+	_refresh_world_latches()
+	window_rattle_audio.stop()
+	one_shot_audio.stream = WINDOW_CATCH_SOUND
+	one_shot_audio.play()
+	_try_record_door_window()
+	focus_reaction_pending = "The frame is quiet now. The wind outside hasn't stopped." if not _door_is_latched() else "The frame is quiet. Both the door and window are secure."
+
+
+func _door_is_latched() -> bool:
+	return bool(state.flags.get("hall_door_latched", false)) or state.has_note(&"archive-door")
+
+
+func _window_is_fixed() -> bool:
+	return bool(state.flags.get("hall_window_fixed", false)) or state.has_note(&"archive-door")
+
+
+func _try_record_door_window() -> void:
+	if _door_is_latched() and _window_is_fixed():
+		_record(&"archive-door", false)
+
+
+func _refresh_world_latches(animate: bool = true) -> void:
+	door_bolt_world.set_secured(_door_is_latched(), animate)
+	window_catch_world.set_secured(_window_is_fixed(), animate)
 
 
 func _on_focus_dismissed() -> void:
 	_set_mode(&"roam")
-	if door_reaction_pending:
-		door_reaction_pending = false
-		_start_dialogue(["The bolt caught. The door should hold when the wind rises."])
+	if not focus_reaction_pending.is_empty():
+		var line := focus_reaction_pending
+		focus_reaction_pending = ""
+		_start_dialogue([line])
 	else:
 		_maybe_finish_hall()
 	_show_pending_note_hint()
