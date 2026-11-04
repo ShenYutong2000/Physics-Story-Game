@@ -696,13 +696,14 @@ func _update_discovery(scene: Node, objective: Dictionary) -> void:
 		if scene.has_method("nearest_hotspot") and scene.nearest_hotspot(child.approach_x) != child:
 			continue
 		var distance: float = absf(kath.position.x - child.approach_x)
-		if distance <= 260.0:
-			nearby.append({"distance": distance, "position": child.marker_position(), "id": child.interaction_id})
+		var discovery_radius: float = child.discovery_radius
+		if distance <= discovery_radius:
+			nearby.append({"distance": distance, "radius": discovery_radius, "position": child.marker_position(), "id": child.interaction_id})
 	if scene.has_method("discovery_candidates"):
 		for item in scene.discovery_candidates():
 			var distance: float = absf(kath.position.x - float(item["x"]))
 			if distance <= 260.0:
-				nearby.append({"distance": distance, "position": item["position"], "id": item.get("id", &"")})
+				nearby.append({"distance": distance, "radius": 260.0, "position": item["position"], "id": item.get("id", &"")})
 	nearby.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if a["id"] == focus_id and b["id"] != focus_id:
 			return true
@@ -716,7 +717,7 @@ func _update_discovery(scene: Node, objective: Dictionary) -> void:
 			continue
 		var anchor: Vector2 = nearby[i]["position"]
 		marker.position = Vector2(clampf(anchor.x - 17.0, 8.0, 1630.0), clampf(anchor.y - 17.0 + sin(Time.get_ticks_msec() * 0.004 + i) * 3.0, 35.0, 830.0))
-		marker.modulate.a = clampf((260.0 - float(nearby[i]["distance"])) / 75.0, 0.0, 1.0) * 0.9
+		marker.modulate.a = clampf((float(nearby[i]["radius"]) - float(nearby[i]["distance"])) / 75.0, 0.0, 1.0) * 0.9
 		marker.visible = marker.modulate.a > 0.02
 
 

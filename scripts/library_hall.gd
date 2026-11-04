@@ -14,6 +14,9 @@ const DOOR_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall
 const WINDOW_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/window-catch-states.png")
 const CLOCK_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/clock-winding-detail-states.png")
 const KEYS_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/duty-keys-states.png")
+const PLAQUE_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/old-plaque-states.png")
+const CLOCK_COVER_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/clock-inner-cover-states.png")
+const CATALOGUE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/catalogue-card-states.png")
 const KEY_HOOK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 const PAGE_TURN_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
 
@@ -23,7 +26,10 @@ const INSPECTIONS := {
 	"duty-keys": {"title": "Duty keys", "body": "All three keys are present. I returned the east service key from a temporary nail to its labelled hook. The reverse of its tag reads OBSERVATORY CASTLE."},
 	"evening-round-filed": {"title": "Evening round filed", "body": "The doors and windows, hall clock, and duty keys were checked. I stamped the completed page; the current task page is blank."},
 	"emergency-procedure": {"title": "Emergency page", "body": "The red tab says: if the upper needle crosses the red line, pull lever 2, then lever 4. Check the needle again."},
-	"maintenance-sheet": {"title": "Old maintenance sheet", "body": "An earlier checklist used different labels."}
+	"maintenance-sheet": {"title": "Old maintenance sheet", "body": "An earlier checklist used different labels."},
+	"old-plaque": {"title": "An older name", "body": "Under the dust, the archive door's nameplate reads GRAND ARCHIVE. Its current sign only says Library."},
+	"clock-inner-cover": {"title": "Clock calibration marks", "body": "The clock's inner cover hides fine calibration marks and older reference lines. Someone once checked its motion more closely than a daily winding."},
+	"catalogue-card": {"title": "A mismatched catalogue card", "body": "The card's current face lists Lamps, Clocks, and Keys. Its reverse uses older headings: Motion, Light, and Matter. Those headings no longer match the shelf labels."}
 }
 
 @onready var kath: CharacterBody2D = $Kath
@@ -38,9 +44,12 @@ const INSPECTIONS := {
 @onready var clock_motion: Node2D = $OldClock/ClockMotion
 @onready var key_rack_world: Sprite2D = $DutyKeys/RackVisual
 @onready var round_book_world: Sprite2D = $MaintenanceSheet/Sprite2D
+@onready var catalogue_card_world: Sprite2D = $CatalogueCard/CardVisual
+@onready var plaque_world: Sprite2D = $OldPlaqueVisual
+@onready var clock_cover_world: Sprite2D = $ClockCoverVisual
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
-@onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $DutyKeys, $UpperStacksEntry]
+@onready var hotspots: Array[Node] = [$ArchiveDoor, $OldPlaque, $HighWindow, $OldClock, $ClockInnerCover, $CatalogueCard, $MaintenanceSheet, $DutyKeys, $UpperStacksEntry]
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var notes: Array[Dictionary] = state.notes
 
@@ -60,6 +69,8 @@ var clock_tick_seconds := 1.0
 var clock_winding_progress := 0.0
 var clock_wind_click_stage := 0
 var clock_winding_held := false
+var focus_subject: StringName = &""
+var focus_part := 0
 
 
 func _ready() -> void:
@@ -98,6 +109,9 @@ func _ready() -> void:
 	clock_motion.set_winding_progress(clock_winding_progress)
 	_refresh_world_latches(false)
 	key_rack_world.set_sorted(_key_is_sorted(), false)
+	catalogue_card_world.set_flipped(bool(state.flags.get("hall_catalogue_flipped", false)), false)
+	plaque_world.set_revealed(bool(state.flags.get("hall_plaque_cleaned", false)), false)
+	clock_cover_world.set_revealed(bool(state.flags.get("hall_clock_cover_open", false)), false)
 	round_book_world.set_filed(bool(state.flags.get("hall_round_filed", false)), false)
 	var ambience := AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(ambience, true)
@@ -232,9 +246,18 @@ func _unhandled_input(event: InputEvent) -> void:
 					clock_winding_held = true
 				&"sort_duty_key":
 					_sort_duty_key()
+				&"wipe_plaque":
+					_wipe_plaque()
+				&"open_clock_cover":
+					_open_clock_cover()
+				&"flip_catalogue":
+					_flip_catalogue()
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
+			if focus_subject in [&"door", &"clock"]:
+				_switch_focus_detail()
+			else:
+				focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
 			get_viewport().set_input_as_handled()
 	elif mode == &"round_book":
 		if event.is_action_pressed("interact"):
@@ -313,11 +336,22 @@ func _inspect(hotspot: Node) -> void:
 			ui.hide_prompt()
 			_set_mode(&"round_book")
 			round_book.open_view(_door_is_latched(), _window_is_fixed(), _clock_is_wound(), _key_is_sorted(), bool(state.flags.get("hall_round_filed", false)))
+		&"plaque":
+			pending_inspection = &""
+			_open_plaque_focus()
+		&"clock-cover":
+			pending_inspection = &""
+			_open_clock_cover_focus()
+		&"catalogue":
+			pending_inspection = &""
+			_open_catalogue_focus()
 		_:
 			pending_inspection = &""
 
 
 func _open_door_focus() -> void:
+	focus_subject = &"door"
+	focus_part = 0
 	ui.hide_modals()
 	ui.hide_prompt()
 	_set_mode(&"focus")
@@ -330,11 +364,14 @@ func _open_door_focus() -> void:
 		"before_text": "The bolt has slipped short of its keeper.",
 		"after_text": "The bolt now sits flush in its keeper.",
 		"verb": "SLIDE BOLT",
+		"control_override": "E  SLIDE BOLT  ·  →  NAMEPLATE  ·  ESC  RETURN",
+		"done_control": "→  NAMEPLATE",
 		"parts": [{"label": "Door bolt", "action": "secure_door_bolt"}],
 	}, _door_is_latched())
 
 
 func _open_window_focus() -> void:
+	focus_subject = &""
 	ui.hide_modals()
 	ui.hide_prompt()
 	_set_mode(&"focus")
@@ -353,6 +390,8 @@ func _open_window_focus() -> void:
 
 
 func _open_clock_focus() -> void:
+	focus_subject = &"clock"
+	focus_part = 0
 	ui.hide_modals()
 	ui.hide_prompt()
 	_set_mode(&"focus")
@@ -365,14 +404,15 @@ func _open_clock_focus() -> void:
 		"before_text": "The pendulum slows. The handle can wind its spring.",
 		"after_text": "The handle is set. The pendulum keeps a steady rhythm.",
 		"has_hold_progress": true,
-		"control_override": "HOLD E  WIND SPRING  ·  ESC  RETURN",
-		"done_control": "CLOCK WOUND",
+		"control_override": "HOLD E  WIND SPRING  ·  →  INNER COVER  ·  ESC  RETURN",
+		"done_control": "→  INNER COVER",
 		"parts": [{"label": "Winding handle", "action": "wind_clock"}],
 	}, _clock_is_wound())
 	focus.set_hold_progress(clock_winding_progress)
 
 
 func _open_keys_focus() -> void:
+	focus_subject = &""
 	ui.hide_modals()
 	ui.hide_prompt()
 	_set_mode(&"focus")
@@ -392,6 +432,134 @@ func _open_keys_focus() -> void:
 		"tag_reveal": "OBSERVATORY\nCASTLE",
 		"parts": [{"label": "East service key", "action": "sort_duty_key"}],
 	}, _key_is_sorted())
+
+
+func _open_plaque_focus() -> void:
+	focus_subject = &"door"
+	focus_part = 1
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "ARCHIVE DOOR · OLD NAMEPLATE",
+		"texture": PLAQUE_FOCUS_TEXTURE,
+		"before_region": Rect2(0, 0, 887, 887),
+		"after_region": Rect2(887, 0, 887, 887),
+		"source": Vector2(162, 550),
+		"before_text": "Dust covers the older plate beside the bolt.",
+		"after_text": "The uncovered brass reads GRAND ARCHIVE.",
+		"verb": "WIPE DUST",
+		"control_override": "E  WIPE DUST  ·  ←  DOOR BOLT  ·  ESC  RETURN",
+		"done_control": "←  DOOR BOLT",
+		"hide_parts": true,
+		"inscription_after": "GRAND\nARCHIVE",
+		"inscription_position": Vector2(955, 479),
+		"inscription_size": Vector2(176, 71),
+		"inscription_font_size": 23,
+		"inscription_color": Color("47322a"),
+		"parts": [{"label": "Dusty plate", "action": "wipe_plaque"}],
+	}, bool(state.flags.get("hall_plaque_cleaned", false)))
+
+
+func _open_clock_cover_focus() -> void:
+	focus_subject = &"clock"
+	focus_part = 1
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "HALL CLOCK · INNER COVER",
+		"texture": CLOCK_COVER_TEXTURE,
+		"before_region": Rect2(0, 0, 887, 887),
+		"after_region": Rect2(887, 0, 887, 887),
+		"source": Vector2(970, 555),
+		"before_text": "A small brass cover is fitted below the pendulum.",
+		"after_text": "Fine calibration marks are etched inside the cover.",
+		"verb": "OPEN COVER",
+		"control_override": "E  OPEN COVER  ·  ←  CLOCK HANDLE  ·  ESC  RETURN",
+		"done_control": "←  CLOCK HANDLE",
+		"hide_parts": true,
+		"parts": [{"label": "Inner cover", "action": "open_clock_cover"}],
+	}, bool(state.flags.get("hall_clock_cover_open", false)))
+
+
+func _open_catalogue_focus() -> void:
+	focus_subject = &""
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "DUTY DESK · CATALOGUE CARD",
+		"texture": CATALOGUE_TEXTURE,
+		"before_region": Rect2(0, 0, 836, 941),
+		"after_region": Rect2(836, 0, 836, 941),
+		"source": Vector2(1114, 598),
+		"before_text": "The front lists the shelves used in today's rounds.",
+		"after_text": "The reverse has older headings that the shelves no longer use.",
+		"verb": "FLIP CARD",
+		"done_control": "REVERSE EXAMINED",
+		"hide_parts": true,
+		"transition": "flip",
+		"inscription_before": "CURRENT SHELVES\nLAMPS  ·  CLOCKS  ·  KEYS",
+		"inscription_after": "OLD INDEX\nMOTION  ·  LIGHT  ·  MATTER",
+		"inscription_position": Vector2(656, 377),
+		"inscription_size": Vector2(362, 184),
+		"inscription_font_size": 23,
+		"inscription_color": Color("493d40"),
+		"parts": [{"label": "Catalogue card", "action": "flip_catalogue"}],
+	}, bool(state.flags.get("hall_catalogue_flipped", false)))
+
+
+func _switch_focus_detail() -> void:
+	if focus.transitioning:
+		return
+	clock_winding_held = false
+	if focus_subject == &"door":
+		if focus_part == 0:
+			_open_plaque_focus()
+		else:
+			_open_door_focus()
+	elif focus_subject == &"clock":
+		if focus_part == 0:
+			_open_clock_cover_focus()
+		else:
+			_open_clock_focus()
+
+
+func _wipe_plaque() -> void:
+	if state.flags.get("hall_plaque_cleaned", false):
+		return
+	state.flags["hall_plaque_cleaned"] = true
+	focus.set_completed()
+	plaque_world.set_revealed(true)
+	one_shot_audio.stream = PAGE_TURN_SOUND
+	one_shot_audio.play()
+	_record(&"old-plaque", false)
+	focus_reaction_pending = "Grand Archive? I've only ever known this place as the library."
+
+
+func _open_clock_cover() -> void:
+	if state.flags.get("hall_clock_cover_open", false):
+		return
+	state.flags["hall_clock_cover_open"] = true
+	focus.set_completed()
+	clock_cover_world.set_revealed(true)
+	one_shot_audio.stream = KEY_HOOK_SOUND
+	one_shot_audio.play()
+	_record(&"clock-inner-cover", false)
+	focus_reaction_pending = "These marks are much finer than the ones I use to set the hour."
+
+
+func _flip_catalogue() -> void:
+	if state.flags.get("hall_catalogue_flipped", false):
+		return
+	state.flags["hall_catalogue_flipped"] = true
+	focus.set_completed()
+	catalogue_card_world.set_flipped(true)
+	one_shot_audio.stream = PAGE_TURN_SOUND
+	one_shot_audio.play()
+	_record(&"catalogue-card", false)
+	focus_reaction_pending = "Motion, Light, Matter... None of those are shelf labels now. Why keep this card?"
 
 
 func _sort_duty_key() -> void:
@@ -488,6 +656,7 @@ func _refresh_world_latches(animate: bool = true) -> void:
 
 func _on_focus_dismissed() -> void:
 	clock_winding_held = false
+	focus_subject = &""
 	_set_mode(&"roam")
 	if not focus_reaction_pending.is_empty():
 		var line := focus_reaction_pending

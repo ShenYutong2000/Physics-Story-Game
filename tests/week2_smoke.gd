@@ -43,8 +43,10 @@ func _run() -> void:
 	if hall.mode != &"roam":
 		_fail("A physical distant E press opened an inspection.")
 		return
-	if hall.nearest_hotspot(1080.0).interaction_id != &"clock-housing" \
-		or hall.nearest_hotspot(1100.0).interaction_id != &"maintenance-sheet":
+	if hall.nearest_hotspot(967.0).interaction_id != &"clock-housing" \
+		or hall.nearest_hotspot(1080.0).interaction_id != &"clock-inner-cover" \
+		or hall.nearest_hotspot(1100.0).interaction_id != &"catalogue-card" \
+		or hall.nearest_hotspot(1212.0).interaction_id != &"maintenance-sheet":
 		_fail("Overlapping hotspots did not choose the nearest approach point.")
 		return
 	kath.position.x = 120.0

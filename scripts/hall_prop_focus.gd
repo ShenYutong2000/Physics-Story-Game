@@ -21,6 +21,7 @@ var hold_fill: ColorRect
 var hook_labels: Label
 var tag_card: ColorRect
 var tag_label: Label
+var inscription_label: Label
 var config: Dictionary = {}
 var selected_part := 0
 var completed := false
@@ -51,6 +52,8 @@ func _ready() -> void:
 	picture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen.add_child(picture)
+	inscription_label = _label("Inscription", Rect2(625, 390, 425, 220), 26, Color("33273b"))
+	inscription_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label = _label("Title", Rect2(92, 30, 1488, 62), 36, GOLD)
 	detail_label = _label("Observation", Rect2(180, 807, 1312, 47), 25, CREAM)
 	controls_label = _label("Controls", Rect2(180, 858, 1312, 40), 22, GOLD)
@@ -99,10 +102,13 @@ func open_view(prop_config: Dictionary, already_completed: bool) -> void:
 	shade.modulate.a = 0.0
 	picture.texture = _state_texture(completed)
 	picture.modulate.a = 1.0
+	picture.scale = Vector2.ONE
+	picture.pivot_offset = Vector2.ZERO
 	var source: Vector2 = config.get("source", Vector2(836, 470))
 	picture.position = source - Vector2(65, 65)
 	picture.size = Vector2(130, 130)
 	_refresh_labels()
+	inscription_label.visible = config.has("inscription_before") or config.has("inscription_after")
 	parts_label.visible = not bool(config.get("hide_parts", false))
 	hook_labels.visible = config.has("hook_labels")
 	tag_card.visible = completed and config.has("tag_reveal")
@@ -117,7 +123,7 @@ func open_view(prop_config: Dictionary, already_completed: bool) -> void:
 	_tween.tween_property(shade, "modulate:a", 0.91, 0.23)
 	_tween.tween_property(picture, "position", IMAGE_RECT.position, 0.23).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(picture, "size", IMAGE_RECT.size, 0.23).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label]:
+	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label, inscription_label]:
 		_tween.tween_property(label, "modulate:a", 1.0, 0.18).set_delay(0.05)
 	_tween.finished.connect(func() -> void: transitioning = false)
 
@@ -178,6 +184,18 @@ func set_completed() -> void:
 	_stop_tween()
 	_clear_hold_preview()
 	set_hold_progress(1.0)
+	if config.get("transition", "") == "flip":
+		transitioning = true
+		picture.pivot_offset = IMAGE_RECT.size / 2.0
+		_tween = create_tween()
+		_tween.tween_property(picture, "scale:x", 0.0, 0.18).set_trans(Tween.TRANS_CUBIC)
+		_tween.tween_callback(func() -> void:
+			picture.texture = _state_texture(true)
+			_refresh_labels()
+		)
+		_tween.tween_property(picture, "scale:x", 1.0, 0.18).set_trans(Tween.TRANS_CUBIC)
+		_tween.finished.connect(func() -> void: transitioning = false)
+		return
 	_changed_image = TextureRect.new()
 	_changed_image.name = "ChangedImage"
 	_changed_image.texture = _state_texture(true)
@@ -230,6 +248,11 @@ func _state_texture(is_done: bool) -> AtlasTexture:
 
 func _refresh_labels() -> void:
 	title_label.text = config.get("title", "INSPECT")
+	inscription_label.text = config.get("inscription_after", "") if completed else config.get("inscription_before", "")
+	inscription_label.position = config.get("inscription_position", Vector2(625, 390))
+	inscription_label.size = config.get("inscription_size", Vector2(425, 220))
+	inscription_label.add_theme_font_size_override("font_size", int(config.get("inscription_font_size", 26)))
+	inscription_label.add_theme_color_override("font_color", config.get("inscription_color", Color("33273b")))
 	hook_labels.text = config.get("hook_labels_after", "") if completed and config.has("hook_labels_after") else config.get("hook_labels", "")
 	tag_label.text = config.get("tag_reveal", "")
 	detail_label.text = config.get("after_text", "") if completed else config.get("before_text", "")
@@ -247,7 +270,7 @@ func _refresh_labels() -> void:
 
 
 func _set_labels_alpha(alpha: float) -> void:
-	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label]:
+	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label, inscription_label]:
 		label.modulate.a = alpha
 
 

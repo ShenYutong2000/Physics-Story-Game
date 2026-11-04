@@ -7,6 +7,7 @@ signal exit_requested(destination_scene: String, spawn_tag: String)
 @export var display_name: String = "Inspect"
 @export var approach_x: float = 0.0
 @export var reach_radius: float = 115.0
+@export var discovery_radius: float = 260.0
 @export var content_key: StringName
 @export var destination_scene: String = ""
 @export var spawn_tag: String = ""
