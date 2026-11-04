@@ -62,6 +62,7 @@ func _ready() -> void:
 	case_sprite.frame = 2 if state.flags.get("stacks_page_collected", false) else (1 if state.flags.get("stacks_case_open", false) else 0)
 	bucket.position = Vector2(LEAK_X if state.flags.get("stacks_bucket_moved", false) else 900.0, FLOOR_Y - 48.0)
 	case_open = bool(state.flags.get("stacks_case_open", false))
+	leak_inspected = bool(state.flags.get("stacks_leak_inspected", false))
 	ripple_setup()
 
 	var ambience := AudioStreamPlayer.new()
@@ -94,6 +95,21 @@ func _exit_tree() -> void:
 	var ambience := get_node_or_null("UpperStacksAmbience") as AudioStreamPlayer
 	if ambience != null:
 		ambience.stop()
+
+
+func discovery_candidates() -> Array[Dictionary]:
+	if kath.locomotion_mode == &"climb":
+		return [{"x": CASE_X, "position": Vector2(CASE_X, 300), "id": &"stacks-case"}] if absf(ladder.position.x - CASE_X) <= 80.0 and not state.flags.get("stacks_page_collected", false) else []
+	var items: Array[Dictionary] = [
+		{"x": RETURN_X, "position": Vector2(RETURN_X, 485), "id": &"stacks-hall-exit"},
+		{"x": LEAK_X, "position": Vector2(LEAK_X, 330), "id": &"stacks-leak"},
+		{"x": ladder.position.x, "position": Vector2(ladder.position.x, 470), "id": &"stacks-ladder"},
+	]
+	if state.flags.get("stacks_page_collected", false):
+		items.append({"x": 100.0, "position": Vector2(100, 440), "id": &"stacks-room-exit"})
+	if absf(ladder.position.x - CASE_X) <= 80.0 and not state.flags.get("stacks_page_collected", false):
+		items.append({"x": CASE_X, "position": Vector2(CASE_X, 300), "id": &"stacks-case"})
+	return items
 
 
 func _process(delta: float) -> void:
@@ -169,18 +185,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
-			if kath.locomotion_mode == &"push":
-				if event.is_action_pressed("world_action"):
-					_handle_interact()
-			elif ui.is_action_prompt():
-				if event.is_action_pressed("world_action"):
-					_handle_interact()
-				else:
-					ui.examine_named_prompt()
-			elif event.is_action_pressed("interact"):
-				_handle_interact()
+			_handle_interact()
 		elif event.is_action_pressed("toggle_journal"):
 			_set_mode(&"journal")
 			_show_journal()
@@ -236,6 +243,7 @@ func _handle_interact() -> void:
 			_start_dialogue(["The seam is still leaking. The drops now strike the bucket instead of the boards; the floor is no longer being soaked."])
 		elif not leak_inspected:
 			leak_inspected = true
+			state.flags["stacks_leak_inspected"] = true
 			wick.react_to(LEAK_X - 20.0, 342.0)
 			_start_dialogue(["The water is falling in a narrow line from that split in the roof.", "The bucket is close enough to slide beneath it."])
 		else:
@@ -264,7 +272,7 @@ func _begin_ladder_push() -> void:
 	state.flags["stacks_ladder_locked"] = false
 	kath.begin_pushing(ladder.position.x, LADDER_MIN_X, LADDER_MAX_X, 72.0)
 	_play_effect(LADDER_SOUND)
-	ui.show_hint("A / D OR ← / →  MOVE  ·  F  LOCK", 5.0)
+	ui.show_hint("A / D OR ← / →  MOVE  ·  E  LOCK", 5.0)
 
 
 func _end_ladder_push() -> void:
@@ -287,7 +295,7 @@ func _begin_climb() -> void:
 	state.flags["stacks_ladder_ready_to_climb"] = false
 	has_climbed_above_floor = false
 	_play_effect(LADDER_SOUND)
-	ui.show_hint("W / S OR ↑ / ↓  CLIMB  ·  F  OPEN CASE", 4.0)
+	ui.show_hint("W / S OR ↑ / ↓  CLIMB  ·  E  OPEN CASE", 4.0)
 
 
 func _can_open_case() -> bool:

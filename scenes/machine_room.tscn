@@ -123,6 +123,7 @@ scale = Vector2(0.105, 0.105)
 position = Vector2(1338, 773)
 z_index = -4
 interaction_id = &"emergency-stop"
+discovery_anchor = Vector2(1338, 475)
 display_name = "Emergency stop"
 approach_x = 1338.0
 reach_radius = 110.0

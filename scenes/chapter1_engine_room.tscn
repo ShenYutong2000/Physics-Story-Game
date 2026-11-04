@@ -134,6 +134,7 @@ reach_radius = 90.0
 [node name="WallChart" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(335, 725)
 interaction_id = &"engine-wall-chart"
+discovery_anchor = Vector2(335, 460)
 display_name = "Diagram"
 approach_x = 335.0
 reach_radius = 82.0
@@ -155,6 +156,7 @@ reach_radius = 55.0
 [node name="Obstruction" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(805, 725)
 interaction_id = &"engine-obstruction"
+discovery_anchor = Vector2(805, 525)
 display_name = "Jam"
 approach_x = 805.0
 reach_radius = 65.0
@@ -162,6 +164,7 @@ reach_radius = 65.0
 [node name="Linkage" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(945, 725)
 interaction_id = &"engine-linkage"
+discovery_anchor = Vector2(945, 485)
 display_name = "Linkage"
 approach_x = 945.0
 reach_radius = 61.0
@@ -169,6 +172,7 @@ reach_radius = 61.0
 [node name="BrakeAssembly" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(1090, 725)
 interaction_id = &"engine-brake"
+discovery_anchor = Vector2(1090, 485)
 display_name = "Brake"
 approach_x = 1090.0
 reach_radius = 63.0
@@ -176,6 +180,7 @@ reach_radius = 63.0
 [node name="MaintenanceDrive" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(1275, 725)
 interaction_id = &"engine-drive"
+discovery_anchor = Vector2(1275, 510)
 display_name = "Drive"
 approach_x = 1275.0
 reach_radius = 67.0
@@ -183,6 +188,7 @@ reach_radius = 67.0
 [node name="StopIndicator" parent="." instance=ExtResource("17_hotspot")]
 position = Vector2(1430, 725)
 interaction_id = &"engine-stop-indicator"
+discovery_anchor = Vector2(1430, 470)
 display_name = "Signal"
 approach_x = 1430.0
 reach_radius = 55.0

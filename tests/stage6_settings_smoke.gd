@@ -32,21 +32,23 @@ func _run() -> void:
 	if settings.text_scale < 1.04 or title.get_node("Menu/Title").get_theme_font_size("font_size") <= 62:
 		_fail("Text size did not change live.")
 		return
-	settings.selection = 6
+	if InputMap.has_action("world_action") or settings.key_bindings.has("world_action"):
+		_fail("The removed action binding still exists.")
+		return
+	settings.selection = 5
 	settings._input(_key(KEY_ENTER))
 	if not settings.capturing:
-		_fail("Action-key capture did not start.")
+		_fail("Interact-key capture did not start.")
 		return
 	settings._input(_key(KEY_G))
 	if settings.capturing:
-		_fail("Action-key capture did not end after a valid letter.")
+		_fail("Interact-key capture did not end after a valid letter.")
 		return
-	if settings.key_label("world_action") != "G" or not settings.control_text("F  OPERATE").begins_with("G"):
-		_fail("Action remap did not update game prompts.")
+	if settings.key_label("interact") != "G" or not settings.control_text("E  OPERATE").begins_with("G"):
+		_fail("Interact remap did not update game prompts.")
 		return
-	settings._bind_key("interact", KEY_F)
-	if not settings.control_text("E  EXAMINE").begins_with("F") or not settings.control_text("F  OPERATE").begins_with("G"):
-		_fail("Chained key substitutions displayed the wrong controls.")
+	if settings._bind_key("interact", KEY_F) or settings.key_label("interact") != "G":
+		_fail("F should not be assignable to the unified interaction.")
 		return
 	settings.close_menu()
 	if not FileAccess.file_exists(TEST_PATH):
@@ -65,7 +67,7 @@ func _run() -> void:
 	if not hall.ui.shaft_winch_instruction.text.contains("G to dock"):
 		_fail("Winch instructions did not use the remapped action key.")
 		return
-	hall.ui.show_engine_maintenance("TEST", "TEST", "TEST", "F CHECK")
+	hall.ui.show_engine_maintenance("TEST", "TEST", "TEST", "E CHECK")
 	if hall.ui.engine_footer.text != "G CHECK":
 		_fail("Engine instructions did not use the remapped action key.")
 		return
@@ -82,7 +84,6 @@ func _run() -> void:
 	settings.hints_enabled = true
 	settings.text_scale = 1.0
 	settings._bind_key("interact", KEY_E)
-	settings._bind_key("world_action", KEY_F)
 	settings.settings_path_override = ""
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_PATH))
 	print("STAGE6_SETTINGS_OK: title, pause, hint toggle, text, action remap and persistence")

@@ -92,6 +92,7 @@ content_key = &"service-road-return"
 [node name="ErinStation" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(305, 755)
 interaction_id = &"castle-erin-station"
+discovery_anchor = Vector2(305, 520)
 display_name = "Erin"
 approach_x = 305.0
 reach_radius = 60.0
@@ -100,6 +101,7 @@ content_key = &"erin-briefing"
 [node name="PositionDial" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(438, 755)
 interaction_id = &"castle-position-dial"
+discovery_anchor = Vector2(438, 435)
 display_name = "Dial"
 approach_x = 438.0
 reach_radius = 60.0
@@ -108,6 +110,7 @@ content_key = &"position-reading"
 [node name="ReturnConsole" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(568, 755)
 interaction_id = &"castle-return-console"
+discovery_anchor = Vector2(568, 585)
 display_name = "Return Test"
 approach_x = 568.0
 reach_radius = 60.0
@@ -116,6 +119,7 @@ content_key = &"return-test"
 [node name="LowerServiceHatch" parent="." instance=ExtResource("6_hotspot")]
 position = Vector2(615, 755)
 interaction_id = &"castle-lower-service-hatch"
+discovery_anchor = Vector2(678, 615)
 display_name = "Lower Hatch"
 approach_x = 615.0
 reach_radius = 48.0

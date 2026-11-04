@@ -79,6 +79,7 @@ reach_radius = 90.0
 [node name="Records" parent="." instance=ExtResource("10_hotspot")]
 position = Vector2(445, 820)
 interaction_id = &"observatory-records"
+discovery_anchor = Vector2(445, 515)
 display_name = "Archive"
 approach_x = 445.0
 reach_radius = 110.0
@@ -86,6 +87,7 @@ reach_radius = 110.0
 [node name="Telescope" parent="." instance=ExtResource("10_hotspot")]
 position = Vector2(810, 820)
 interaction_id = &"observatory-telescope"
+discovery_anchor = Vector2(810, 460)
 display_name = "Scope"
 approach_x = 810.0
 reach_radius = 110.0
@@ -93,6 +95,7 @@ reach_radius = 110.0
 [node name="Worktable" parent="." instance=ExtResource("10_hotspot")]
 position = Vector2(1320, 820)
 interaction_id = &"observatory-worktable"
+discovery_anchor = Vector2(1320, 575)
 display_name = "Notebook"
 approach_x = 1320.0
 reach_radius = 96.0

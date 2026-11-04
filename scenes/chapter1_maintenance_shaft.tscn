@@ -65,6 +65,7 @@ reach_radius = 46.0
 [node name="SpeakingTube" parent="." instance=ExtResource("20_hotspot")]
 position = Vector2(805, 790)
 interaction_id = &"shaft-speaking-tube"
+discovery_anchor = Vector2(824, 625)
 display_name = "Voice Tube"
 approach_x = 805.0
 reach_radius = 45.0
@@ -72,6 +73,7 @@ reach_radius = 45.0
 [node name="RigInspection" parent="." instance=ExtResource("20_hotspot")]
 position = Vector2(610, 790)
 interaction_id = &"shaft-rope-path"
+discovery_anchor = Vector2(610, 575)
 display_name = "Rope"
 approach_x = 610.0
 reach_radius = 52.0
@@ -86,6 +88,7 @@ reach_radius = 52.0
 [node name="WinchConsole" parent="." instance=ExtResource("20_hotspot")]
 position = Vector2(450, 790)
 interaction_id = &"shaft-winch"
+discovery_anchor = Vector2(450, 630)
 display_name = "Winch"
 approach_x = 450.0
 reach_radius = 65.0
@@ -107,6 +110,7 @@ reach_radius = 38.0
 [node name="TopAnchorSurvey" parent="." instance=ExtResource("20_hotspot")]
 position = Vector2(540, 790)
 interaction_id = &"shaft-top-anchor"
+discovery_anchor = Vector2(540, 565)
 display_name = "Top Anchor"
 approach_x = 540.0
 reach_radius = 27.0

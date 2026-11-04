@@ -32,7 +32,7 @@ func _run() -> void:
 	hall._close_dialogue(true)
 	hall.kath.position.x = 120.0
 	# Physical F traverses the action handler before the old scene unloads.
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	var room := current_scene
 	if room == null or room.name != "MachineRoom" or room.kath.position.x != 250.0:
 		_fail("Hall exit did not load the Machine Room at its entry point.")
@@ -42,14 +42,14 @@ func _run() -> void:
 		return
 	room._close_dialogue(false)
 	room.kath.position.x = 120.0
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	hall = current_scene
 	if hall == null or hall.name != "LibraryHall" or hall.mode != &"dialogue" \
 		or not state.flags.get("early_return_cue_seen", false) or state.flags.get("machine_baseline_recorded", false):
 		_fail("Returning early did not preserve the unfinished reading and show its reminder.")
 		return
 	hall._close_dialogue(false)
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	room = current_scene
 	if room == null or room.name != "MachineRoom" or room.mode != &"roam":
 		_fail("Re-entering the Machine Room replayed its introduction or lost the entrance.")
@@ -75,7 +75,7 @@ func _run() -> void:
 		_fail("Reopening the gauge duplicated the note.")
 		return
 	room.kath.position.x = 120.0
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	hall = current_scene
 	if hall == null or hall.name != "LibraryHall" or hall.kath.position.x != 120.0:
 		_fail("Machine-room return did not restore the Hall beside its entrance.")
@@ -90,7 +90,7 @@ func _run() -> void:
 		_fail("Notes did not show separate hall and machine-room progress: " + hall.ui.journal_progress.text)
 		return
 	hall._unhandled_input(_key(KEY_J))
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	room = current_scene
 	room.kath.position.x = 861.0
 	room._inspect(room.get_node("RouteDiagram"))
@@ -106,7 +106,7 @@ func _run() -> void:
 		_fail("Inspecting the route diagram twice duplicated its observation.")
 		return
 	room.kath.position.x = 120.0
-	await _tap_key(KEY_F)
+	await _tap_key(KEY_E)
 	hall = current_scene
 	if hall.mode != &"roam" or state.notes.size() != 5:
 		_fail("A later return replayed the roof leak cue or duplicated observations.")

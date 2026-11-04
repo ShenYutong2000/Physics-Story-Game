@@ -28,7 +28,7 @@ func _run() -> void:
 	control.lower_service_hatch_art.visible = true
 	control.kath.position.x = 615.0
 	control._process(0.0)
-	control._unhandled_input(_key(KEY_F))
+	control._unhandled_input(_key(KEY_E))
 	await process_frame
 	var room = current_scene
 	if room == null or room.name != "Chapter1InvertedRoom":
@@ -103,7 +103,7 @@ func _run() -> void:
 		return
 	room.kath.position.x = 145.0
 	room._process(0.0)
-	room._unhandled_input(_key(KEY_F))
+	room._unhandled_input(_key(KEY_E))
 	await process_frame
 	var reentry = current_scene
 	if reentry == null or reentry.name != "CastleControlWalkway" or not reentry.lower_service_hatch_art.visible:

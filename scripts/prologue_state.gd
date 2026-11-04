@@ -36,6 +36,7 @@ var play_seconds := 0.0
 var chapter1_start_seconds := -1.0
 var chapter1_finish_seconds := -1.0
 var guide_objective_id := ""
+var guide_progress_signature := ""
 var guide_hint_level := 0
 var guide_idle_seconds := 0.0
 var guide_reminder_shown := false
@@ -134,6 +135,7 @@ func resume_checkpoint() -> bool:
 
 func reset_guide_progress() -> void:
 	guide_objective_id = ""
+	guide_progress_signature = ""
 	guide_hint_level = 0
 	guide_idle_seconds = 0.0
 	guide_reminder_shown = false

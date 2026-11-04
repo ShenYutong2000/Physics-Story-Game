@@ -108,7 +108,7 @@ func _run() -> void:
 		_fail("The isolated linkage did not clear visually and in shared state.")
 		return
 	engine._inspect(engine.linkage)
-	engine._unhandled_input(_key(KEY_F))
+	engine._unhandled_input(_key(KEY_E))
 	engine._unhandled_input(_key(KEY_ESCAPE))
 	if state.flags.get("engine_checks_verified", false) or state.has_note(&"engine-home-stop-test"):
 		_fail("Cancelling the dry run committed a partial check.")
@@ -117,7 +117,7 @@ func _run() -> void:
 	for index in [2, 0, 1]:
 		while engine.check_selection != index:
 			engine._unhandled_input(_key(KEY_D))
-		engine._unhandled_input(_key(KEY_F))
+		engine._unhandled_input(_key(KEY_E))
 	engine._unhandled_input(_key(KEY_ENTER))
 	_dismiss(engine)
 	if not state.flags.get("engine_checks_verified", false):
@@ -173,7 +173,7 @@ func _run() -> void:
 	observatory._unhandled_input(_key(KEY_ENTER))
 	observatory.kath.position.x = 1490.0
 	observatory._process(0.0)
-	observatory._unhandled_input(_key(KEY_F))
+	observatory._unhandled_input(_key(KEY_E))
 	await process_frame
 	engine = current_scene
 	if engine == null or engine.name != "Chapter1EngineRoom" or engine.kath.position.x < 1300.0 or state.notes.size() != note_count:

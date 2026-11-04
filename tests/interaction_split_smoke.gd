@@ -18,11 +18,11 @@ func _run() -> void:
 	await process_frame
 	hall._close_dialogue(false)
 
-	# A reading-only hotspot accepts E, while F has no effect.
+	# One key handles nearby context; F has no binding.
 	hall.kath.position.x = hall.get_node("OldClock").approach_x
 	hall._process(0.0)
 	if hall.ui.prompt.text.find("E  INSPECT") == -1 or hall.ui.prompt.text.find("F  ") != -1:
-		_fail("The clock should show only an E inspection prompt.")
+		_fail("The clock should show only the unified E prompt.")
 		return
 	hall._unhandled_input(_key(KEY_F))
 	if hall.mode != &"roam" or state.notes.size() != 0:
@@ -34,26 +34,27 @@ func _run() -> void:
 		return
 	hall._close_dialogue(false)
 
-	# Once available, a doorway advertises both meanings; E must not travel.
+	# An available doorway uses the same E key to enter.
 	for note_id in [&"archive-door", &"clock-housing", &"maintenance-sheet"]:
 		state.add_note_once(note_id, String(note_id), "Observation")
 	hall.kath.position.x = hall.archive_door.approach_x
 	hall._process(0.0)
-	if hall.ui.prompt.text.find("E  EXAMINE") == -1 or hall.ui.prompt.text.find("F  ENTER") == -1:
-		_fail("The available door does not show both E and F actions.")
+	if hall.ui.prompt.text.find("E  ENTER") == -1 or hall.ui.prompt.text.find("F  ") != -1:
+		_fail("The available door did not show a single E entry prompt.")
 		return
 	var note_count: int = state.notes.size()
-	hall._unhandled_input(_key(KEY_E))
-	if current_scene != hall or hall.mode != &"roam" or state.notes.size() != note_count or not hall.ui.hint.visible:
-		_fail("E at the open door should describe it without travelling or changing progress.")
-		return
+	hall.ui.hint.visible = false
 	hall._unhandled_input(_key(KEY_F))
+	if current_scene != hall or hall.mode != &"roam" or state.notes.size() != note_count or hall.ui.hint.visible:
+		_fail("F at the open door should not travel or change progress.")
+		return
+	hall._unhandled_input(_key(KEY_E))
 	await process_frame
 	await process_frame
 	if current_scene == null or current_scene.name != "MachineRoom":
-		_fail("F did not enter the machine room.")
+		_fail("E did not enter the machine room.")
 		return
-	print("INTERACTION_SPLIT_SMOKE_OK: E examines, F acts, prompts match")
+	print("INTERACTION_SINGLE_KEY_OK: E inspects or acts, F is inactive")
 	quit(0)
 
 

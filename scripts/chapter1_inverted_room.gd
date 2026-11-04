@@ -68,7 +68,7 @@ func _ready() -> void:
 		_start_dialogue(["This passage is only safe after the wing has stopped moving. I should return to the fixed tower."])
 	elif spawn_tag == &"from-maintenance-shaft":
 		kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, LADDER_TOP_Y)
-		ui.show_hint("W/S climb down. F at the top returns to the shaft.", 4.0)
+		ui.show_hint("W/S climb down. E at the top returns to the shaft.", 4.0)
 	elif not state.flags.get("inverted_room_intro_seen", false):
 		state.flags["inverted_room_intro_seen"] = true
 		_start_dialogue([
@@ -129,25 +129,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
 			if kath.locomotion_mode == &"climb":
-				if event.is_action_pressed("world_action") and kath.position.y <= LADDER_TOP_Y + 18.0:
+				if kath.position.y <= LADDER_TOP_Y + 18.0:
 					_set_mode(&"travel")
 					ui.hide_modals()
 					state.travel_to(MAINTENANCE_SHAFT_SCENE, &"from-inverted-room")
-				elif event.is_action_pressed("interact") and kath.position.y <= LADDER_TOP_Y + 18.0:
-					ui.examine_named_prompt()
 				return
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				if ui.is_action_prompt():
-					if event.is_action_pressed("world_action"):
-						_inspect(closest)
-					else:
-						ui.examine_hotspot(closest)
-				elif event.is_action_pressed("interact"):
-					_inspect(closest)
+				_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -257,7 +249,7 @@ func _inspect(hotspot: Node) -> void:
 			], &"mark_ladder")
 		else:
 			kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, FLOOR_Y - 30.0)
-			ui.show_hint("W/S climb. F at the top enters the maintenance shaft.", 4.0)
+			ui.show_hint("W/S climb. E at the top enters the maintenance shaft.", 4.0)
 
 
 func _leave_ladder_at_foot() -> void:

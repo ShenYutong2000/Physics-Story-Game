@@ -189,17 +189,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_close_overlay()
 		return
 	if mode == &"roam":
-		if event.is_action_pressed("interact") or event.is_action_pressed("world_action"):
+		if event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
 			var closest: Node = nearest_hotspot(kath.position.x)
 			if closest != null:
-				if ui.is_action_prompt():
-					if event.is_action_pressed("world_action"):
-						_inspect(closest)
-					else:
-						ui.examine_hotspot(closest)
-				elif event.is_action_pressed("interact"):
-					_inspect(closest)
+				_inspect(closest)
 		elif event.is_action_pressed("toggle_journal"):
 			get_viewport().set_input_as_handled()
 			_set_mode(&"journal")
@@ -215,7 +209,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			load_check_selection = posmod(load_check_selection + (-1 if event.is_action_pressed("move_left") else 1), 4)
 			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
-		elif event.is_action_pressed("world_action"):
+		elif event.is_action_pressed("interact"):
 			get_viewport().set_input_as_handled()
 			var check_ids: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
 			if not pending_load_checks.has(check_ids[load_check_selection]):
@@ -227,7 +221,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_complete_load_check()
 			else:
 				ui.shaft_load_detail.text = "Check all four observations before confirming."
-	elif mode == &"winch" and event.is_action_pressed("world_action"):
+	elif mode == &"winch" and event.is_action_pressed("interact"):
 		get_viewport().set_input_as_handled()
 		if basket_progress >= 0.995 and not state.flags.get("shaft_rail_removed", false):
 			erin.set_repairing(true)
@@ -764,7 +758,7 @@ func _start_tool_transfer() -> void:
 	state.flags["shaft_tools_loaded"] = true
 	_update_rig_visuals()
 	_set_mode(&"roam")
-	ui.show_hint("The tools are secured. F at the winch, then hold Up to lift.", 5.0)
+	ui.show_hint("The tools are secured. E at the winch, then hold Up to lift.", 5.0)
 
 
 func _start_boarding() -> void:
