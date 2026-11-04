@@ -11,7 +11,7 @@ const CASTLE_POSE_ANGLES_DEGREES := {
 	&"inverted": 180.0,
 	&"restored": 0.0,
 }
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_PATH := "user://footnotes-chapter1-save.json"
 const STORY_SCENES := [
 	"res://scenes/library_hall.tscn",
@@ -305,6 +305,16 @@ func hall_checks_complete() -> bool:
 		if not has_note(note_id):
 			return false
 	return true
+
+
+func weather_phase() -> StringName:
+	if flags.get("dawn_reached", false):
+		return &"dawn"
+	if flags.get("hall_rain_heavy", false):
+		return &"heavy"
+	if flags.get("hall_rain_started", false):
+		return &"rain"
+	return &"prestorm"
 
 
 func upper_stacks_unlocked() -> bool:

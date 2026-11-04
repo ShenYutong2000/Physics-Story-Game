@@ -2,7 +2,7 @@ extends SceneTree
 ## New Game, guarded replacement, checkpoint reload and damaged-save handling.
 
 const TITLE: PackedScene = preload("res://scenes/title_screen.tscn")
-const TEST_SAVE := "user://phase3-step7-checkpoint-test.json"
+const TEST_SAVE := "res://tests/_phase3_step7_checkpoint.json"
 
 
 func _initialize() -> void:

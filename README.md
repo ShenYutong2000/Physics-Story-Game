@@ -8,6 +8,8 @@ Open `project.godot` in Godot 4.7.2 and press **F5**. The title screen offers **
 
 The game saves on room transitions and about every five seconds while Kath is freely exploring, paused, or viewing the chapter end card. Press **Esc** in exploration to pause, then **Q** to save and quit. A new run replaces the old slot. The file lives in Godot's `user://footnotes-chapter1-save.json`; Godot manages its actual system location. Checkpoints are written through a temporary file and retain a `.bak` copy; Continue falls back to that copy if the primary file is damaged. Direct **F6** scene previews are developer previews and do not enable disk saves.
 
+The revised hall uses checkpoint version 2. Earlier prototype saves do not offer **Continue**; start a **New Game** to play the revised patrol. The existing New Game confirmation still protects a valid version 2 journey.
+
 **Settings** are available on the title screen or with **S** while paused. Adjust master, ambience and effect volume; text size from 100% to 115%; optional H hints; and the interaction, notes and hint letter keys. Story progress and preferences are separate files. Esc closes Settings and returns to the title or paused game.
 
 ## Controls
@@ -26,7 +28,7 @@ Nearby inspectable objects show a small storybook mark before Kath is close enou
 
 ## Play route
 
-1. **Grand Archive.** Inspect the library door, clock, and maintenance sheet. Record the machine-room gauge baseline. Return to the hall, follow the leak to the upper stacks, position the bucket and ladder, and recover Kath's torn `F = ma` page. In Kath's room, match its torn edge to her notebook, rest until morning, and pack the notebook.
+1. **Grand Archive.** Before the rain begins, latch the archive door and high window, wind the hall clock, return the east service key, then stamp the completed round book. Its red emergency tab may be read early. The old door nameplate, clock cover, and catalogue card are optional discoveries. Entering the machine room starts the rain; record the gauge baseline there. On returning, the storm strengthens and a ceiling drip leads to the upper stacks. Position the bucket and ladder, and recover Kath's torn `F = ma` page. In Kath's room, match its torn edge to her notebook, rest until morning, and pack the notebook.
 2. **Alarm and service road.** Return to the hall for the alarm. In the machine room, operate levers 2 and 4 and stop the local drive; the distant castle wing becomes tilted. Follow the service road, inspect the hanging cable, open the gate, and enter the castle control walkway from the chapter card.
 3. **On-site inversion.** At the control walkway, compare the dial with the visible wing and speak with Erin. The failed return test turns the wing to the separate inverted maintenance catch. Enter the lower passage. In the inverted room, optionally mark a prediction about which way is down at the chalk patch, then test it against falling water and the plumb weight. Inspect and climb the maintenance ladder.
 4. **Rescue in the fixed shaft.** Contact Erin through the speaking tube, load tools from the safe platform, raise the basket, and let her open the bent upper rail. Bring the empty basket down, lock it, take the long rope, and rethread through the basket pulley. In the short empty test, compare the moving rope marks with the basket's rise and the changed winch rhythm. Raise and dock the empty basket again, then let Erin board. Take up slack, confirm the four load checks, release the upper catch, and lower her with measured braking. Lock the lower dock and use the loading spur to bring her onto the fixed platform.
@@ -34,6 +36,8 @@ Nearby inspectable objects show a small storybook mark before Kath is close enou
 6. **Archive and ending.** Cross into the observatory. Open the shaken drawer and read its signed work record, Floating Isles comparison slip, and unexplained withdrawn page in any order. At the worktable, stitch the torn leaf into Kath's notebook. Return to Erin in the engine room for the final conversation and the Chapter I completion card. Enter or Esc closes the card and leaves the restored castle explorable.
 
 Notes are added once in discovery order. Their observation thread places the machine reading, continuing roof leak, and torn page side by side without assigning a cause. The bucket changes the drops' landing place; it does not stop the rain. Esc cancels an unconfirmed document, inspection, or repair check. The game never assumes the cause of the original roof leak or the reason for a withdrawn record before evidence establishes it.
+
+The hall round book keeps the filed checklist in its archive while its current page becomes blank. Notes show the three patrol checks separately, the filed page, and the observed weather phase. H hints name the next unfinished physical action; optional discoveries do not count toward the three checks.
 
 ## Mechanical and physics continuity
 
@@ -49,7 +53,7 @@ In the shaft, one fixed pulley redirects the pull; the alternate route has two s
 
 The design canvas is **1672×941** and the default window is **1280×720**, with aspect-preserving scaling. Kath's shared display height is **301.6 scene pixels** and Wick's is **130 scene pixels**; their shared scenes normalize their frames, so do not scale individual instances again. The reusable art source and game PNG layers are under `chapter1-assets/` and `prologue-asset-pack-v1/`.
 
-Run the smoke scripts under `tests/` with Godot 4.7.2. The complete sequence includes `week1_smoke.gd` through `week6_smoke.gd`, `phase3_step1_smoke.gd` through `phase3_step6_smoke.gd` (including `phase3_step6a_smoke.gd`), `phase3_engine_restoration_smoke.gd`, `phase3_archive_finale_smoke.gd`, `phase3_step7_checkpoint_smoke.gd`, `phase3_step7_quit_smoke.gd`, and `stage6_settings_smoke.gd`. The save checks use dedicated temporary filenames and do not touch the player's slot.
+Run the smoke scripts under `tests/` with Godot 4.7.2. The complete sequence includes `hall_weather_save_smoke.gd`, `week1_smoke.gd` through `week6_smoke.gd`, `phase3_step1_smoke.gd` through `phase3_step6_smoke.gd` (including `phase3_step6a_smoke.gd`), `phase3_engine_restoration_smoke.gd`, `phase3_archive_finale_smoke.gd`, `phase3_step7_checkpoint_smoke.gd`, `phase3_step7_quit_smoke.gd`, and `stage6_settings_smoke.gd`. The save checks use dedicated temporary filenames and do not touch the player's slot.
 
 For a repeatable Windows package, run `tools/build_windows_portable.ps1` with Godot 4.7.2 installed at `D:\Game\Godot-4.7.2` or pass its GUI executable path via `-GodotExe`. The script exports a PCK, pairs it with the engine, copies the engine notice and writes `build/FootnotesToTheWorld-Windows.zip`. Double-click `Play Footnotes.cmd` in the extracted folder. The package uses the installed Godot executable because dedicated Windows export templates are not installed on this development machine.
 

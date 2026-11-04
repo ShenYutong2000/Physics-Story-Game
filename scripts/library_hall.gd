@@ -4,6 +4,8 @@ extends Node2D
 const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/water-drop.wav")
 const WARNING_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop-switch.wav")
 const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
+const PRESTORM_CITY: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/archive-prestorm-city.png")
+const RAIN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-night-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-library.wav")
 const DOOR_LATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/gate-latch.wav")
 const WINDOW_CATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
@@ -49,6 +51,7 @@ const INSPECTIONS := {
 @onready var clock_cover_world: Sprite2D = $ClockCoverVisual
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
+@onready var rain_streaks: Node2D = $RainStreaks
 @onready var hotspots: Array[Node] = [$ArchiveDoor, $OldPlaque, $HighWindow, $OldClock, $ClockInnerCover, $CatalogueCard, $MaintenanceSheet, $DutyKeys, $UpperStacksEntry]
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var notes: Array[Dictionary] = state.notes
@@ -121,8 +124,9 @@ func _ready() -> void:
 	add_child(ambience)
 	ambience.play()
 	var spawn_tag: StringName = state.take_spawn_tag()
-	if state.flags.get("dawn_reached", false):
-		far.texture = DAWN_CITY
+	if spawn_tag == &"from-machine-room" and state.flags.get("machine_baseline_recorded", false) and not state.flags.get("dawn_reached", false):
+		state.flags["hall_rain_heavy"] = true
+	_apply_weather()
 	if spawn_tag == &"from-machine-room":
 		kath.position.x = 120.0
 		if state.flags.get("incident_complete", false) and not state.flags.get("incident_return_line_seen", false):
@@ -136,7 +140,7 @@ func _ready() -> void:
 			_start_dialogue(["The storm has strengthened. A drop just fell from the ceiling above the upper stacks.", "The machine reading is safe for now. I should check where that water is coming from."])
 		elif not state.flags.get("early_return_cue_seen", false):
 			state.flags["early_return_cue_seen"] = true
-			_start_dialogue(["I haven't written down the machine-room reading yet. The service stairs are still open."])
+			_start_dialogue(["Rain has started outside. I haven't written down the machine-room reading yet; the service stairs are still open."])
 	elif spawn_tag == &"from-upper-stacks":
 		kath.position.x = 1530.0
 		if state.flags.get("prologue_departure_ready", false) \
@@ -149,7 +153,27 @@ func _ready() -> void:
 			_start_dialogue(["That alarm is coming from the machine room! The gauge was still below the red sector last night.", "I need to get back to the controls."])
 	elif not state.flags.get("hall_intro_seen", false):
 		state.flags["hall_intro_seen"] = true
-		_start_dialogue(["Evening rounds. Secure the door and high window, wind the clock, check the duty keys, then file the round book."])
+		_start_dialogue(["A storm is building. I'll secure the door and high window, wind the clock, check the keys, then file the round book."])
+
+
+func _apply_weather() -> void:
+	match state.weather_phase():
+		&"dawn":
+			far.texture = DAWN_CITY
+			far.modulate = Color.WHITE
+			rain_streaks.set_strength(0.0)
+		&"heavy":
+			far.texture = RAIN_CITY
+			far.modulate = Color(0.76, 0.82, 0.94)
+			rain_streaks.set_strength(1.0)
+		&"rain":
+			far.texture = RAIN_CITY
+			far.modulate = Color.WHITE
+			rain_streaks.set_strength(0.25)
+		_:
+			far.texture = PRESTORM_CITY
+			far.modulate = Color.WHITE
+			rain_streaks.set_strength(0.0)
 
 
 func _exit_tree() -> void:
@@ -767,4 +791,6 @@ func _on_exit_requested(destination_scene: String, spawn_tag: String) -> void:
 		return
 	if destination_scene == "res://scenes/upper_stacks.tscn" and not state.upper_stacks_unlocked():
 		return
+	if destination_scene == "res://scenes/machine_room.tscn" and not state.flags.get("dawn_reached", false):
+		state.flags["hall_rain_started"] = true
 	state.travel_to(destination_scene, StringName(spawn_tag))

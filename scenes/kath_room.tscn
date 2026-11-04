@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/kath_room.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="2_far"]
@@ -11,6 +11,7 @@
 [ext_resource type="SpriteFrames" path="res://prologue-asset-pack-v1/godot/frames/satchel-states.tres" id="9_bag"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/notebook-world.png" id="10_notebook"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/hanging-coat.png" id="11_coat"]
+[ext_resource type="Script" path="res://scripts/archive_rain.gd" id="12_rain"]
 
 [node name="KathRoom" type="Node2D"]
 script = ExtResource("1_script")
@@ -22,6 +23,10 @@ color = Color(0.7, 0.76, 0.9, 1)
 z_index = -20
 texture = ExtResource("2_far")
 centered = false
+
+[node name="RainStreaks" type="Node2D" parent="."]
+z_index = -15
+script = ExtResource("12_rain")
 
 [node name="Mid" type="Sprite2D" parent="."]
 z_index = -10

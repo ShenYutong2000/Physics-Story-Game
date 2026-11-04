@@ -30,6 +30,7 @@ const RETURN_X := 500.0
 @onready var ripple: AnimatedSprite2D = $Ripple
 @onready var rain_drop: Sprite2D = $RainDrop
 @onready var far: Sprite2D = $Far
+@onready var rain_streaks: Node2D = $RainStreaks
 @onready var state: Node = get_node("/root/PrologueState")
 
 var mode: StringName = &"roam"
@@ -56,6 +57,8 @@ func _ready() -> void:
 		kath.position.x = 100.0
 	if state.flags.get("dawn_reached", false):
 		far.texture = DAWN_CITY
+	far.modulate = Color(0.76, 0.82, 0.94) if state.flags.get("hall_rain_heavy", false) and not state.flags.get("dawn_reached", false) else Color.WHITE
+	rain_streaks.set_strength(0.0 if state.flags.get("dawn_reached", false) else (1.0 if state.flags.get("hall_rain_heavy", false) else 0.25))
 
 	ladder.position.x = float(state.flags.get("stacks_ladder_x", LADDER_START_X))
 	ladder.position.y = FLOOR_Y

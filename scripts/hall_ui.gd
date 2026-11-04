@@ -830,6 +830,17 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	]
 	if hall_complete and hall_count == 3:
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
+	if hall_state.flags.get("hall_round_filed", false):
+		journal_progress.text = journal_progress.text.replace("[x]  Round book filed\n\nMACHINE ROOM", "[x]  Round book filed\nCURRENT TASK PAGE  Blank\nARCHIVE  Checked round available in the book\n\nMACHINE ROOM")
+	var weather_label := "Storm approaching"
+	match hall_state.weather_phase():
+		&"rain":
+			weather_label = "Rain started"
+		&"heavy":
+			weather_label = "Heavy rain; drip heard above the stacks"
+		&"dawn":
+			weather_label = "Morning after the storm"
+	journal_progress.text += "\n\nWEATHER  %s" % weather_label
 	journal_progress.text += "\n\nSERVICE ROAD  %s" % ("Castle entrance reached" if service_road_end_reached else ("Gate open" if service_gate_open else "Not reached"))
 	if discovered.has(&"castle-on-site-inversion"):
 		journal_progress.text += "\n\nCASTLE WING  %s" % ("Restored" if discovered.has(&"engine-wing-restored") else "Inverted")

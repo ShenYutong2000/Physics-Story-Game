@@ -26,7 +26,7 @@ func _run() -> void:
 	if hall.mode != &"dialogue" or kath.controls_enabled or not ui.dialogue.visible:
 		_fail("Opening dialogue did not lock movement.")
 		return
-	if ui.dialogue_text.text != "Evening rounds. Secure the door and high window, wind the clock, check the duty keys, then file the round book.":
+	if ui.dialogue_text.text != "A storm is building. I'll secure the door and high window, wind the clock, check the keys, then file the round book.":
 		_fail("Opening dialogue text was cleared by the scene-change settings refresh.")
 		return
 	await _tap_key(KEY_ENTER)

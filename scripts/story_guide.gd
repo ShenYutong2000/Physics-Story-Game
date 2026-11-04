@@ -253,6 +253,25 @@ static func route_focus(from_scene: String, to_scene: String) -> Vector2:
 
 static func hint_text(state: Node, objective: Dictionary, level: int, scene_path: String, kath_x: float) -> String:
 	var hint: String = objective["hints"][level - 1]
+	if objective["id"] == "hall":
+		var target: Dictionary = focus_target(state, objective, scene_path, kath_x) if scene_path == objective["focus_scene"] else focus_candidates(state, objective)[0]
+		if not target.is_empty():
+			var target_id: StringName = target["id"]
+			if level == 1:
+				return "The next unfinished part of the round is near the %s." % target["label"]
+			if level == 2:
+				return "Look closely at the %s; it should change when you operate it." % target["label"]
+			match target_id:
+				&"archive-door":
+					return "Stand by the archive door, press E, then press E again to slide its bolt into place."
+				&"high-window":
+					return "Stand by the high window, press E, then press E again to fix the loose catch."
+				&"clock-housing":
+					return "Open the clock with E and hold E for about a second until the winding bar is full."
+				&"duty-keys":
+					return "Open the duty keys with E and return the east service key to its labelled hook."
+				&"maintenance-sheet":
+					return "Open the round book on the desk and press E on the checked task page to stamp ROUND FILED."
 	if scene_path != objective["focus_scene"] and level == 1:
 		return "The next clue is in %s. %s" % [objective["next_area"], hint]
 	if objective["id"] == "leak" and state.flags.get("stacks_leak_inspected", false) and level >= 2:
