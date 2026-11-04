@@ -13,10 +13,13 @@ const CLOCK_WIND_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audi
 const DOOR_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/door-latch-states.png")
 const WINDOW_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/window-catch-states.png")
 const CLOCK_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/clock-winding-detail-states.png")
+const KEYS_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/duty-keys-states.png")
+const KEY_HOOK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 
 const INSPECTIONS := {
 	"archive-door": {"title": "Doors and windows", "body": "The archive-door bolt and high-window catch are both fastened before the storm."},
 	"clock-housing": {"title": "Hall clock", "body": "The winding handle was turned until the spring caught. The pendulum and ticking settled into a regular rhythm."},
+	"duty-keys": {"title": "Duty keys", "body": "All three keys are present. I returned the east service key from a temporary nail to its labelled hook. The reverse of its tag reads OBSERVATORY CASTLE."},
 	"maintenance-sheet": {"title": "Maintenance sheet", "body": "Five checks are listed, with no reasons given."}
 }
 
@@ -29,9 +32,10 @@ const INSPECTIONS := {
 @onready var door_bolt_world: Node2D = $DoorBoltWorld
 @onready var window_catch_world: Node2D = $WindowCatchWorld
 @onready var clock_motion: Node2D = $OldClock/ClockMotion
+@onready var key_rack_world: Sprite2D = $DutyKeys/RackVisual
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
-@onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $UpperStacksEntry]
+@onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $DutyKeys, $UpperStacksEntry]
 @onready var state: Node = get_node("/root/PrologueState")
 @onready var notes: Array[Dictionary] = state.notes
 
@@ -85,6 +89,7 @@ func _ready() -> void:
 	clock_motion.set_wound(_clock_is_wound())
 	clock_motion.set_winding_progress(clock_winding_progress)
 	_refresh_world_latches(false)
+	key_rack_world.set_sorted(_key_is_sorted(), false)
 	var ambience := AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(ambience, true)
 	ambience.name = "HallAmbience"
@@ -213,6 +218,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					_fix_window_catch()
 				&"wind_clock":
 					clock_winding_held = true
+				&"sort_duty_key":
+					_sort_duty_key()
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
@@ -279,6 +286,10 @@ func _inspect(hotspot: Node) -> void:
 			pending_inspection = &""
 			wick.react_to(967.0, 490.0)
 			_open_clock_focus()
+		&"keys":
+			pending_inspection = &""
+			wick.react_to(1370.0, 482.0)
+			_open_keys_focus()
 		&"sheet":
 			wick.react_to(1212.0, 450.0)
 			_set_mode(&"inspection")
@@ -340,6 +351,44 @@ func _open_clock_focus() -> void:
 		"parts": [{"label": "Winding handle", "action": "wind_clock"}],
 	}, _clock_is_wound())
 	focus.set_hold_progress(clock_winding_progress)
+
+
+func _open_keys_focus() -> void:
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "DUTY KEYS · EAST SERVICE WAY",
+		"texture": KEYS_FOCUS_TEXTURE,
+		"before_region": Rect2(0, 0, 887, 887),
+		"after_region": Rect2(887, 0, 887, 887),
+		"source": Vector2(1370, 506),
+		"before_text": "Three keys are here. The east service key hangs on the spare nail.",
+		"after_text": "The third hook is filled. The key tag has turned over.",
+		"verb": "RETURN EAST KEY",
+		"done_control": "THREE KEYS IN PLACE",
+		"hide_parts": true,
+		"hook_labels": "MACHINE ROOM\nUPPER STACKS\nEAST SERVICE WAY\nSPARE NAIL → THIRD HOOK",
+		"hook_labels_after": "MACHINE ROOM\nUPPER STACKS\nEAST SERVICE WAY\nTHIRD HOOK FILLED",
+		"tag_reveal": "OBSERVATORY\nCASTLE",
+		"parts": [{"label": "East service key", "action": "sort_duty_key"}],
+	}, _key_is_sorted())
+
+
+func _sort_duty_key() -> void:
+	if _key_is_sorted():
+		return
+	state.flags["hall_east_key_sorted"] = true
+	focus.set_completed()
+	key_rack_world.set_sorted(true)
+	one_shot_audio.stream = KEY_HOOK_SOUND
+	one_shot_audio.play()
+	_record(&"duty-keys", false)
+	focus_reaction_pending = "All three are accounted for. Why does the east key's old tag say Observatory Castle?"
+
+
+func _key_is_sorted() -> bool:
+	return bool(state.flags.get("hall_east_key_sorted", false)) or state.has_note(&"duty-keys")
 
 
 func _update_clock_winding(delta: float) -> void:

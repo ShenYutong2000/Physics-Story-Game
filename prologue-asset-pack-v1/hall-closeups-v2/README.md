@@ -1,6 +1,6 @@
-# Grand Archive Hall — close-up art review (step 2)
+# Grand Archive Hall — close-up art and playable props
 
-The archive door, high window, and hall clock close-ups are now playable in the hall. The other prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
+The archive door, high window, hall clock, and duty keys are now playable in the hall. The round book and optional prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
 
 ## Scene and main props
 
@@ -41,6 +41,12 @@ The [capture script](../../tests/hall_art_capture.gd) renders the art with live 
 In the hall, stand by the archive door or high window and press E to focus. Press E again to slide the bolt or press the catch; Esc returns to the hall. Esc before operating leaves that part unchanged. The latch or catch visibly changes in the close-up and on the room-scale fixture; the window rattle stops when the catch is fixed. The combined patrol item is recorded only after both parts are secured, in either order. Both close-ups reopen in their completed state after leaving and returning to the hall. The same focus scene supports left/right part selection for props with multiple actionable parts in later steps.
 
 Live Godot captures at 1280 × 720: [hall before](review-captures/interactive-hall-before-1280x720.png) · [hall after](review-captures/interactive-hall-after-1280x720.png) · [door before](review-captures/interactive-door-before-1280x720.png) · [door after](review-captures/interactive-door-after-1280x720.png) · [window before](review-captures/interactive-window-before-1280x720.png) · [window after](review-captures/interactive-window-after-1280x720.png). Corresponding 1672 × 941 captures are in the same folder. The redesigned round book and other props remain for subsequent steps.
+
+## Duty keys (Step 6)
+
+Stand near the duty desk's key rack and press E. The close-up shows three keys: the machine-room and upper-stacks keys already hang on their hooks, while the east service key hangs on the spare nail. Press E to return that key to its labelled third hook. Its tag turns and reveals `OBSERVATORY CASTLE` in a readable magnified card. The rack changes in the hall and retains its arrangement after scene changes and checkpoint restore. Esc before moving the key leaves it unsorted; repeating the action cannot add a second note. The patrol-book completion gate still follows the existing three checks until Step 7 connects the redesigned checklist and stamp.
+
+Live 1280 × 720 captures: [keys before](review-captures/interactive-keys-before-1280x720.png) · [keys after](review-captures/interactive-keys-after-1280x720.png) · [hall before](review-captures/interactive-keys-hall-before-1280x720.png) · [hall after](review-captures/interactive-keys-hall-after-1280x720.png). Matching 1672 × 941 captures are in the same folder.
 
 ## Hall clock (Step 5)
 

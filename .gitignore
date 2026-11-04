@@ -2,6 +2,7 @@
 .godot/
 .godot-local/
 chapter1-assets/review-*/*.png.import
+prologue-asset-pack-v1/hall-closeups-v2/review-captures/*.png.import
 
 # Local builds and exports
 build/

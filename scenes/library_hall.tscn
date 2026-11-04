@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
@@ -14,6 +14,7 @@
 [ext_resource type="PackedScene" path="res://scenes/hall_prop_focus.tscn" id="11_focus"]
 [ext_resource type="Script" path="res://scripts/hall_latch_visual.gd" id="12_latch_visual"]
 [ext_resource type="Script" path="res://scripts/hall_clock_motion.gd" id="13_clock_motion"]
+[ext_resource type="Script" path="res://scripts/hall_key_rack.gd" id="14_key_rack"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
@@ -95,6 +96,21 @@ content_key = &"sheet"
 position = Vector2(0, -35)
 scale = Vector2(0.071, 0.071)
 texture = ExtResource("8_sheet")
+
+[node name="DutyKeys" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1370, 700)
+z_index = -5
+interaction_id = &"duty-keys"
+display_name = "Duty keys"
+approach_x = 1370.0
+reach_radius = 115.0
+content_key = &"keys"
+discovery_anchor = Vector2(1370, 506)
+
+[node name="RackVisual" type="Sprite2D" parent="DutyKeys"]
+position = Vector2(0, -157)
+scale = Vector2(0.19, 0.19)
+script = ExtResource("14_key_rack")
 
 [node name="UpperStacksEntry" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(1530, 778)

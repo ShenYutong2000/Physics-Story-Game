@@ -18,11 +18,15 @@ var parts_label: Label
 var hold_label: Label
 var hold_track: ColorRect
 var hold_fill: ColorRect
+var hook_labels: Label
+var tag_card: ColorRect
+var tag_label: Label
 var config: Dictionary = {}
 var selected_part := 0
 var completed := false
 var transitioning := false
 var _tween: Tween
+var _tag_tween: Tween
 var _changed_image: TextureRect
 var _hold_preview: TextureRect
 
@@ -52,6 +56,18 @@ func _ready() -> void:
 	controls_label = _label("Controls", Rect2(180, 858, 1312, 40), 22, GOLD)
 	parts_label = _label("Parts", Rect2(1200, 218, 360, 240), 21, CREAM)
 	parts_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	hook_labels = _label("HookNames", Rect2(1200, 305, 360, 170), 22, GOLD)
+	hook_labels.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	tag_card = ColorRect.new()
+	tag_card.name = "KeyTagReverse"
+	tag_card.position = Vector2(1200, 520)
+	tag_card.size = Vector2(350, 112)
+	tag_card.pivot_offset = tag_card.size / 2.0
+	tag_card.color = Color("e6c692")
+	tag_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	screen.add_child(tag_card)
+	tag_label = _label("KeyTagText", Rect2(1215, 528, 320, 94), 27, Color("30283d"))
+	tag_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hold_label = _label("HoldStatus", Rect2(1200, 505, 360, 38), 21, GOLD)
 	hold_track = ColorRect.new()
 	hold_track.name = "HoldTrack"
@@ -72,6 +88,7 @@ func _ready() -> void:
 
 func open_view(prop_config: Dictionary, already_completed: bool) -> void:
 	_stop_tween()
+	_stop_tag_tween()
 	_clear_changed_image()
 	_clear_hold_preview()
 	config = prop_config
@@ -86,6 +103,11 @@ func open_view(prop_config: Dictionary, already_completed: bool) -> void:
 	picture.position = source - Vector2(65, 65)
 	picture.size = Vector2(130, 130)
 	_refresh_labels()
+	parts_label.visible = not bool(config.get("hide_parts", false))
+	hook_labels.visible = config.has("hook_labels")
+	tag_card.visible = completed and config.has("tag_reveal")
+	tag_label.visible = tag_card.visible
+	tag_card.scale.x = 1.0
 	hold_label.visible = bool(config.get("has_hold_progress", false))
 	hold_track.visible = hold_label.visible
 	hold_fill.visible = hold_label.visible
@@ -95,7 +117,7 @@ func open_view(prop_config: Dictionary, already_completed: bool) -> void:
 	_tween.tween_property(shade, "modulate:a", 0.91, 0.23)
 	_tween.tween_property(picture, "position", IMAGE_RECT.position, 0.23).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(picture, "size", IMAGE_RECT.size, 0.23).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	for label in [title_label, detail_label, controls_label, parts_label, hold_label]:
+	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label]:
 		_tween.tween_property(label, "modulate:a", 1.0, 0.18).set_delay(0.05)
 	_tween.finished.connect(func() -> void: transitioning = false)
 
@@ -145,6 +167,14 @@ func set_completed() -> void:
 	if completed or not screen.visible:
 		return
 	completed = true
+	if config.has("tag_reveal"):
+		tag_card.visible = true
+		tag_label.visible = true
+		tag_card.scale.x = 0.0
+		tag_label.modulate.a = 0.0
+		_tag_tween = create_tween().set_parallel(true)
+		_tag_tween.tween_property(tag_card, "scale:x", 1.0, 0.34).set_delay(0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_tag_tween.tween_property(tag_label, "modulate:a", 1.0, 0.18).set_delay(0.28)
 	_stop_tween()
 	_clear_hold_preview()
 	set_hold_progress(1.0)
@@ -173,6 +203,7 @@ func close_view() -> void:
 	if not screen.visible:
 		return
 	_stop_tween()
+	_stop_tag_tween()
 	_clear_changed_image()
 	_clear_hold_preview()
 	transitioning = true
@@ -199,6 +230,8 @@ func _state_texture(is_done: bool) -> AtlasTexture:
 
 func _refresh_labels() -> void:
 	title_label.text = config.get("title", "INSPECT")
+	hook_labels.text = config.get("hook_labels_after", "") if completed and config.has("hook_labels_after") else config.get("hook_labels", "")
+	tag_label.text = config.get("tag_reveal", "")
 	detail_label.text = config.get("after_text", "") if completed else config.get("before_text", "")
 	var parts: Array = config.get("parts", [])
 	var lines := PackedStringArray()
@@ -214,13 +247,18 @@ func _refresh_labels() -> void:
 
 
 func _set_labels_alpha(alpha: float) -> void:
-	for label in [title_label, detail_label, controls_label, parts_label, hold_label]:
+	for label in [title_label, detail_label, controls_label, parts_label, hold_label, hook_labels, tag_label]:
 		label.modulate.a = alpha
 
 
 func _stop_tween() -> void:
 	if _tween != null and _tween.is_running():
 		_tween.kill()
+
+
+func _stop_tag_tween() -> void:
+	if _tag_tween != null and _tag_tween.is_running():
+		_tag_tween.kill()
 
 
 func _clear_changed_image() -> void:
