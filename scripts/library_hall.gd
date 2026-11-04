@@ -8,12 +8,15 @@ const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-li
 const DOOR_LATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/gate-latch.wav")
 const WINDOW_CATCH_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 const WINDOW_RATTLE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/step-wood.wav")
+const CLOCK_TICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/clock-tick.wav")
+const CLOCK_WIND_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 const DOOR_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/door-latch-states.png")
 const WINDOW_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/window-catch-states.png")
+const CLOCK_FOCUS_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/clock-winding-detail-states.png")
 
 const INSPECTIONS := {
 	"archive-door": {"title": "Doors and windows", "body": "The archive-door bolt and high-window catch are both fastened before the storm."},
-	"clock-housing": {"title": "Old clock", "body": "Wick heard a rattle, though the clock still runs."},
+	"clock-housing": {"title": "Hall clock", "body": "The winding handle was turned until the spring caught. The pendulum and ticking settled into a regular rhythm."},
 	"maintenance-sheet": {"title": "Maintenance sheet", "body": "Five checks are listed, with no reasons given."}
 }
 
@@ -25,6 +28,7 @@ const INSPECTIONS := {
 @onready var high_window: Node2D = $HighWindow
 @onready var door_bolt_world: Node2D = $DoorBoltWorld
 @onready var window_catch_world: Node2D = $WindowCatchWorld
+@onready var clock_motion: Node2D = $OldClock/ClockMotion
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
 @onready var hotspots: Array[Node] = [$ArchiveDoor, $HighWindow, $OldClock, $MaintenanceSheet, $UpperStacksEntry]
@@ -41,6 +45,12 @@ var completion_played := false
 var focus_reaction_pending := ""
 var window_rattle_audio: AudioStreamPlayer
 var window_rattle_seconds := 1.8
+var clock_tick_audio: AudioStreamPlayer
+var clock_wind_audio: AudioStreamPlayer
+var clock_tick_seconds := 1.0
+var clock_winding_progress := 0.0
+var clock_wind_click_stage := 0
+var clock_winding_held := false
 
 
 func _ready() -> void:
@@ -58,6 +68,22 @@ func _ready() -> void:
 	window_rattle_audio.stream = WINDOW_RATTLE_SOUND
 	window_rattle_audio.volume_db = -28.0
 	add_child(window_rattle_audio)
+	clock_tick_audio = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(clock_tick_audio)
+	clock_tick_audio.name = "HallClockTick"
+	clock_tick_audio.stream = CLOCK_TICK_SOUND
+	clock_tick_audio.volume_db = -12.0
+	add_child(clock_tick_audio)
+	clock_wind_audio = AudioStreamPlayer.new()
+	get_node("/root/GameSettings").configure_audio(clock_wind_audio)
+	clock_wind_audio.name = "HallClockWinding"
+	clock_wind_audio.stream = CLOCK_WIND_SOUND
+	clock_wind_audio.volume_db = -9.0
+	add_child(clock_wind_audio)
+	clock_winding_progress = 1.0 if _clock_is_wound() else clampf(float(state.flags.get("hall_clock_winding_progress", 0.0)), 0.0, 1.0)
+	clock_wind_click_stage = floori(clock_winding_progress * 4.0)
+	clock_motion.set_wound(_clock_is_wound())
+	clock_motion.set_winding_progress(clock_winding_progress)
 	_refresh_world_latches(false)
 	var ambience := AudioStreamPlayer.new()
 	get_node("/root/GameSettings").configure_audio(ambience, true)
@@ -106,9 +132,18 @@ func _exit_tree() -> void:
 		ambience.stop()
 	if is_instance_valid(window_rattle_audio):
 		window_rattle_audio.stop()
+	if is_instance_valid(clock_tick_audio):
+		clock_tick_audio.stop()
+	if is_instance_valid(clock_wind_audio):
+		clock_wind_audio.stop()
 
 
 func _process(delta: float) -> void:
+	_update_clock_winding(delta)
+	clock_tick_seconds -= delta
+	if clock_tick_seconds <= 0.0:
+		clock_tick_seconds = 1.12 if _clock_is_wound() else 2.7
+		clock_tick_audio.play()
 	if not _window_is_fixed() and mode == &"roam":
 		window_rattle_seconds -= delta
 		if window_rattle_seconds <= 0.0:
@@ -133,6 +168,10 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.echo:
 		return
+	if mode == &"focus" and event.is_action_released("interact"):
+		clock_winding_held = false
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("ui_cancel"):
 		if mode == &"roam":
 			_set_mode(&"paused")
@@ -144,6 +183,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif mode == &"paper":
 			_return_from_saved_page()
 		elif mode == &"focus":
+			clock_winding_held = false
 			_set_mode(&"focus_closing")
 			focus.close_view()
 		else:
@@ -171,6 +211,8 @@ func _unhandled_input(event: InputEvent) -> void:
 					_secure_door_bolt()
 				&"fix_window_catch":
 					_fix_window_catch()
+				&"wind_clock":
+					clock_winding_held = true
 			get_viewport().set_input_as_handled()
 		elif event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 			focus.select_part(-1 if event.is_action_pressed("move_left") else 1)
@@ -234,8 +276,9 @@ func _inspect(hotspot: Node) -> void:
 			pending_inspection = &""
 			_open_window_focus()
 		&"clock":
+			pending_inspection = &""
 			wick.react_to(967.0, 490.0)
-			_start_dialogue(["Still ticking. I wound it this morning.", "You heard that little rattle too, Wick? I'll note it down."])
+			_open_clock_focus()
 		&"sheet":
 			wick.react_to(1212.0, 450.0)
 			_set_mode(&"inspection")
@@ -277,6 +320,59 @@ func _open_window_focus() -> void:
 		"done_control": "ALREADY FIXED",
 		"parts": [{"label": "Window catch", "action": "fix_window_catch"}],
 	}, _window_is_fixed())
+
+
+func _open_clock_focus() -> void:
+	ui.hide_modals()
+	ui.hide_prompt()
+	_set_mode(&"focus")
+	focus.open_view({
+		"title": "HALL CLOCK · WINDING HANDLE",
+		"texture": CLOCK_FOCUS_TEXTURE,
+		"before_region": Rect2(0, 0, 836, 941),
+		"after_region": Rect2(836, 0, 836, 941),
+		"source": Vector2(967, 512),
+		"before_text": "The pendulum slows. The handle can wind its spring.",
+		"after_text": "The handle is set. The pendulum keeps a steady rhythm.",
+		"has_hold_progress": true,
+		"control_override": "HOLD E  WIND SPRING  ·  ESC  RETURN",
+		"done_control": "CLOCK WOUND",
+		"parts": [{"label": "Winding handle", "action": "wind_clock"}],
+	}, _clock_is_wound())
+	focus.set_hold_progress(clock_winding_progress)
+
+
+func _update_clock_winding(delta: float) -> void:
+	if mode != &"focus" or not clock_winding_held or _clock_is_wound():
+		return
+	clock_winding_progress = minf(1.0, clock_winding_progress + delta)
+	state.flags["hall_clock_winding_progress"] = clock_winding_progress
+	clock_motion.set_winding_progress(clock_winding_progress)
+	focus.set_hold_progress(clock_winding_progress)
+	var next_stage := floori(clock_winding_progress * 4.0)
+	if next_stage > clock_wind_click_stage:
+		clock_wind_click_stage = next_stage
+		clock_wind_audio.play()
+	if clock_winding_progress >= 1.0:
+		_complete_clock_winding()
+
+
+func _complete_clock_winding() -> void:
+	if _clock_is_wound():
+		return
+	clock_winding_held = false
+	clock_winding_progress = 1.0
+	state.flags["hall_clock_winding_progress"] = 1.0
+	state.flags["hall_clock_wound"] = true
+	focus.set_completed()
+	clock_motion.set_wound(true)
+	clock_tick_seconds = 0.2
+	_record(&"clock-housing", false)
+	focus_reaction_pending = "The pendulum is steady again. I'll mark the clock as wound."
+
+
+func _clock_is_wound() -> bool:
+	return bool(state.flags.get("hall_clock_wound", false)) or state.has_note(&"clock-housing")
 
 
 func _secure_door_bolt() -> void:
@@ -323,6 +419,7 @@ func _refresh_world_latches(animate: bool = true) -> void:
 
 
 func _on_focus_dismissed() -> void:
+	clock_winding_held = false
 	_set_mode(&"roam")
 	if not focus_reaction_pending.is_empty():
 		var line := focus_reaction_pending

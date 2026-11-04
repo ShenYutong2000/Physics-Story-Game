@@ -112,10 +112,27 @@ func _run() -> void:
 	if not wick.flying or wick.reaction_time <= 0.0:
 		_fail("Wick did not react to the clock.")
 		return
-	hall._advance_dialogue()
+	await create_timer(0.3).timeout
+	hall._unhandled_input(_key(KEY_E))
+	hall._process(0.55)
+	var released_e := _key(KEY_E)
+	released_e.pressed = false
+	hall._unhandled_input(released_e)
+	if hall.notes.size() != 1 or hall.clock_winding_progress < 0.5:
+		_fail("Releasing E early did not preserve partial winding without recording the clock.")
+		return
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
+	hall._inspect(hall.nearest_hotspot(kath.position.x))
+	await create_timer(0.3).timeout
+	hall._unhandled_input(_key(KEY_E))
+	hall._process(0.5)
+	hall._unhandled_input(released_e)
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 	hall._advance_dialogue()
 	if hall.notes.size() != 2 or hall.notes[1]["id"] != &"clock-housing":
-		_fail("Clock observation was not appended in discovery order.")
+		_fail("The completed clock winding was not appended in discovery order.")
 		return
 
 	kath.position.x = 120.0
@@ -148,8 +165,12 @@ func _run() -> void:
 	hall._advance_dialogue()
 	kath.position.x = 967.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	hall._advance_dialogue()
-	hall._advance_dialogue()
+	await create_timer(0.3).timeout
+	if not hall.focus.completed:
+		_fail("The wound clock did not reopen in its completed state.")
+		return
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 	if hall.notes.size() != 3 or hall.mode != &"roam":
 		_fail("Repeating the final inspection replayed completion or duplicated notes.")
 		return

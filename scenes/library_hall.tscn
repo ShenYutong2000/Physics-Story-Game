@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="10_ui"]
 [ext_resource type="PackedScene" path="res://scenes/hall_prop_focus.tscn" id="11_focus"]
 [ext_resource type="Script" path="res://scripts/hall_latch_visual.gd" id="12_latch_visual"]
+[ext_resource type="Script" path="res://scripts/hall_clock_motion.gd" id="13_clock_motion"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
@@ -76,6 +77,10 @@ content_key = &"clock"
 position = Vector2(0, -183)
 scale = Vector2(0.258, 0.258)
 texture = ExtResource("7_clock")
+
+[node name="ClockMotion" type="Node2D" parent="OldClock"]
+position = Vector2(0, -236)
+script = ExtResource("13_clock_motion")
 
 [node name="MaintenanceSheet" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(1212, 575)

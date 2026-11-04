@@ -1,6 +1,6 @@
 # Grand Archive Hall — close-up art review (step 2)
 
-The archive-door and high-window close-ups are now playable in the hall. The other prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
+The archive door, high window, and hall clock close-ups are now playable in the hall. The other prop sheets are art assets for the following steps. Open [the review viewer](review.html) to compare the proposed states at the design size (1672 × 941) or 1280 × 720. The viewer draws planned English headings and key lines as live text; the PNGs intentionally leave inscription areas blank so Godot can render the full final wording clearly.
 
 ## Scene and main props
 
@@ -41,3 +41,7 @@ The [capture script](../../tests/hall_art_capture.gd) renders the art with live 
 In the hall, stand by the archive door or high window and press E to focus. Press E again to slide the bolt or press the catch; Esc returns to the hall. Esc before operating leaves that part unchanged. The latch or catch visibly changes in the close-up and on the room-scale fixture; the window rattle stops when the catch is fixed. The combined patrol item is recorded only after both parts are secured, in either order. Both close-ups reopen in their completed state after leaving and returning to the hall. The same focus scene supports left/right part selection for props with multiple actionable parts in later steps.
 
 Live Godot captures at 1280 × 720: [hall before](review-captures/interactive-hall-before-1280x720.png) · [hall after](review-captures/interactive-hall-after-1280x720.png) · [door before](review-captures/interactive-door-before-1280x720.png) · [door after](review-captures/interactive-door-after-1280x720.png) · [window before](review-captures/interactive-window-before-1280x720.png) · [window after](review-captures/interactive-window-after-1280x720.png). Corresponding 1672 × 941 captures are in the same folder. The redesigned round book and other props remain for subsequent steps.
+
+## Hall clock (Step 5)
+
+Stand by the clock and press E to focus. Hold E for about one second to wind it. Releasing E early keeps the visible spring progress; Esc can close and reopen the close-up without falsely completing the check. The handle and pendulum change in the close-up, while the room-scale handle turns and the pendulum and ticking settle into a regular rhythm. The completed state persists on later hall visits and produces only one journal entry. Review the live [unwound view](review-captures/interactive-clock-before-1280x720.png), [partial winding](review-captures/interactive-clock-partial-1280x720.png), [wound view](review-captures/interactive-clock-after-1280x720.png), and [hall after winding](review-captures/interactive-clock-hall-after-1280x720.png); 1672 × 941 versions are alongside them.

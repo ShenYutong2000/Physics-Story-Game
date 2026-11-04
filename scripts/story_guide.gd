@@ -51,7 +51,7 @@ const FOCUS_IDS := {
 static func current(state: Node) -> Dictionary:
 	var f: Dictionary = state.flags
 	if not state.hall_checks_complete():
-		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Secure the door and high window, then check the clock and sheet.", "The archive door is left of the tall windows; the clock and sheet are farther right.", "Stand by the door and high window; press E to focus, then E to fasten each latch.", [&"archive-door", &"clock-housing", &"maintenance-sheet"], 1040.0, 510.0)
+		return _step("hall", "Complete the evening rounds", "Library Hall", "Library Hall", "Secure the door and high window, wind the clock, then check the sheet.", "The archive door is left of the tall windows; the clock and sheet are farther right.", "Use E twice to fasten each latch. At the clock, hold E for about a second to wind it.", [&"archive-door", &"clock-housing", &"maintenance-sheet"], 1040.0, 510.0)
 	if not f.get("machine_baseline_recorded", false):
 		return _step("baseline", "Record the machine reading", "Machine Room", "Machine Room", "The instrument has a mark from the last reading.", "Enter through the hall's archive door and find the large gauge.", "Press E at the gauge, compare its pointer with the old mark, then press Enter to record it.", [&"archive-door"], 1136.0, 420.0)
 	if not f.get("stacks_bucket_moved", false):
