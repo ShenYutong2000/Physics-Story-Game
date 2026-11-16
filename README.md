@@ -53,7 +53,21 @@ In the shaft, one fixed pulley redirects the pull; the alternate route has two s
 
 The design canvas is **1672×941** and the default window is **1280×720**, with aspect-preserving scaling. Kath's shared display height is **301.6 scene pixels** and Wick's is **130 scene pixels**; their shared scenes normalize their frames, so do not scale individual instances again. The reusable art source and game PNG layers are under `chapter1-assets/` and `prologue-asset-pack-v1/`.
 
-Run the smoke scripts under `tests/` with Godot 4.7.2. The complete sequence includes `hall_weather_save_smoke.gd`, `week1_smoke.gd` through `week6_smoke.gd`, `phase3_step1_smoke.gd` through `phase3_step6_smoke.gd` (including `phase3_step6a_smoke.gd`), `phase3_engine_restoration_smoke.gd`, `phase3_archive_finale_smoke.gd`, `phase3_step7_checkpoint_smoke.gd`, `phase3_step7_quit_smoke.gd`, and `stage6_settings_smoke.gd`. The save checks use dedicated temporary filenames and do not touch the player's slot.
+### Code layout
+
+- `scripts/story_room.gd` (`StoryRoom`) is the base class of every playable room. It owns the shared exploration loop: modes, dialogue, notes, the torn-page view, pause, nearest-hotspot selection, travel, audio players and the Archive weather. Each room script (`library_hall.gd`, `machine_room.gd`, … `chapter1_observatory.gd`) only fills `hotspots`, implements `_inspect()`, and overrides hooks such as `_room_input()` or `_cancel()` where it differs.
+- `scripts/prologue_state.gd` (autoload `PrologueState`) holds story flags, notes, castle pose and checkpoints. `scripts/game_settings.gd` (autoload `GameSettings`) holds preferences.
+- `scripts/hall_ui.gd` is the shared HUD; its notes panel reads `PrologueState` directly.
+
+### Tests
+
+Each `tests/*_test.gd` script checks one feature and extends `tests/support/story_test.gd`, which provides key presses, scene setup and failure reporting. Run the whole suite headless with:
+
+```powershell
+.\tools\run_tests.ps1
+```
+
+Use `-Filter hall` to run a subset, or `-CaptureDir <folder>` to open a window and save each test's review screenshots there. Tests never write into the project folder, and the save checks use dedicated temporary filenames that do not touch the player's slot. Run a single test with `godot --headless --path . --script res://tests/<name>_test.gd`.
 
 For a repeatable Windows package, run `tools/build_windows_portable.ps1` with Godot 4.7.2 installed at `D:\Game\Godot-4.7.2` or pass its GUI executable path via `-GodotExe`. The script exports a PCK, pairs it with the engine, copies the engine notice and writes `build/FootnotesToTheWorld-Windows.zip`. Double-click `Play Footnotes.cmd` in the extracted folder. The package uses the installed Godot executable because dedicated Windows export templates are not installed on this development machine.
 

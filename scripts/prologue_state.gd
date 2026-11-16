@@ -2,8 +2,6 @@ extends Node
 ## Story state, single-slot checkpoints, and first-play timing.
 
 const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"duty-keys"]
-const UPPER_STACKS_NOTE_IDS := [&"leak-observation", &"newton-note"]
-const ROOM_NOTE_IDS := [&"notebook-match", &"castle-alarm"]
 const CASTLE_POSE_ORDER := [&"upright", &"tilted", &"inverted", &"restored"]
 const CASTLE_POSE_ANGLES_DEGREES := {
 	&"upright": 0.0,
@@ -321,24 +319,10 @@ func upper_stacks_unlocked() -> bool:
 	return bool(flags.get("machine_baseline_recorded", false))
 
 
-func upper_stacks_complete() -> bool:
-	for note_id in UPPER_STACKS_NOTE_IDS:
-		if not has_note(note_id):
-			return false
-	return true
-
-
 func room_preparation_complete() -> bool:
 	return bool(flags.get("room_notebook_compared", false)) \
 		and bool(flags.get("room_rested", false)) \
 		and bool(flags.get("room_bag_packed", false))
-
-
-func machine_incident_complete() -> bool:
-	return bool(flags.get("incident_valve_two_open", false)) \
-		and bool(flags.get("incident_valve_four_open", false)) \
-		and bool(flags.get("incident_drive_stopped", false)) \
-		and bool(flags.get("incident_tilt_observed", false))
 
 
 func travel_to(scene_path: String, spawn_tag: StringName) -> void:

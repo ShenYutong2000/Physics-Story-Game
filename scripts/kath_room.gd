@@ -1,283 +1,172 @@
-extends Node2D
+extends StoryRoom
 ## Notebook comparison, rest, and departure preparation.
 
 const UPPER_SCENE := "res://scenes/upper_stacks.tscn"
-const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
-const NIGHT_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-night-city.png")
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-room.wav")
 const PAGE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
-const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
+const NOTEBOOK_NOTE := {
+	"title": "A matching page",
+	"body": "The torn edge fits the empty place in Kath's notebook. An old entry names the Observatory Castle. The equation remains unexplained.",
+}
 
 const DOOR_X := 100.0
-const DOOR_REACH := 94.0
 const LAMP_X := 1281.0
-const LAMP_REACH := 75.0
 const NOTEBOOK_X := 1028.0
-const NOTEBOOK_REACH := 75.0
 const BED_X := 560.0
-const BED_REACH := 55.0
 const BAG_X := 646.0
-const BAG_REACH := 55.0
 const COAT_X := 881.0
-const COAT_REACH := 55.0
 
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
-@onready var ui: CanvasLayer = $HallUI
+## Room objects in priority order: id, centre x, reach, prompt name.
+const TARGETS := [
+	[&"door", DOOR_X, 94.0, "Stairway to Upper Stacks"],
+	[&"lamp", LAMP_X, 75.0, "Desk lamp"],
+	[&"notebook", NOTEBOOK_X, 75.0, "Old notebook"],
+	[&"bed", BED_X, 55.0, "Bed"],
+	[&"bag", BAG_X, 55.0, "Travel satchel"],
+	[&"coat", COAT_X, 55.0, "Hanging coat"],
+]
+
 @onready var far: Sprite2D = $Far
 @onready var rain_streaks: Node2D = $RainStreaks
 @onready var night_tint: CanvasModulate = $NightTint
 @onready var lamp: AnimatedSprite2D = $DeskLamp
 @onready var satchel: AnimatedSprite2D = $Satchel
-@onready var state: Node = get_node("/root/PrologueState")
-
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
-var ambient_player: AudioStreamPlayer
-var effects_player: AudioStreamPlayer
-var page_from_journal := false
 
 
 func _ready() -> void:
-	var spawn_tag: StringName = state.take_spawn_tag()
+	state.take_spawn_tag()
 	kath.position = Vector2(210.0, 801.0)
-	if spawn_tag == &"from-upper-stacks":
-		kath.position.x = 210.0
-	far.texture = DAWN_CITY if state.flags.get("dawn_reached", false) else NIGHT_CITY
-	far.modulate = Color(0.76, 0.82, 0.94) if state.flags.get("hall_rain_heavy", false) and not state.flags.get("dawn_reached", false) else Color.WHITE
-	rain_streaks.set_strength(0.0 if state.flags.get("dawn_reached", false) else (1.0 if state.flags.get("hall_rain_heavy", false) else 0.25))
-	if state.flags.get("room_lamp_on", false):
-		lamp.frame = 1
-	if state.flags.get("room_bag_packed", false):
-		satchel.frame = 1
-	if state.flags.get("dawn_reached", false):
+	_apply_archive_weather(far, rain_streaks, false)
+	lamp.frame = 1 if _flag("room_lamp_on") else 0
+	satchel.frame = 1 if _flag("room_bag_packed") else 0
+	if _flag("dawn_reached"):
 		night_tint.color = Color.WHITE
-	ambient_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(ambient_player, true)
-	ambient_player.name = "RoomAmbience"
-	ambient_player.stream = AMBIENCE
-	ambient_player.volume_db = -16.0
-	add_child(ambient_player)
-	ambient_player.play()
-	effects_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(effects_player)
-	effects_player.name = "RoomEffects"
-	add_child(effects_player)
-	if not state.flags.get("room_intro_seen", false):
+	_add_audio("RoomAmbience", AMBIENCE, -16.0, true)
+	if not _flag("room_intro_seen"):
 		state.flags["room_intro_seen"] = true
 		_start_dialogue(["My room. I must have hidden that page here before the Night of Unnaming.", "First, the desk lamp. Then I can compare it with the notebook I kept."])
 
 
-func _exit_tree() -> void:
-	if is_instance_valid(ambient_player):
-		ambient_player.stop()
-	if is_instance_valid(effects_player):
-		effects_player.stop()
+func _flag(key: String) -> bool:
+	return bool(state.flags.get(key, false))
 
 
 func discovery_candidates() -> Array[Dictionary]:
 	var items: Array[Dictionary] = [{"x": DOOR_X, "position": Vector2(DOOR_X, 575), "id": &"room-door"}]
-	if not state.flags.get("room_lamp_on", false):
+	if not _flag("room_lamp_on"):
 		items.append({"x": LAMP_X, "position": Vector2(LAMP_X, 495), "id": &"room-lamp"})
-	if state.flags.get("room_lamp_on", false) and not state.flags.get("room_notebook_compared", false):
+	if _flag("room_lamp_on") and not _flag("room_notebook_compared"):
 		items.append({"x": NOTEBOOK_X, "position": Vector2(NOTEBOOK_X, 515), "id": &"room-notebook"})
-	if state.flags.get("room_notebook_compared", false) and not state.flags.get("room_rested", false):
+	if _flag("room_notebook_compared") and not _flag("room_rested"):
 		items.append({"x": BED_X, "position": Vector2(BED_X, 580), "id": &"room-bed"})
-	if state.flags.get("dawn_reached", false) and not state.flags.get("room_bag_packed", false):
+	if _flag("dawn_reached") and not _flag("room_bag_packed"):
 		items.append({"x": BAG_X, "position": Vector2(BAG_X, 585), "id": &"room-bag"})
 	items.append({"x": COAT_X, "position": Vector2(COAT_X, 475), "id": &"room-coat"})
 	return items
 
 
+## The first object in reach that still has something to do, or {}.
+func _target_at(x: float) -> Dictionary:
+	for target in TARGETS:
+		var id: StringName = target[0]
+		if absf(x - float(target[1])) <= float(target[2]) and not _target_finished(id):
+			return {"id": id, "x": target[1], "name": target[3]}
+	return {}
+
+
+func _target_finished(id: StringName) -> bool:
+	match id:
+		&"lamp":
+			return _flag("room_lamp_on")
+		&"notebook":
+			return _flag("room_notebook_compared")
+		&"bed":
+			return _flag("room_rested")
+		&"bag":
+			return _flag("room_bag_packed")
+	return false
+
+
+func _target_action(id: StringName) -> String:
+	match id:
+		&"door":
+			return "RETURN"
+		&"lamp":
+			return "TURN ON"
+		&"notebook":
+			return "COMPARE PAGE" if _flag("room_lamp_on") else "TURN ON LAMP FIRST"
+		&"bed":
+			return "REST UNTIL MORNING" if _flag("room_notebook_compared") else "COMPARE THE PAGE FIRST"
+		&"bag":
+			return "PACK NOTEBOOK" if _flag("dawn_reached") else "WAIT FOR DAWN"
+	return "INSPECT"
+
+
 func _process(_delta: float) -> void:
-	if mode != &"roam":
-		ui.hide_prompt()
-		return
-	var x := kath.position.x
-	var name := ""
-	var action := "INSPECT"
-	var target_x := x
-	if absf(x - DOOR_X) <= DOOR_REACH:
-		name = "Stairway to Upper Stacks"
-		action = "RETURN"
-		target_x = DOOR_X
-	elif absf(x - LAMP_X) <= LAMP_REACH and not state.flags.get("room_lamp_on", false):
-		name = "Desk lamp"
-		action = "TURN ON"
-		target_x = LAMP_X
-	elif absf(x - NOTEBOOK_X) <= NOTEBOOK_REACH and not state.flags.get("room_notebook_compared", false):
-		name = "Old notebook"
-		action = "COMPARE PAGE" if state.flags.get("room_lamp_on", false) else "TURN ON LAMP FIRST"
-		target_x = NOTEBOOK_X
-	elif absf(x - BED_X) <= BED_REACH and not state.flags.get("room_rested", false):
-		name = "Bed"
-		action = "REST UNTIL MORNING" if state.flags.get("room_notebook_compared", false) else "COMPARE THE PAGE FIRST"
-		target_x = BED_X
-	elif absf(x - BAG_X) <= BAG_REACH and not state.flags.get("room_bag_packed", false):
-		name = "Travel satchel"
-		action = "PACK NOTEBOOK" if state.flags.get("dawn_reached", false) else "WAIT FOR DAWN"
-		target_x = BAG_X
-	elif absf(x - COAT_X) <= COAT_REACH:
-		name = "Hanging coat"
-		action = "INSPECT"
-		target_x = COAT_X
-	if name.is_empty():
+	var target := _target_at(kath.position.x) if mode == &"roam" else {}
+	if target.is_empty():
 		ui.hide_prompt()
 	else:
-		ui.show_prompt(name, target_x, action, 540.0)
+		ui.show_prompt(target["name"], target["x"], _target_action(target["id"]), 540.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
-		elif mode == &"dialogue":
-			_close_dialogue(false)
-		elif mode == &"paper":
-			_return_to_journal()
-		else:
-			_close_overlay()
-		get_viewport().set_input_as_handled()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			_interact()
-		elif event.is_action_pressed("toggle_journal"):
-			_set_mode(&"journal")
-			_show_journal()
-			get_viewport().set_input_as_handled()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		_advance_dialogue()
-		get_viewport().set_input_as_handled()
-	elif mode == &"comparison" and event.is_action_pressed("advance_dialogue"):
+func _room_input(event: InputEvent) -> bool:
+	if mode == &"comparison" and event.is_action_pressed("advance_dialogue"):
 		_commit_comparison()
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("toggle_journal"):
-		_close_overlay()
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("move_up"):
-		ui.scroll_journal(-1)
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("move_down"):
-		ui.scroll_journal(1)
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-		page_from_journal = true
-		_set_mode(&"paper")
-		ui.show_torn_page(true)
-		get_viewport().set_input_as_handled()
-	elif mode == &"paper" and (event.is_action_pressed("advance_dialogue") or event.is_action_pressed("toggle_journal")):
-		_return_to_journal()
-		get_viewport().set_input_as_handled()
-	elif mode == &"paused" and event.is_action_pressed("advance_dialogue"):
-		_close_overlay()
-		get_viewport().set_input_as_handled()
-	elif mode == &"paused" and event is InputEventKey and event.pressed and event.keycode == KEY_Q:
-		get_tree().quit()
+		return true
+	return false
 
 
 func _interact() -> void:
-	var x := kath.position.x
-	if absf(x - DOOR_X) <= DOOR_REACH:
-		state.flags["prologue_departure_ready"] = state.room_preparation_complete()
-		state.travel_to(UPPER_SCENE, &"from-kath-room")
+	var target := _target_at(kath.position.x)
+	if target.is_empty():
 		return
-	if absf(x - LAMP_X) <= LAMP_REACH and not state.flags.get("room_lamp_on", false):
-		state.flags["room_lamp_on"] = true
-		lamp.frame = 1
-		_play_effect(PAGE_SOUND)
-		_start_dialogue(["There. I can read the pencil marks now."])
-		return
-	if absf(x - NOTEBOOK_X) <= NOTEBOOK_REACH and not state.flags.get("room_notebook_compared", false):
-		if not state.flags.get("room_lamp_on", false):
-			_start_dialogue(["Too dark to compare the page. I should light the desk lamp."])
-			return
-		_set_mode(&"comparison")
-		ui.show_notebook_comparison()
-		_play_effect(PAGE_SOUND)
-		return
-	if absf(x - BED_X) <= BED_REACH and not state.flags.get("room_rested", false):
-		if not state.flags.get("room_notebook_compared", false):
-			_start_dialogue(["I need to find out whether this page belongs in my notebook first."])
-			return
-		state.flags["room_rested"] = true
-		state.flags["dawn_reached"] = true
-		far.texture = DAWN_CITY
-		far.modulate = Color.WHITE
-		rain_streaks.set_strength(0.0)
-		var dawn_tween := create_tween()
-		dawn_tween.tween_property(night_tint, "color", Color.WHITE, 1.8)
-		_play_effect(PAGE_SOUND)
-		_start_dialogue(["I must have fallen asleep over my notes.", "Morning already. The castle entry is still waiting in my notebook."])
-		return
-	if absf(x - BAG_X) <= BAG_REACH and not state.flags.get("room_bag_packed", false):
-		if not state.flags.get("dawn_reached", false):
-			_start_dialogue(["I'll pack when morning comes."])
-			return
-		state.flags["room_bag_packed"] = true
-		state.add_note_once(&"notebook-match", "A matching page", "The torn edge fits the empty place in Kath's notebook. An old entry names the Observatory Castle. The equation remains unexplained.")
-		satchel.frame = 1
-		_play_effect(PENCIL_SOUND)
-		_start_dialogue(["Notebook, pencil, and the page. I want to see what I was trying to understand at the castle."])
-		return
-	if absf(x - COAT_X) <= COAT_REACH:
-		_start_dialogue(["Still warm from the pipes. I'll need this for the road."])
+	match target["id"]:
+		&"door":
+			state.flags["prologue_departure_ready"] = state.room_preparation_complete()
+			state.travel_to(UPPER_SCENE, &"from-kath-room")
+		&"lamp":
+			state.flags["room_lamp_on"] = true
+			lamp.frame = 1
+			_play_effect(PAGE_SOUND)
+			_start_dialogue(["There. I can read the pencil marks now."])
+		&"notebook":
+			if not _flag("room_lamp_on"):
+				_start_dialogue(["Too dark to compare the page. I should light the desk lamp."])
+				return
+			_set_mode(&"comparison")
+			ui.show_notebook_comparison()
+			_play_effect(PAGE_SOUND)
+		&"bed":
+			if not _flag("room_notebook_compared"):
+				_start_dialogue(["I need to find out whether this page belongs in my notebook first."])
+				return
+			_rest_until_dawn()
+		&"bag":
+			if not _flag("dawn_reached"):
+				_start_dialogue(["I'll pack when morning comes."])
+				return
+			state.flags["room_bag_packed"] = true
+			state.add_note_once(&"notebook-match", NOTEBOOK_NOTE["title"], NOTEBOOK_NOTE["body"])
+			satchel.frame = 1
+			_play_effect(PENCIL_SOUND)
+			_start_dialogue(["Notebook, pencil, and the page. I want to see what I was trying to understand at the castle."])
+		&"coat":
+			_start_dialogue(["Still warm from the pipes. I'll need this for the road."])
+
+
+func _rest_until_dawn() -> void:
+	state.flags["room_rested"] = true
+	state.flags["dawn_reached"] = true
+	_apply_archive_weather(far, rain_streaks, false)
+	create_tween().tween_property(night_tint, "color", Color.WHITE, 1.8)
+	_play_effect(PAGE_SOUND)
+	_start_dialogue(["I must have fallen asleep over my notes.", "Morning already. The castle entry is still waiting in my notebook."])
 
 
 func _commit_comparison() -> void:
 	ui.hide_modals()
 	state.flags["room_notebook_compared"] = true
-	state.add_note_once(&"notebook-match", "A matching page", "The torn edge fits the empty place in Kath's notebook. An old entry names the Observatory Castle. The equation remains unexplained.")
+	state.add_note_once(&"notebook-match", NOTEBOOK_NOTE["title"], NOTEBOOK_NOTE["body"])
 	_play_effect(PENCIL_SOUND)
 	_start_dialogue(["The torn edge fits. And this line says I was due back at the Observatory Castle.", "The handwriting is mine. The equation still means nothing to me."])
-
-
-func _show_journal() -> void:
-	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)))
-
-
-func _return_to_journal() -> void:
-	page_from_journal = false
-	_set_mode(&"journal")
-	_show_journal()
-
-
-func _start_dialogue(lines: Array[String]) -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	_set_mode(&"dialogue")
-	ui.show_dialogue(dialogue_lines[0], kath.global_position)
-
-
-func _advance_dialogue() -> void:
-	dialogue_index += 1
-	if dialogue_index < dialogue_lines.size():
-		ui.show_dialogue(dialogue_lines[dialogue_index], kath.global_position)
-	else:
-		_close_dialogue(true)
-
-
-func _close_dialogue(_completed: bool) -> void:
-	ui.hide_modals()
-	_set_mode(&"roam")
-
-
-func _close_overlay() -> void:
-	ui.hide_modals()
-	_set_mode(&"roam")
-
-
-func _set_mode(value: StringName) -> void:
-	mode = value
-	kath.controls_enabled = mode == &"roam"
-
-
-func _play_effect(stream: AudioStream) -> void:
-	effects_player.stop()
-	effects_player.stream = stream
-	effects_player.play()

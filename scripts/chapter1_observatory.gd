@@ -1,8 +1,11 @@
-extends Node2D
+extends StoryRoom
 ## The restored wing's records reveal the Grand Archive link and the next station.
 
 const ENGINE_ROOM_SCENE := "res://scenes/chapter1_engine_room.tscn"
 const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
+const CLICK_DB := -15.0
+const WITHDRAWN_INK := Color(155 / 255.0, 78 / 255.0, 73 / 255.0)  # #9b4e49
+const DOCUMENT_INK := Color(0.18, 0.14, 0.11, 1.0)
 const DOCUMENTS := [
 	{
 		"id": &"observatory-work-record",
@@ -30,10 +33,6 @@ const DOCUMENTS := [
 	}
 ]
 
-@onready var state: Node = get_node("/root/PrologueState")
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
-@onready var ui: CanvasLayer = $HallUI
 @onready var engine_return: Node2D = $EngineReturn
 @onready var records: Node2D = $Records
 @onready var telescope: Node2D = $Telescope
@@ -44,16 +43,12 @@ const DOCUMENTS := [
 @onready var document_title: Label = $DocumentModal/DocumentTitle
 @onready var document_body: Label = $DocumentModal/DocumentBody
 @onready var document_footer: Label = $DocumentModal/DocumentFooter
-@onready var hotspots: Array[Node] = [engine_return, records, telescope, worktable]
 
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
 var document_index := 0
-var sound_player: AudioStreamPlayer
 
 
 func _ready() -> void:
+	hotspots = [engine_return, records, telescope, worktable]
 	state.take_spawn_tag()
 	kath.position = Vector2(1465, 820)
 	kath.floor_y = 820.0
@@ -62,11 +57,6 @@ func _ready() -> void:
 	drawer.visible = state.flags.get("observatory_drawer_open", false)
 	telescope_pivot.rotation_degrees = -6.0 if state.flags.get("observatory_scope_angled", false) else 0.0
 	document_modal.visible = false
-	sound_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(sound_player)
-	sound_player.stream = CLICK_SOUND
-	sound_player.volume_db = -15.0
-	add_child(sound_player)
 	if not _archive_accessible():
 		_start_dialogue(["The wing is not secured at home. I should return to the fixed engine room before inspecting these records."])
 	elif not state.flags.get("observatory_arrival_seen", false):
@@ -86,7 +76,7 @@ func _process(_delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
-	var closest: Node = nearest_hotspot(kath.position.x)
+	var closest := nearest_hotspot(kath.position.x)
 	if closest == null:
 		ui.hide_prompt()
 		return
@@ -98,82 +88,28 @@ func _process(_delta: float) -> void:
 	ui.show_prompt(closest.display_name, closest.approach_x, action, 315.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
-		else:
-			_close_overlay()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			var closest: Node = nearest_hotspot(kath.position.x)
-			if closest != null:
-				_inspect(closest)
-		elif event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"journal")
-			_show_journal()
-	elif mode == &"records":
+func _room_input(event: InputEvent) -> bool:
+	if mode == &"records":
 		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			document_index = posmod(document_index + (-1 if event.is_action_pressed("move_left") else 1), DOCUMENTS.size())
-			_show_document(document_index)
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
+			_show_document(posmod(document_index + (-1 if event.is_action_pressed("move_left") else 1), DOCUMENTS.size()))
+			return true
+		if event.is_action_pressed("advance_dialogue"):
 			_record_document()
+			return true
 	elif mode == &"stitch" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
 		_stitch_page()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		dialogue_index += 1
-		if dialogue_index >= dialogue_lines.size():
-			_close_overlay()
-		else:
-			ui.show_dialogue(dialogue_lines[dialogue_index], kath.global_position)
-	elif mode == &"journal":
-		if event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_close_overlay()
-		elif event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"paper")
-			ui.show_torn_page(true)
-		elif event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(-1 if event.is_action_pressed("move_up") else 1)
-	elif mode == &"paper" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_set_mode(&"journal")
-		_show_journal()
-	elif mode == &"paused" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_close_overlay()
+		return true
+	return false
 
 
-func nearest_hotspot(feet_x: float) -> Node:
-	var best: Node = null
-	var best_distance := INF
-	for hotspot in hotspots:
-		if hotspot != engine_return and not _archive_accessible():
-			continue
-		if hotspot.is_reachable(feet_x) and hotspot.distance_from(feet_x) < best_distance:
-			best = hotspot
-			best_distance = hotspot.distance_from(feet_x)
-	return best
+## Until the wing is restored only the way back to the engine room is usable.
+func _is_hotspot_available(hotspot: Node) -> bool:
+	return hotspot == engine_return or _archive_accessible()
 
 
 func _inspect(hotspot: Node) -> void:
 	if hotspot == engine_return:
-		_set_mode(&"travel")
-		ui.hide_modals()
-		state.travel_to(ENGINE_ROOM_SCENE, &"from-observatory")
+		_travel(ENGINE_ROOM_SCENE, &"from-observatory")
 	elif not _archive_accessible():
 		_start_dialogue(["The wing must be secured before I search the records."])
 	elif hotspot == records:
@@ -200,7 +136,7 @@ func _inspect(hotspot: Node) -> void:
 func _open_drawer() -> void:
 	state.flags["observatory_drawer_open"] = true
 	drawer.visible = true
-	sound_player.play()
+	_play_effect(CLICK_SOUND, CLICK_DB)
 	wick.react_to(330.0, 495.0)
 	_start_dialogue(["The drawer's catch has sprung. Inside are a signed work record, an unfinished station slip, and a withdrawn page."])
 
@@ -217,7 +153,7 @@ func _show_document(index: int) -> void:
 	document_index = index
 	var document: Dictionary = DOCUMENTS[index]
 	document_title.text = document["title"] + ("  ✓" if state.has_note(document["id"]) else "")
-	document_title.add_theme_color_override("font_color", Color("9b4e49") if index == 2 else Color(0.18, 0.14, 0.11, 1.0))
+	document_title.add_theme_color_override("font_color", WITHDRAWN_INK if index == 2 else DOCUMENT_INK)
 	document_body.text = document["body"]
 	document_footer.text = "%d/3  ←/→ PAGE  %s  ESC" % [index + 1, "ENTER CLOSE" if state.has_note(document["id"]) else "ENTER NOTE"]
 	document_modal.visible = true
@@ -228,7 +164,7 @@ func _record_document() -> void:
 	var already_recorded: bool = state.has_note(document["id"])
 	if not already_recorded:
 		state.add_note_once(document["id"], document["note_title"], document["note_body"])
-		sound_player.play()
+		_play_effect(CLICK_SOUND, CLICK_DB)
 	_close_overlay()
 	if already_recorded:
 		return
@@ -258,29 +194,12 @@ func _stitch_page() -> void:
 		return
 	state.flags["observatory_page_stitched"] = true
 	state.add_note_once(&"observatory-page-stitched", "The missing leaf returned", "I stitched F = ma beside today's rope, load, speed-change and castle-stop records. The old work sheet separates mass, weight and rope pull. My working guess: F is the net force on an object, not one rope's tension; m is mass, its resistance to acceleration; a is change of velocity over time. Weight is the downward gravitational pull here. I have not compared equal net pulls with different masses or measured friction. This model still needs tests under stated conditions.")
-	sound_player.play()
+	_play_effect(CLICK_SOUND, CLICK_DB)
 	wick.react_to(1240.0, 420.0)
 	_close_overlay()
 	_start_dialogue(["The torn edge fits. I stitch the old page beside today's rope, load and braking observations.", "Maybe F is the combined pull on a moving thing, not the reading from one rope. The record separates mass and weight, but I still need a fair test of that idea.", "These observations and their limits belong in the notebook. I should tell Erin what the archive revealed."])
 
 
-func _start_dialogue(lines: Array[String]) -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	_set_mode(&"dialogue")
-	ui.show_dialogue(lines[0], kath.global_position)
-
-
-func _show_journal() -> void:
-	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)), bool(state.flags.get("service_gate_open", false)), bool(state.flags.get("service_road_end_reached", false)))
-
-
 func _close_overlay() -> void:
 	document_modal.visible = false
-	ui.hide_modals()
-	_set_mode(&"roam")
-
-
-func _set_mode(value: StringName) -> void:
-	mode = value
-	kath.controls_enabled = mode == &"roam"
+	super()

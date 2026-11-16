@@ -1,4 +1,4 @@
-extends Node2D
+extends StoryRoom
 ## Tool lift, passenger rig test, load check and controlled rescue on the fixed shaft.
 
 const INVERTED_ROOM_SCENE := "res://scenes/chapter1_inverted_room.tscn"
@@ -19,13 +19,15 @@ const SAFETY_STOP_PROGRESS := 0.08
 const BASKET_OPEN: Texture2D = preload("res://chapter1-assets/maintenance-shaft-layers-v1/basket-gate-open.png")
 const BASKET_CLOSED: Texture2D = preload("res://chapter1-assets/maintenance-shaft-layers-v1/basket-empty.png")
 const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
+const CLAMP_LOCKED := Color(145 / 255.0, 179 / 255.0, 165 / 255.0)  # #91b3a5
+const CLAMP_OPEN := Color(185 / 255.0, 125 / 255.0, 69 / 255.0)  # #b97d45
+const LOAD_CHECK_IDS: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
+## Phases stored in shaft_rescue_phase once Erin is involved; earlier phases follow from flags.
+const STORED_PHASES := [&"load_tension", &"load_verified", &"passenger_descent", &"lower_arrived", &"lower_docked", &"rescued"]
 
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
 @onready var erin: Node2D = $ErinOnLedge
 @onready var erin_in_basket: Node2D = $BasketRig/ErinInBasket
 @onready var erin_at_lower: Node2D = $ErinAtLower
-@onready var ui: CanvasLayer = $HallUI
 @onready var return_aperture: Node2D = $ReturnAperture
 @onready var engine_access: Node2D = $EngineAccess
 @onready var speaking_tube: Node2D = $SpeakingTube
@@ -57,15 +59,7 @@ const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lev
 @onready var open_rail: Line2D = $OpenRailStubs
 @onready var load_indicator: Sprite2D = $LoadIndicator
 @onready var brake_lever: Sprite2D = $BrakeLever
-@onready var state: Node = get_node("/root/PrologueState")
-@onready var hotspots: Array[Node] = [return_aperture, engine_access, winch_console, rig_inspection, tool_chest, speaking_tube, long_rope_cabinet, lower_dock_latch, top_anchor_survey]
 
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
-var dialogue_speaker := Vector2.ZERO
-var dialogue_beside_erin := false
-var pending_dialogue_action: StringName = &""
 var basket_progress := 0.0
 var winch_motion_direction := 0.0
 var winch_click_clock := 0.0
@@ -77,6 +71,7 @@ var sound_player: AudioStreamPlayer
 
 
 func _ready() -> void:
+	hotspots = [return_aperture, engine_access, winch_console, rig_inspection, tool_chest, speaking_tube, long_rope_cabinet, lower_dock_latch, top_anchor_survey]
 	var spawn_tag: StringName = state.take_spawn_tag()
 	ui.hint.position = Vector2(36, 45)
 	ui.hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -85,11 +80,8 @@ func _ready() -> void:
 	kath.right_limit = 815.0
 	kath.position = Vector2(704.0 if spawn_tag == &"from-engine-room" else 300.0, FLOOR_Y)
 	basket_progress = clampf(float(state.flags.get("shaft_basket_progress", 0.0)), 0.0, 1.0)
-	sound_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(sound_player)
-	sound_player.stream = CLICK_SOUND
-	sound_player.volume_db = -14.0
-	add_child(sound_player)
+	# The winch click keeps its own player because its pitch follows the rope path.
+	sound_player = _add_audio("WinchClick", CLICK_SOUND, -14.0)
 	_update_rig_visuals()
 	if state.castle_pose == &"restored":
 		$ReturnApertureArt.modulate = Color(0.48, 0.53, 0.62, 1.0)
@@ -124,9 +116,10 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if mode == &"winch":
-		if _rescue_phase() == &"load_tension":
+		var phase := _rescue_phase()
+		if phase == &"load_tension":
 			_process_load_tension(delta)
-		elif _rescue_phase() == &"passenger_descent":
+		elif phase == &"passenger_descent":
 			_process_passenger_descent(delta)
 		else:
 			_process_winch(delta)
@@ -135,7 +128,7 @@ func _process(delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
-	var closest: Node = nearest_hotspot(kath.position.x)
+	var closest := nearest_hotspot(kath.position.x)
 	if closest == null:
 		ui.hide_prompt()
 		return
@@ -150,7 +143,7 @@ func _process(delta: float) -> void:
 		elif state.flags.get("shaft_upper_dock_locked", false) and not state.flags.get("shaft_erin_aboard", false):
 			action = "BOARD"
 		else:
-			action = "DOCK" if _winch_phase() == &"passenger_raise" and basket_progress >= 0.995 else "CALL"
+			action = "DOCK" if _rescue_phase() == &"passenger_raise" and basket_progress >= 0.995 else "CALL"
 	elif closest == tool_chest and state.flags.get("shaft_tool_goal", false) and not state.flags.get("shaft_tools_loaded", false):
 		action = "LOAD"
 	elif closest == lower_dock_latch:
@@ -175,102 +168,62 @@ func _process(delta: float) -> void:
 	ui.show_prompt(closest.display_name, closest.approach_x, action, 430.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		if mode == &"loading":
-			return
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
-		else:
-			_close_overlay()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			var closest: Node = nearest_hotspot(kath.position.x)
-			if closest != null:
-				_inspect(closest)
-		elif event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"journal")
-			_show_journal()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_advance_dialogue()
-	elif mode == &"rigging" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_advance_rigging()
-	elif mode == &"load_check":
-		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			load_check_selection = posmod(load_check_selection + (-1 if event.is_action_pressed("move_left") else 1), 4)
-			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
-		elif event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			var check_ids: Array[StringName] = [&"rope", &"anchor", &"indicator", &"brake"]
-			if not pending_load_checks.has(check_ids[load_check_selection]):
-				pending_load_checks.append(check_ids[load_check_selection])
-			ui.update_shaft_load_check(pending_load_checks, load_check_selection)
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
-			if pending_load_checks.size() == 4:
-				_complete_load_check()
-			else:
-				ui.shaft_load_detail.text = "Check all four observations before confirming."
-	elif mode == &"winch" and event.is_action_pressed("interact"):
-		get_viewport().set_input_as_handled()
-		if basket_progress >= 0.995 and not state.flags.get("shaft_rail_removed", false):
-			erin.set_repairing(true)
-			_start_dialogue([
-				"Erin catches the tool chest and braces the basket against the docking catch.",
-				"She loosens the bent rail and clears the entrance. I can now lower the empty basket."
-			], &"clear_rail", erin.global_position)
-	elif mode == &"journal":
-		if event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_close_overlay()
-		elif event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"paper")
-			ui.show_torn_page(true)
-		elif event.is_action_pressed("move_up"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(-1)
-		elif event.is_action_pressed("move_down"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(1)
-	elif mode == &"paper" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_set_mode(&"journal")
-		_show_journal()
-	elif mode == &"paused" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_close_overlay()
+func _room_input(event: InputEvent) -> bool:
+	match mode:
+		&"rigging":
+			if event.is_action_pressed("advance_dialogue"):
+				_advance_rigging()
+				return true
+		&"load_check":
+			if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+				load_check_selection = posmod(load_check_selection + (-1 if event.is_action_pressed("move_left") else 1), LOAD_CHECK_IDS.size())
+				ui.update_shaft_load_check(pending_load_checks, load_check_selection)
+				return true
+			if event.is_action_pressed("interact"):
+				if not pending_load_checks.has(LOAD_CHECK_IDS[load_check_selection]):
+					pending_load_checks.append(LOAD_CHECK_IDS[load_check_selection])
+				ui.update_shaft_load_check(pending_load_checks, load_check_selection)
+				return true
+			if event.is_action_pressed("advance_dialogue"):
+				if pending_load_checks.size() == LOAD_CHECK_IDS.size():
+					_complete_load_check()
+				else:
+					ui.shaft_load_detail.text = "Check all four observations before confirming."
+				return true
+		&"winch":
+			if event.is_action_pressed("interact"):
+				if basket_progress >= 0.995 and not _flag("shaft_rail_removed"):
+					erin.set_repairing(true)
+					_start_dialogue([
+						"Erin catches the tool chest and braces the basket against the docking catch.",
+						"She loosens the bent rail and clears the entrance. I can now lower the empty basket."
+					], &"clear_rail", erin.global_position)
+				return true
+	return false
 
 
-func nearest_hotspot(feet_x: float) -> Node:
-	var best: Node = null
-	var best_distance := INF
-	for hotspot in hotspots:
-		if hotspot == engine_access and not state.flags.get("shaft_rescue_complete", false):
-			continue
-		if state.flags.get("shaft_rescue_complete", false) and hotspot == speaking_tube:
-			continue
-		if hotspot in [long_rope_cabinet, lower_dock_latch, top_anchor_survey] and not state.flags.get("shaft_tool_trip_complete", false):
-			continue
-		if hotspot == tool_chest and state.flags.get("shaft_tool_trip_complete", false):
-			continue
-		if not hotspot.is_reachable(feet_x):
-			continue
-		var distance: float = hotspot.distance_from(feet_x)
-		if distance < best_distance:
-			best = hotspot
-			best_distance = distance
-	return best
+## Tweened hand-offs (loading, boarding) cannot be cancelled halfway.
+func _cancel() -> void:
+	if mode != &"loading":
+		super()
+
+
+func _flag(key: String) -> bool:
+	return bool(state.flags.get(key, false))
+
+
+func _is_hotspot_available(hotspot: Node) -> bool:
+	var rescued := _flag("shaft_rescue_complete")
+	var tool_trip_done := _flag("shaft_tool_trip_complete")
+	if hotspot == engine_access:
+		return rescued
+	if hotspot == speaking_tube:
+		return not rescued
+	if hotspot in [long_rope_cabinet, lower_dock_latch, top_anchor_survey]:
+		return tool_trip_done
+	if hotspot == tool_chest:
+		return not tool_trip_done
+	return true
 
 
 func _inspect(hotspot: Node) -> void:
@@ -278,18 +231,14 @@ func _inspect(hotspot: Node) -> void:
 		if not state.flags.get("shaft_rescue_complete", false):
 			_start_dialogue(["Erin is still across the shaft. I cannot leave the rescue platform yet."])
 		else:
-			_set_mode(&"travel")
-			ui.hide_modals()
-			state.travel_to(ENGINE_ROOM_SCENE, &"from-maintenance-shaft")
+			_travel(ENGINE_ROOM_SCENE, &"from-maintenance-shaft")
 	elif hotspot == return_aperture:
 		if state.castle_pose == &"restored":
 			_start_dialogue(["The wing's low maintenance hatch no longer lines up with the fixed shaft. The engine passage leads to the restored observatory."])
 		elif state.flags.get("shaft_erin_aboard", false) and not state.flags.get("shaft_rescue_complete", false):
 			_start_dialogue(["Erin is still in the basket. I should stay at the winch until she reaches the fixed platform."])
 		else:
-			_set_mode(&"travel")
-			ui.hide_modals()
-			state.travel_to(INVERTED_ROOM_SCENE, &"from-maintenance-shaft")
+			_travel(INVERTED_ROOM_SCENE, &"from-maintenance-shaft")
 	elif hotspot == speaking_tube:
 		wick.react_to(1420.0, 250.0)
 		if state.flags.get("shaft_rescue_complete", false):
@@ -431,7 +380,7 @@ func _inspect(hotspot: Node) -> void:
 
 
 func _process_winch(delta: float) -> void:
-	var winch_phase: StringName = _winch_phase()
+	var winch_phase: StringName = _rescue_phase()
 	var passenger_test: bool = winch_phase == &"empty_test"
 	var passenger_raise: bool = winch_phase == &"passenger_raise"
 	var direction := 0.0
@@ -469,20 +418,17 @@ func _process_winch(delta: float) -> void:
 		_start_dialogue(["The brake held. For the same empty basket, I drew in about two rope marks for each mark it rose.", "That suggests a trade-off in pull and distance, but I haven't measured the hand force or friction. Erin's load still needs its own check."])
 
 
-func _winch_phase() -> StringName:
-	if state.flags.has("shaft_rescue_phase") and state.flags["shaft_rescue_phase"] in [&"load_tension", &"load_verified", &"passenger_descent", &"lower_arrived", &"lower_docked", &"rescued"]:
-		return state.flags["shaft_rescue_phase"]
-	if state.flags.get("shaft_upper_dock_locked", false):
+func _rescue_phase() -> StringName:
+	var stored: Variant = state.flags.get("shaft_rescue_phase", &"")
+	if stored in STORED_PHASES:
+		return stored
+	if _flag("shaft_upper_dock_locked"):
 		return &"upper_docked"
-	if state.flags.get("shaft_empty_test_complete", false):
+	if _flag("shaft_empty_test_complete"):
 		return &"passenger_raise"
-	if state.flags.get("shaft_passenger_rethread_complete", false):
+	if _flag("shaft_passenger_rethread_complete"):
 		return &"empty_test"
 	return &"tool"
-
-
-func _rescue_phase() -> StringName:
-	return _winch_phase()
 
 
 func _process_load_tension(delta: float) -> void:
@@ -592,13 +538,11 @@ func _update_rig_visuals() -> void:
 	pilot_guide.visible = trip_complete and not rethreaded
 	if rigging_step == 1:
 		pilot_guide.points = PackedVector2Array([Vector2(700, 650), Vector2(1015, 126), Vector2(1060, 76), Vector2(1070, moving_pulley.position.y)])
-	elif rigging_step == 2:
-		pilot_guide.points = PackedVector2Array([Vector2(700, 650), Vector2(1015, 126), Vector2(1060, 76), Vector2(1070, moving_pulley.position.y), Vector2(1100, moving_pulley.position.y + 39), Vector2(1135, moving_pulley.position.y), Vector2(1160, 94)])
 	else:
 		pilot_guide.points = PackedVector2Array([Vector2(700, 650), Vector2(1015, 126), Vector2(1060, 76), Vector2(1070, moving_pulley.position.y), Vector2(1100, moving_pulley.position.y + 39), Vector2(1135, moving_pulley.position.y), Vector2(1160, 94)])
 	pilot_guide.width = 5.0 if rigging_step > 0 else 2.0
 	rope_coil.visible = not state.flags.get("shaft_long_rope_taken", false)
-	lower_dock_clamp.color = Color("91b3a5") if state.flags.get("shaft_lower_dock_locked", false) else Color("b97d45")
+	lower_dock_clamp.color = CLAMP_LOCKED if state.flags.get("shaft_lower_dock_locked", false) else CLAMP_OPEN
 	lower_dock_clamp.rotation = -0.32 if state.flags.get("shaft_lower_dock_locked", false) else 0.0
 	var loaded: bool = state.flags.get("shaft_tools_loaded", false)
 	var rail_removed: bool = state.flags.get("shaft_rail_removed", false)
@@ -641,24 +585,9 @@ func _advance_rigging() -> void:
 	_start_dialogue(["Wick lights the top latch. Erin checks from her ledge: the rope is seated in both wheels and the anchor is closed.", "The basket is still on its lower clamp. I should release it and test the new path without a passenger."], &"", erin.global_position)
 
 
-func _start_dialogue(lines: Array[String], completion_action: StringName = &"", speaker: Vector2 = Vector2.ZERO) -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	dialogue_speaker = kath.global_position if speaker == Vector2.ZERO else speaker
-	dialogue_beside_erin = speaker != Vector2.ZERO
-	pending_dialogue_action = completion_action
-	_set_mode(&"dialogue")
-	ui.show_dialogue(dialogue_lines[0], dialogue_speaker, dialogue_beside_erin)
-
-
-func _advance_dialogue() -> void:
-	dialogue_index += 1
-	if dialogue_index < dialogue_lines.size():
-		ui.show_dialogue(dialogue_lines[dialogue_index], dialogue_speaker, dialogue_beside_erin)
-		return
-	var action := pending_dialogue_action
-	_close_overlay()
-	_complete_dialogue_action(action)
+## Lines from another speaker sit beside that character instead of above Kath.
+func _show_dialogue_line() -> void:
+	ui.show_dialogue(dialogue_lines[dialogue_index], dialogue_speaker, not dialogue_by_kath)
 
 
 func _complete_dialogue_action(action: StringName) -> void:
@@ -802,39 +731,20 @@ func _help_erin_out() -> void:
 	_start_dialogue(["Erin steps from the locked basket, across the loading spur, onto the fixed platform.", "Kath: The basket's speed changed while it moved. Braking changed it again, so I needed room to stop.", "Erin: We can trace the rotation fault in the engine room now."], &"", erin_at_lower.global_position)
 
 
-func _show_journal() -> void:
-	ui.show_journal(
-		state.notes,
-		state.hall_checks_complete(),
-		bool(state.flags.get("machine_baseline_recorded", false)),
-		bool(state.flags.get("stacks_bucket_moved", false)),
-		bool(state.flags.get("stacks_page_collected", false)),
-		bool(state.flags.get("room_notebook_compared", false)),
-		bool(state.flags.get("incident_complete", false)),
-		state.room_preparation_complete(),
-		bool(state.flags.get("machine_incident_active", false)),
-		bool(state.flags.get("service_gate_open", false)),
-		bool(state.flags.get("service_road_end_reached", false))
-	)
-
-
 func _close_overlay() -> void:
 	if mode == &"load_check":
 		pending_load_checks.clear()
 	if mode == &"winch" and _rescue_phase() == &"passenger_descent":
 		descent_speed = 0.0
-	ui.hide_modals()
-	erin.set_repairing(false)
-	pending_dialogue_action = &""
 	if mode == &"rigging":
 		rigging_step = 0
 		_update_rig_visuals()
-	_set_mode(&"roam")
+	erin.set_repairing(false)
+	super()
 
 
 func _set_mode(value: StringName) -> void:
-	mode = value
+	super(value)
 	if mode != &"winch":
 		brake_lever.rotation = 0.0
 		winch_motion_direction = 0.0
-	kath.controls_enabled = mode == &"roam"
