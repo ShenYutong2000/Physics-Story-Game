@@ -1,0 +1,3 @@
+Asset: mid layer with real alpha, 16:9, 1672x941. Input image 1 is the approved new clean background for this scene. Edit it, do not redesign it.
+
+Make ONLY the glass area of every window showing the outside city genuinely alpha-transparent, keeping every window bar, lead line and frame opaque. All other pixels keep the exact same composition, position, dimensions, palette and lighting. Keep opaque walls, books, furniture and the entire walking floor in their original positions. Do not insert black or white into the window holes; those pixels must be actual zero alpha. No checkerboard painted into the image. No extra objects or characters.

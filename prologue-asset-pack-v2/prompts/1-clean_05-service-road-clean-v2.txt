@@ -1,0 +1,36 @@
+Asset: production clean background, 16:9, 1672x941.
+
+STYLE: Original 2D side-on storybook game background, hand-painted in opaque gouache and
+coloured pencil on toned paper. Strictly steampunk: a working world of brass and copper
+pipework, riveted iron, pressure gauges, valve handwheels, gear trains, flywheels, leather
+belts, bellows, pneumatic message tubes, speaking tubes and gas lamps. Every pipe visibly
+comes from somewhere and goes somewhere. Chunky, slightly wonky hand-cut shapes, no ruled
+lines, verticals lean a little, fittings and rivets are oversized and toy-like. Visible dry
+brush strokes, uneven pigment, soft fuzzy edges, paper grain and light print speckle.
+PALETTE: soot umber #2A1E1A, walnut #6B3F2A, old brass #B8893E, copper #B5622F, gaslight
+amber #F2B255, cream paper #F0DFB8, vermilion #C8432B, petrol teal #1F4A4F, verdigris
+#4F8F86. Roughly 60% warm wood, ochre and brass, 25% petrol-teal shadow, 10% vermilion,
+5% cream light. No purple, no ultramarine, no pure white.
+LIGHT: each gas lamp throws a warm pool on wall and floor that falls off fast into
+petrol-teal shadow. Outside is always colder than inside. Dusty light shafts.
+DENSITY: big readable shapes first, then working props, then tiny footnote clutter: brass
+labels, pinned notes with no readable words, hanging tags, chalk marks, small gauges.
+NEVER: magic, glowing runes, ghosts or creatures, neon, electric screens, modern appliances,
+plastic, 3D rendering, photorealism, airbrush gradients, watermark, readable text, people
+or animals. One full-bleed 16:9 scene, not a board or collage.
+
+Scene 05 SERVICE ROAD at dawn, the path from the archive to the Observatory Castle. Input
+image 1 is the layout reference: keep positions. Far left: the archive's stone wall with an
+arched stained-glass doorway, a wall lantern and a fat brass downpipe. A wet cobbled road
+climbs gently to the right across the bottom 22 percent. Stone and iron railing along the
+road's far edge. Three timber telegraph poles with hanging gas lanterns and sagging wires
+recede to the right. Middle distance: a misty forested valley, a town on an arched viaduct,
+mountains, a low sun. Upper right: a fixed stone observatory tower on a crag, and beside it
+a huge EMPTY brass ring on bearing axles and support brackets (empty for a separate rotating
+wing sprite), reached by a lamp-lit causeway on arches.
+Repaint: sky in dusty rose #D98C7A, amber and pale verdigris instead of lavender; clouds as
+flat gouache shapes with dry edges. Pines in petrol teal, mist in warm cream. Factory
+chimneys with thin smoke in the town. The ring and tower visibly engineered: riveted
+segments, gear teeth on the ring's inner rim, a steam winch house at its base. Vermilion
+banners with a plain gear-and-compass device.
+No road sign, no gate, no cable, no near-camera foliage, nothing inside the ring.

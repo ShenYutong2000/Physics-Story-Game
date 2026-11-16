@@ -1,0 +1,24 @@
+Asset: foreground occlusion layer with real alpha, 16:9, 1672x941. Input image 1 is the approved new clean background for this scene; match its brushwork and palette but do not copy its contents.
+
+STYLE: Original 2D side-on storybook game background, hand-painted in opaque gouache and
+coloured pencil on toned paper. Strictly steampunk: a working world of brass and copper
+pipework, riveted iron, pressure gauges, valve handwheels, gear trains, flywheels, leather
+belts, bellows, pneumatic message tubes, speaking tubes and gas lamps. Every pipe visibly
+comes from somewhere and goes somewhere. Chunky, slightly wonky hand-cut shapes, no ruled
+lines, verticals lean a little, fittings and rivets are oversized and toy-like. Visible dry
+brush strokes, uneven pigment, soft fuzzy edges, paper grain and light print speckle.
+PALETTE: soot umber #2A1E1A, walnut #6B3F2A, old brass #B8893E, copper #B5622F, gaslight
+amber #F2B255, cream paper #F0DFB8, vermilion #C8432B, petrol teal #1F4A4F, verdigris
+#4F8F86. Roughly 60% warm wood, ochre and brass, 25% petrol-teal shadow, 10% vermilion,
+5% cream light. No purple, no ultramarine, no pure white.
+LIGHT: each gas lamp throws a warm pool on wall and floor that falls off fast into
+petrol-teal shadow. Outside is always colder than inside. Dusty light shafts.
+DENSITY: big readable shapes first, then working props, then tiny footnote clutter: brass
+labels, pinned notes with no readable words, hanging tags, chalk marks, small gauges.
+NEVER: magic, glowing runes, ghosts or creatures, neon, electric screens, modern appliances,
+plastic, 3D rendering, photorealism, airbrush gradients, watermark, readable text, people
+or animals. One full-bleed 16:9 scene, not a board or collage.
+
+This layer is NOT a full-bleed scene; ignore that rule above.
+Paint ONLY these near-camera objects: a potted plant and book stack bottom left, a trunk corner bottom right.
+Dark soot-umber and petrol-teal silhouettes with a thin warm rim light from the room lamps. Everything stays within the bottom 22 percent of the canvas; the centre 70 percent of the width stays clear. No floor, walls, sky or backdrop. Everything outside these objects is real zero alpha, including the whole upper region. No checkerboard painted into the image.

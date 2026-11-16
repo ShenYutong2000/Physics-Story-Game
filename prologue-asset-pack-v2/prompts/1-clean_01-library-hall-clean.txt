@@ -1,0 +1,39 @@
+Asset: production clean background, 16:9, 1672x941.
+
+STYLE: Original 2D side-on storybook game background, hand-painted in opaque gouache and
+coloured pencil on toned paper. Strictly steampunk: a working world of brass and copper
+pipework, riveted iron, pressure gauges, valve handwheels, gear trains, flywheels, leather
+belts, bellows, pneumatic message tubes, speaking tubes and gas lamps. Every pipe visibly
+comes from somewhere and goes somewhere. Chunky, slightly wonky hand-cut shapes, no ruled
+lines, verticals lean a little, fittings and rivets are oversized and toy-like. Visible dry
+brush strokes, uneven pigment, soft fuzzy edges, paper grain and light print speckle.
+PALETTE: soot umber #2A1E1A, walnut #6B3F2A, old brass #B8893E, copper #B5622F, gaslight
+amber #F2B255, cream paper #F0DFB8, vermilion #C8432B, petrol teal #1F4A4F, verdigris
+#4F8F86. Roughly 60% warm wood, ochre and brass, 25% petrol-teal shadow, 10% vermilion,
+5% cream light. No purple, no ultramarine, no pure white.
+LIGHT: each gas lamp throws a warm pool on wall and floor that falls off fast into
+petrol-teal shadow. Outside is always colder than inside. Dusty light shafts.
+DENSITY: big readable shapes first, then working props, then tiny footnote clutter: brass
+labels, pinned notes with no readable words, hanging tags, chalk marks, small gauges.
+NEVER: magic, glowing runes, ghosts or creatures, neon, electric screens, modern appliances,
+plastic, 3D rendering, photorealism, airbrush gradients, watermark, readable text, people
+or animals. One full-bleed 16:9 scene, not a board or collage.
+
+Scene 01 LIBRARY HALL, evening before a storm. Input image 1 is the layout reference: keep
+every large element where it is. Left edge: dark arched doorway aperture, left empty for a
+separate door sprite. Left third: a tall arched window in three lights with a round compass
+rose at the top, leaded in iron, a few panes of amber and verdigris stained glass. In front
+of it a long walnut reading table with a green-shaded brass lamp, one chair, a floor globe
+and a potted plant on stacked trunks. Centre: three-storey bookcases with a brass rolling-
+ladder rail; a standing gas lamp post; leave an empty clock-width gap between table and
+bookcase. Centre right: a bookbinder's bench with tool rack, glue pots and a small lantern,
+its top left clear for a separate open-book sprite. Upper level: brass balustrade gallery
+with an armillary sphere. Right: a wide stair climbing to the gallery; under the stair a
+small arched boiler alcove with a glowing grate.
+Repaint: walnut panelling and ochre plaster instead of blue walls. Book spines in faded
+vermilion, ochre, verdigris and cream, shelved unevenly with gaps, leaning volumes, boxes
+and rolled charts. A pneumatic message tube runs along the cornice into the bookcases with
+brass capsule stations. A speaking tube by the stair. Small pressure gauge and valve on the
+riser pipe. Vermilion carpet runners with a simple gear border.
+Floor walking line at 80 percent of image height; the bottom 20 percent is bare worn boards.
+No freestanding clock, no open books or papers on tables, no ladder, no near-camera objects.

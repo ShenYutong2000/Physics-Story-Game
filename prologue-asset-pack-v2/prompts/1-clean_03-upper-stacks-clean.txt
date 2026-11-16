@@ -1,0 +1,34 @@
+Asset: production clean background, 16:9, 1672x941.
+
+STYLE: Original 2D side-on storybook game background, hand-painted in opaque gouache and
+coloured pencil on toned paper. Strictly steampunk: a working world of brass and copper
+pipework, riveted iron, pressure gauges, valve handwheels, gear trains, flywheels, leather
+belts, bellows, pneumatic message tubes, speaking tubes and gas lamps. Every pipe visibly
+comes from somewhere and goes somewhere. Chunky, slightly wonky hand-cut shapes, no ruled
+lines, verticals lean a little, fittings and rivets are oversized and toy-like. Visible dry
+brush strokes, uneven pigment, soft fuzzy edges, paper grain and light print speckle.
+PALETTE: soot umber #2A1E1A, walnut #6B3F2A, old brass #B8893E, copper #B5622F, gaslight
+amber #F2B255, cream paper #F0DFB8, vermilion #C8432B, petrol teal #1F4A4F, verdigris
+#4F8F86. Roughly 60% warm wood, ochre and brass, 25% petrol-teal shadow, 10% vermilion,
+5% cream light. No purple, no ultramarine, no pure white.
+LIGHT: each gas lamp throws a warm pool on wall and floor that falls off fast into
+petrol-teal shadow. Outside is always colder than inside. Dusty light shafts.
+DENSITY: big readable shapes first, then working props, then tiny footnote clutter: brass
+labels, pinned notes with no readable words, hanging tags, chalk marks, small gauges.
+NEVER: magic, glowing runes, ghosts or creatures, neon, electric screens, modern appliances,
+plastic, 3D rendering, photorealism, airbrush gradients, watermark, readable text, people
+or animals. One full-bleed 16:9 scene, not a board or collage.
+
+Scene 03 UPPER STACKS, the top room under the roof. Input image 1 is the layout reference:
+keep positions. Left: a giant arched window with a compass rose in its head, a writing desk
+with an armillary sphere, a chair and a small lantern in front of it. Lower left: a stair
+down with brass newel posts. Centre and right: two storeys of tall bookcases with a brass
+balustrade ledge at 26 percent height and a clear shelf bay for a separate wooden-case
+sprite. Upper right: sloping roof timbers with a roof light and one visibly cracked seam
+above the right bookcase (the leak source). Right edge: wall lanterns and a hanging banner.
+Walkway carpet at 78 percent height; below it, arches opening onto the hall beneath.
+Repaint: honey-coloured roof timbers with iron straps, shelves crammed and sagging, stacked
+ledgers tied with string, specimen jars, rolled charts, a brass ladder rail along the
+shelves. A copper rain gutter pipe crosses the rafters to a drain funnel. A handwheel-driven
+book lift beside the stair. Vermilion banner with a plain gear-and-compass device.
+No ladder, no wooden case, no bucket, no water, no near-camera objects.

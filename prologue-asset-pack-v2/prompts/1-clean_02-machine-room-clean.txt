@@ -1,0 +1,38 @@
+Asset: production clean background, 16:9, 1672x941.
+
+STYLE: Original 2D side-on storybook game background, hand-painted in opaque gouache and
+coloured pencil on toned paper. Strictly steampunk: a working world of brass and copper
+pipework, riveted iron, pressure gauges, valve handwheels, gear trains, flywheels, leather
+belts, bellows, pneumatic message tubes, speaking tubes and gas lamps. Every pipe visibly
+comes from somewhere and goes somewhere. Chunky, slightly wonky hand-cut shapes, no ruled
+lines, verticals lean a little, fittings and rivets are oversized and toy-like. Visible dry
+brush strokes, uneven pigment, soft fuzzy edges, paper grain and light print speckle.
+PALETTE: soot umber #2A1E1A, walnut #6B3F2A, old brass #B8893E, copper #B5622F, gaslight
+amber #F2B255, cream paper #F0DFB8, vermilion #C8432B, petrol teal #1F4A4F, verdigris
+#4F8F86. Roughly 60% warm wood, ochre and brass, 25% petrol-teal shadow, 10% vermilion,
+5% cream light. No purple, no ultramarine, no pure white.
+LIGHT: each gas lamp throws a warm pool on wall and floor that falls off fast into
+petrol-teal shadow. Outside is always colder than inside. Dusty light shafts.
+DENSITY: big readable shapes first, then working props, then tiny footnote clutter: brass
+labels, pinned notes with no readable words, hanging tags, chalk marks, small gauges.
+NEVER: magic, glowing runes, ghosts or creatures, neon, electric screens, modern appliances,
+plastic, 3D rendering, photorealism, airbrush gradients, watermark, readable text, people
+or animals. One full-bleed 16:9 scene, not a board or collage.
+
+Scene 02 MACHINE ROOM, the archive's engine. Input image 1 is the layout reference: keep
+positions. Left: stone stair with brass handrail rising off-frame, two wall gas lamps.
+Left of centre: a tall riveted copper boiler column banded in brass, with a large spoked
+flywheel and crank at its foot behind a low brass guard rail. Centre: a wall of pipework,
+elbows, flanges and two handwheels. Centre right: a control wall with two blank cream
+mounting boards (small one left, wide one right with a notch in its lower edge) in iron
+frames with corner bolts; both boards stay completely empty for separate gauge and lever
+sprites. Beneath them a long workbench with cupboard doors and a stool. Far right: a tall
+arched iron window. Floor: stone deck with a vermilion runner and a long iron floor grate
+right of centre; below the deck, a lower arcade with one lamp.
+Repaint: boiler in warm copper with soot streaks and heat-blued bands instead of blue paint.
+Walls in sooty ochre brick and riveted iron plate. Add a centrifugal governor on the boiler,
+a leather belt from flywheel to a line shaft overhead, a sight glass, a row of small
+pressure gauges with blank faces, oil cans, rag hooks, chalked tally marks. Faint steam at
+pipe joints painted as soft dry-brush wisps.
+Walking line at 80 percent height, unbroken floor. No levers, no gauge needles, no cables,
+no papers, no near-camera objects.

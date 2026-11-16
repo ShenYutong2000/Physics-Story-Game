@@ -1,0 +1,3 @@
+Asset: mid layer with real alpha, 16:9, 1672x941. Input image 1 is the approved new clean background for this scene. Edit it, do not redesign it.
+
+KEEP only the near street elements in their exact positions: the archive wall and doorway, wall lantern, brass downpipe, cobbled road, telegraph poles with their lanterns and wires, and the stone and iron railing. Remove EVERYTHING ELSE to true alpha: sky, clouds, sun, mountains, distant town and viaduct, trees, valley mist, and the whole distant castle including tower, empty ring, crag and causeway. No new art or objects, no matte background, no checkerboard.
