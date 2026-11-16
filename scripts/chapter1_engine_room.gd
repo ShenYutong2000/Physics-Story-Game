@@ -1,4 +1,4 @@
-extends Node2D
+extends StoryRoom
 ## Fixed engine core: trace the failed home stop, repair it, and return the wing slowly.
 
 const SHAFT_SCENE := "res://scenes/chapter1_maintenance_shaft.tscn"
@@ -6,17 +6,21 @@ const OBSERVATORY_SCENE := "res://scenes/chapter1_observatory.tscn"
 const STOP_TEXTURE: Texture2D = preload("res://chapter1-assets/engine-room-layers-v1/stop-signal.png")
 const NORMAL_TEXTURE: Texture2D = preload("res://chapter1-assets/engine-room-layers-v1/normal-signal.png")
 const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
+const CLICK_DB := -14.0
+const FEED_ISOLATED := Color(82 / 255.0, 107 / 255.0, 105 / 255.0)  # #526b69
+const FEED_LIVE := Color(233 / 255.0, 125 / 255.0, 74 / 255.0)  # #e97d4a
 const FLOOR_Y := 725.0
 const RETURN_RATE := 0.085
 const CHECK_IDS := [&"stop", &"brake", &"lock"]
 const CHECK_TITLES := ["HOME STOP SIGNAL", "BRAKE PAWL", "NORMAL-POSITION LOCK"]
+const CHECK_DETAILS := [
+	"The signal contact closes at the home mark.",
+	"The brake pawl reaches its seat when the rod moves.",
+	"The normal lock can slide into its home socket; it is not engaged while inverted.",
+]
 const OBSERVATION_FLAGS := ["engine_chart_seen", "engine_jam_seen", "engine_linkage_seen", "engine_brake_seen", "engine_signal_seen"]
 
-@onready var state: Node = get_node("/root/PrologueState")
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
 @onready var erin: Node2D = $Erin
-@onready var ui: CanvasLayer = $HallUI
 @onready var window_wing_pivot: Node2D = $WindowWingPivot
 @onready var normal_linkage: Sprite2D = $NormalLinkage
 @onready var backup_lock: Sprite2D = $BackupLock
@@ -35,22 +39,16 @@ const OBSERVATION_FLAGS := ["engine_chart_seen", "engine_jam_seen", "engine_link
 @onready var maintenance_drive: Node2D = $MaintenanceDrive
 @onready var stop_indicator: Node2D = $StopIndicator
 @onready var observatory_exit: Node2D = $ObservatoryExit
-@onready var hotspots: Array[Node] = [shaft_return, wall_chart, isolator, erin_conversation, obstruction, linkage, brake_assembly, maintenance_drive, stop_indicator, observatory_exit]
 
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
-var dialogue_speaker := Vector2.ZERO
-var pending_action: StringName = &""
 var check_selection := 0
 var hypothesis_selection := -1
 var repair_selection := -1
 var pending_checks: Array[StringName] = []
 var return_progress := 0.0
-var sound_player: AudioStreamPlayer
 
 
 func _ready() -> void:
+	hotspots = [shaft_return, wall_chart, isolator, erin_conversation, obstruction, linkage, brake_assembly, maintenance_drive, stop_indicator, observatory_exit]
 	var spawn_tag: StringName = state.take_spawn_tag()
 	ui.hint.position = Vector2(36, 45)
 	ui.hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -59,11 +57,6 @@ func _ready() -> void:
 	kath.right_limit = 1555.0
 	kath.position = Vector2(1450.0 if spawn_tag == &"from-observatory" else 265.0, FLOOR_Y)
 	return_progress = clampf(float(state.flags.get("engine_return_progress", 0.0)), 0.0, 1.0)
-	sound_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(sound_player)
-	sound_player.stream = CLICK_SOUND
-	sound_player.volume_db = -14.0
-	add_child(sound_player)
 	_refresh_art()
 	if spawn_tag == &"from-maintenance-shaft" and not state.flags.get("engine_intro_seen", false):
 		state.flags["engine_intro_seen"] = true
@@ -84,7 +77,7 @@ func _process(delta: float) -> void:
 	if mode != &"roam":
 		ui.hide_prompt()
 		return
-	var closest: Node = nearest_hotspot(kath.position.x)
+	var closest := nearest_hotspot(kath.position.x)
 	if closest == null:
 		ui.hide_prompt()
 		return
@@ -108,129 +101,85 @@ func _process(delta: float) -> void:
 	ui.show_prompt(closest.display_name, closest.approach_x, action, 315.0)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
-		else:
-			_close_overlay()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			var closest: Node = nearest_hotspot(kath.position.x)
-			if closest != null:
-				_inspect(closest)
-		elif event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"journal")
-			_show_journal()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_advance_dialogue()
-	elif mode == &"hypothesis":
-		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			hypothesis_selection = 0 if event.is_action_pressed("move_left") else 1
-			_update_hypothesis()
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
-			if hypothesis_selection < 0:
+func _room_input(event: InputEvent) -> bool:
+	var sideways := event.is_action_pressed("move_left") or event.is_action_pressed("move_right")
+	var confirm := event.is_action_pressed("advance_dialogue")
+	match mode:
+		&"hypothesis":
+			if sideways:
+				hypothesis_selection = 0 if event.is_action_pressed("move_left") else 1
 				_update_hypothesis()
-			elif hypothesis_selection == 0:
-				repair_selection = -1
-				_set_mode(&"repair_order")
+			elif confirm:
+				_choose_hypothesis()
+			return sideways or confirm
+		&"repair_order":
+			if sideways:
+				repair_selection = 0 if event.is_action_pressed("move_left") else 1
 				_update_repair_order()
-			else:
+			elif confirm:
+				_choose_repair_order()
+			return sideways or confirm
+		&"verification":
+			if sideways:
+				check_selection = posmod(check_selection + (-1 if event.is_action_pressed("move_left") else 1), CHECK_IDS.size())
+				_update_check_panel()
+				return true
+			if event.is_action_pressed("interact"):
+				var check_id: StringName = CHECK_IDS[check_selection]
+				if not pending_checks.has(check_id):
+					pending_checks.append(check_id)
+					_play_effect(CLICK_SOUND, CLICK_DB)
+				_update_check_panel()
+				return true
+			if confirm:
+				if pending_checks.size() == CHECK_IDS.size():
+					_complete_verification()
+				else:
+					ui.update_engine_maintenance(_check_status() + "\n\nCheck all three before moving the wing.")
+				return true
+		&"chapter_end":
+			if confirm:
 				_close_overlay()
-				_start_dialogue(["A failed signal alone would not keep the mechanical brake pawl out of its seat. The jammed rod can explain both the dark signal and the missed brake.", "I should compare the linkage and brake again before choosing a repair sequence."])
-	elif mode == &"repair_order":
-		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			repair_selection = 0 if event.is_action_pressed("move_left") else 1
-			_update_repair_order()
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
-			if repair_selection < 0:
-				_update_repair_order()
-			elif repair_selection == 0:
-				_close_overlay()
-				_confirm_fault_chain()
-			else:
-				_close_overlay()
-				_start_dialogue(["That order would put my hands beside a rod that the live drive can still move. Isolate the drive first, then clear and test the stop path."])
-	elif mode == &"verification":
-		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			check_selection = posmod(check_selection + (-1 if event.is_action_pressed("move_left") else 1), 3)
-			_update_check_panel()
-		elif event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			var check_id: StringName = CHECK_IDS[check_selection]
-			if not pending_checks.has(check_id):
-				pending_checks.append(check_id)
-				sound_player.play()
-			_update_check_panel()
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
-			if pending_checks.size() == CHECK_IDS.size():
-				_complete_verification()
-			else:
-				ui.update_engine_maintenance(_check_status() + "\n\nCheck all three before moving the wing.")
-	elif mode == &"journal":
-		if event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_close_overlay()
-		elif event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"paper")
-			ui.show_torn_page(true)
-		elif event.is_action_pressed("move_up") or event.is_action_pressed("move_down"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(-1 if event.is_action_pressed("move_up") else 1)
-	elif mode == &"paper" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_set_mode(&"journal")
-		_show_journal()
-	elif mode == &"paused" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_close_overlay()
-	elif mode == &"chapter_end" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_close_overlay()
+				return true
+	return false
 
 
-func nearest_hotspot(feet_x: float) -> Node:
-	var best: Node = null
-	var best_distance := INF
-	for hotspot in hotspots:
-		if hotspot == erin_conversation and not state.flags.get("observatory_page_stitched", false):
-			continue
-		if not hotspot.is_reachable(feet_x):
-			continue
-		var distance: float = hotspot.distance_from(feet_x)
-		if distance < best_distance:
-			best = hotspot
-			best_distance = distance
-	return best
+func _choose_hypothesis() -> void:
+	if hypothesis_selection < 0:
+		_update_hypothesis()
+	elif hypothesis_selection == 0:
+		repair_selection = -1
+		_set_mode(&"repair_order")
+		_update_repair_order()
+	else:
+		_close_overlay()
+		_start_dialogue(["A failed signal alone would not keep the mechanical brake pawl out of its seat. The jammed rod can explain both the dark signal and the missed brake.", "I should compare the linkage and brake again before choosing a repair sequence."])
+
+
+func _choose_repair_order() -> void:
+	if repair_selection < 0:
+		_update_repair_order()
+		return
+	_close_overlay()
+	if repair_selection == 0:
+		_confirm_fault_chain()
+	else:
+		_start_dialogue(["That order would put my hands beside a rod that the live drive can still move. Isolate the drive first, then clear and test the stop path."])
+
+
+## Erin waits for the repaired notebook before the final conversation.
+func _is_hotspot_available(hotspot: Node) -> bool:
+	return hotspot != erin_conversation or bool(state.flags.get("observatory_page_stitched", false))
 
 
 func _inspect(hotspot: Node) -> void:
 	if hotspot == shaft_return:
-		_set_mode(&"travel")
-		ui.hide_modals()
-		state.travel_to(SHAFT_SCENE, &"from-engine-room")
+		_travel(SHAFT_SCENE, &"from-engine-room")
 	elif hotspot == observatory_exit:
 		if state.castle_pose != &"restored":
 			_start_dialogue(["The rotating passage is out of line. I cannot cross until the wing is back at its normal position and locked."])
 		else:
-			_set_mode(&"travel")
-			ui.hide_modals()
-			state.travel_to(OBSERVATORY_SCENE, &"from-engine-room")
+			_travel(OBSERVATORY_SCENE, &"from-engine-room")
 	elif hotspot == erin_conversation:
 		if state.flags.get("chapter1_complete", false):
 			_set_mode(&"chapter_end")
@@ -278,25 +227,7 @@ func _inspect(hotspot: Node) -> void:
 			_open_drive()
 
 
-func _start_dialogue(lines: Array[String], action: StringName = &"", speaker: Vector2 = Vector2.ZERO) -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	dialogue_speaker = kath.global_position if speaker == Vector2.ZERO else speaker
-	pending_action = action
-	_set_mode(&"dialogue")
-	_show_dialogue_line()
-
-
-func _advance_dialogue() -> void:
-	dialogue_index += 1
-	if dialogue_index < dialogue_lines.size():
-		_show_dialogue_line()
-		return
-	var action := pending_action
-	_close_overlay()
-	_complete_dialogue_action(action)
-
-
+## Lines prefixed "Kath:" or "Erin:" appear beside that speaker.
 func _show_dialogue_line() -> void:
 	var line: String = dialogue_lines[dialogue_index]
 	var speaker_position := dialogue_speaker
@@ -325,14 +256,14 @@ func _complete_dialogue_action(action: StringName) -> void:
 		&"isolate_drive":
 			if state.flags.get("engine_fault_traced", false):
 				state.flags["engine_drive_isolated"] = true
-				sound_player.play()
+				_play_effect(CLICK_SOUND, CLICK_DB)
 				_refresh_art()
 				ui.show_hint("Automatic drive isolated. Clear the blocked track.", 5.0)
 		&"clear_jam":
 			if state.flags.get("engine_drive_isolated", false):
 				state.flags["engine_jam_cleared"] = true
 				state.add_note_once(&"engine-track-cleared", "Linkage cleared", "With the automatic drive isolated and Erin bracing the assembly, I removed wet grit and a loose metal fragment from the home rod's track.")
-				sound_player.play()
+				_play_effect(CLICK_SOUND, CLICK_DB)
 				wick.react_to(880.0, 520.0)
 				_refresh_art()
 				ui.show_hint("At the home linkage, test the stop path before moving the wing.", 5.0)
@@ -395,7 +326,7 @@ func _check_status() -> String:
 
 
 func _update_check_panel() -> void:
-	ui.update_engine_maintenance(_check_status() + "\n\n" + ["The signal contact closes at the home mark.", "The brake pawl reaches its seat when the rod moves.", "The normal lock can slide into its home socket; it is not engaged while inverted."][check_selection])
+	ui.update_engine_maintenance(_check_status() + "\n\n" + CHECK_DETAILS[check_selection])
 
 
 func _complete_verification() -> void:
@@ -403,7 +334,7 @@ func _complete_verification() -> void:
 		return
 	state.flags["engine_checks_verified"] = true
 	state.add_note_once(&"engine-home-stop-test", "Home stop dry run", "With the wing still held inverted and the automatic drive isolated, Erin moved the cleared linkage by hand. The home signal closed, the brake pawl travelled, and the normal lock reached its socket in a dry run. None of them is holding the wing at home yet.")
-	sound_player.play()
+	_play_effect(CLICK_SOUND, CLICK_DB)
 	_close_overlay()
 	_refresh_art()
 	_start_dialogue(["Erin: The signal, brake and normal lock each moved in the isolated test.", "Erin: The inverted catch still holds the wing. Use the maintenance drive slowly; release it to stop.", "Kath: I'll watch the angle until the home lock engages."], &"", erin.global_position)
@@ -446,7 +377,7 @@ func _complete_restoration() -> void:
 	state.flags["engine_return_progress"] = 1.0
 	state.flags["engine_restored"] = true
 	state.add_note_once(&"engine-wing-restored", "Wing returned to home", "With the automatic ring drive isolated, the cleared stop path passed a dry run. The separate maintenance drive returned the wing slowly; at home, the signal changed, brake engaged and normal lock seated. This return worked under today's load and speed. The water's route and long-term reliability still need checking.")
-	sound_player.play()
+	_play_effect(CLICK_SOUND, CLICK_DB)
 	_refresh_art()
 	_start_dialogue(["The dial reaches home. The signal changes, the brake catches, and the normal lock seats.", "The wing stays still when Kath releases the drive.", "Erin: The observatory passage lines up again. We should check its work records next."])
 
@@ -460,7 +391,7 @@ func _refresh_art() -> void:
 	var progress: float = 1.0 if restored else return_progress
 	window_wing_pivot.rotation = lerpf(state.castle_pose_angle_radians(&"inverted"), state.castle_pose_angle_radians(&"restored"), progress)
 	jam_debris.visible = not cleared and not restored
-	drive_isolator_lamp.color = Color("526b69") if state.flags.get("engine_drive_isolated", false) or restored else Color("e97d4a")
+	drive_isolator_lamp.color = FEED_ISOLATED if state.flags.get("engine_drive_isolated", false) or restored else FEED_LIVE
 	normal_linkage.position = Vector2(852.0 + (25.0 if restored else 12.0 if cleared else 0.0), 460.0)
 	backup_lock.position.y = 250.0 if restored or progress > 0.01 else 310.0
 	brake_wheel.modulate = Color.WHITE if verified or restored else Color(0.72, 0.74, 0.82, 1.0)
@@ -468,18 +399,7 @@ func _refresh_art() -> void:
 	stop_signal.texture = NORMAL_TEXTURE if restored else STOP_TEXTURE
 
 
-func _show_journal() -> void:
-	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)), bool(state.flags.get("service_gate_open", false)), bool(state.flags.get("service_road_end_reached", false)))
-
-
 func _close_overlay() -> void:
 	if mode == &"verification":
 		pending_checks.clear()
-	ui.hide_modals()
-	pending_action = &""
-	_set_mode(&"roam")
-
-
-func _set_mode(value: StringName) -> void:
-	mode = value
-	kath.controls_enabled = mode == &"roam"
+	super()

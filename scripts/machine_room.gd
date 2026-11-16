@@ -1,5 +1,5 @@
-extends Node2D
-## A short maintenance-room visit focused on recording a baseline observation.
+extends StoryRoom
+## Archive maintenance room: record the gauge baseline, later handle the alarm.
 
 const HALL_SCENE := "res://scenes/library_hall.tscn"
 const ROUTE_NOTE := {
@@ -7,14 +7,15 @@ const ROUTE_NOTE := {
 	"body": "The Archive auxiliary line and a separate status wire run toward the Observatory Castle. The diagram also marks a local ring drive and isolator at the Castle; this panel does not directly switch that motor."
 }
 const AMBIENCE: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-machine.wav")
-const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
 const LEVER_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lever-click.wav")
 const STOP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/stop-switch.wav")
-const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-dawn-city.png")
+const MACHINE_SOUND_DB := -8.0
+const NEEDLE_RISING := -0.76
+const NEEDLE_REBOUND := -0.54
+const NEEDLE_UNLOADED := -1.29
+const NEEDLE_RESTED := -1.3
+const REBOUND_SECONDS := 1.8
 
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
-@onready var ui: CanvasLayer = $HallUI
 @onready var return_exit: Node2D = $ReturnToHall
 @onready var service_road_exit: Node2D = $ServiceRoadExit
 @onready var stop_hotspot: Node2D = $StopHotspot
@@ -26,194 +27,88 @@ const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-d
 @onready var lamp_one: AnimatedSprite2D = $StatusLampOne
 @onready var lamp_two: AnimatedSprite2D = $StatusLampTwo
 @onready var stop_switch: AnimatedSprite2D = $EmergencyStop
-@onready var hotspots: Array[Node] = [$Gauge, $RouteDiagram, $ReturnToHall, $StopHotspot, $ServiceRoadExit]
-@onready var state: Node = get_node("/root/PrologueState")
 
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
-var pending_inspection: StringName = &""
-var record_audio: AudioStreamPlayer
 var incident_rebound_timer := -1.0
 var selected_lever := 2
 var incident_busy := false
 
 
 func _ready() -> void:
+	hotspots = [$Gauge, $RouteDiagram, return_exit, stop_hotspot, service_road_exit]
 	return_exit.exit_requested.connect(_on_exit_requested)
 	service_road_exit.exit_requested.connect(_on_exit_requested)
 	var spawn_tag: StringName = state.take_spawn_tag()
-	if state.flags.get("dawn_reached", false):
-		far.texture = DAWN_CITY
-		far.modulate = Color.WHITE
-		rain_streaks.set_strength(0.0)
-	else:
+	if not _flag("dawn_reached"):
 		state.flags["hall_rain_started"] = true
-		far.modulate = Color(0.76, 0.82, 0.94) if state.flags.get("hall_rain_heavy", false) else Color.WHITE
-		rain_streaks.set_strength(1.0 if state.flags.get("hall_rain_heavy", false) else 0.25)
-	if spawn_tag == &"from-hall":
-		kath.position.x = 250.0
-		if not state.flags.get("machine_intro_seen", false):
-			state.flags["machine_intro_seen"] = true
-			_start_dialogue(["Rain is tapping the vents. No warning lamp; the upper needle is still below red.", "I should compare it with yesterday's mark before I leave."])
-	elif spawn_tag == &"from-service-road":
-		kath.position.x = 1510.0
-	else:
-		kath.position.x = 250.0
-	var ambience := AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(ambience, true)
-	ambience.name = "MachineRoomAmbience"
-	ambience.stream = AMBIENCE
-	ambience.volume_db = -14.0
-	add_child(ambience)
-	ambience.play()
-	record_audio = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(record_audio)
-	record_audio.name = "RecordAudio"
-	record_audio.stream = PENCIL_SOUND
-	record_audio.volume_db = -8.0
-	add_child(record_audio)
+	_apply_archive_weather(far, rain_streaks)
+	_add_audio("MachineRoomAmbience", AMBIENCE, -14.0, true)
+	kath.position.x = 1510.0 if spawn_tag == &"from-service-road" else 250.0
+	if spawn_tag == &"from-hall" and not _flag("machine_intro_seen"):
+		state.flags["machine_intro_seen"] = true
+		_start_dialogue(["Rain is tapping the vents. No warning lamp; the upper needle is still below red.", "I should compare it with yesterday's mark before I leave."])
 	_set_incident_visuals()
-	if state.flags.get("machine_incident_active", false) \
-		and not state.flags.get("incident_complete", false) \
-		and not state.flags.get("machine_incident_intro_seen", false):
+	if _incident_active() and not _flag("machine_incident_intro_seen"):
 		state.flags["machine_incident_intro_seen"] = true
 		_start_dialogue(["The pointer has crossed the red mark. The emergency card is still legible.", "Open return lever 2, isolate lever 4, then stop the local drive if the pointer keeps rising."])
 
 
-func _exit_tree() -> void:
-	if is_instance_valid(record_audio):
-		record_audio.stop()
-	var ambience := get_node_or_null("MachineRoomAmbience") as AudioStreamPlayer
-	if ambience != null:
-		ambience.stop()
+func _flag(key: String) -> bool:
+	return bool(state.flags.get(key, false))
 
 
-func _process(_delta: float) -> void:
-	if incident_rebound_timer >= 0.0 and mode != &"paused" and mode != &"dialogue" and not state.flags.get("incident_drive_stopped", false):
-		incident_rebound_timer -= _delta
+func _incident_active() -> bool:
+	return _flag("machine_incident_active") and not _flag("incident_complete")
+
+
+func _is_hotspot_available(hotspot: Node) -> bool:
+	return hotspot != stop_hotspot or _incident_active()
+
+
+func _process(delta: float) -> void:
+	if incident_rebound_timer >= 0.0 and mode not in [&"paused", &"dialogue"] and not _flag("incident_drive_stopped"):
+		incident_rebound_timer -= delta
 		if incident_rebound_timer <= 0.0:
-			needle.rotation = -0.54
+			needle.rotation = NEEDLE_REBOUND
 			state.flags["incident_needle_rebounded"] = true
 			incident_rebound_timer = -1.0
 			ui.show_hint("THE NEEDLE IS RISING AGAIN  ·  E  OPEN EMERGENCY STOP", 6.0)
-	if mode != &"roam":
-		ui.hide_prompt()
-		return
-	var closest: Node = nearest_hotspot(kath.position.x)
+	var closest := nearest_hotspot(kath.position.x) if mode == &"roam" else null
 	if closest == null:
 		ui.hide_prompt()
-	else:
-		if closest == stop_hotspot and not _incident_active():
-			ui.hide_prompt()
-			return
-		var action := "RETURN" if closest == return_exit else "INSPECT"
-		var prompt_y := 415.0
-		if closest == service_road_exit:
-			if not state.flags.get("incident_complete", false):
-				ui.show_prompt("Service road", closest.approach_x, "COMPLETE THE REPAIR", 415.0)
-				return
-			action = "EXIT TO ROAD"
-			prompt_y = 415.0
-		elif closest == stop_hotspot:
-			action = "STOP DRIVE"
-			prompt_y = 465.0
-		elif closest.content_key == &"gauge":
-			prompt_y = 142.0
-			if _incident_active():
-				action = "OPEN CONTROL CONSOLE"
-		elif closest.content_key == &"route":
-			prompt_y = 190.0
-		ui.show_prompt(closest.display_name, closest.approach_x, action, prompt_y)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
 		return
-	if event.is_action_pressed("ui_cancel"):
-		if mode == &"cutscene":
-			get_viewport().set_input_as_handled()
-			return
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
-		elif mode == &"dialogue":
-			_close_dialogue(false)
-		elif mode == &"gauge":
-			ui.hide_modals()
-			_set_mode(&"roam")
-		elif mode == &"console":
-			ui.hide_modals()
-			_set_mode(&"roam")
-		elif mode == &"paper":
-			_return_from_saved_page()
-		else:
-			_close_modal()
-		get_viewport().set_input_as_handled()
-		return
-	if mode == &"console":
-		if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
-			selected_lever = 4 if selected_lever == 2 else 2
-			_update_console()
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("interact"):
-			_operate_selected_lever()
-			get_viewport().set_input_as_handled()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			# Returning to the hall removes this scene immediately.
-			get_viewport().set_input_as_handled()
-			var closest: Node = nearest_hotspot(kath.position.x)
-			if closest != null:
-				_inspect(closest)
-		elif event.is_action_pressed("toggle_journal"):
-			_set_mode(&"journal")
-			_show_journal()
-			get_viewport().set_input_as_handled()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		_advance_dialogue()
-		get_viewport().set_input_as_handled()
-	elif mode == &"gauge" and event.is_action_pressed("advance_dialogue"):
-		_confirm_gauge_reading()
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("toggle_journal"):
-		_close_modal()
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-		_set_mode(&"paper")
-		ui.show_torn_page(true)
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("move_up"):
-		ui.scroll_journal(-1)
-		get_viewport().set_input_as_handled()
-	elif mode == &"journal" and event.is_action_pressed("move_down"):
-		ui.scroll_journal(1)
-		get_viewport().set_input_as_handled()
-	elif mode == &"paper" and (event.is_action_pressed("advance_dialogue") or event.is_action_pressed("toggle_journal")):
-		_return_from_saved_page()
-		get_viewport().set_input_as_handled()
-	elif mode == &"paused":
-		if event.is_action_pressed("advance_dialogue"):
-			_close_modal()
-			get_viewport().set_input_as_handled()
-		elif event is InputEventKey and event.pressed and event.keycode == KEY_Q:
-			get_tree().quit()
+	var action := "INSPECT"
+	var prompt_y := 415.0
+	if closest == return_exit:
+		action = "RETURN"
+	elif closest == service_road_exit:
+		action = "EXIT TO ROAD" if _flag("incident_complete") else "COMPLETE THE REPAIR"
+	elif closest == stop_hotspot:
+		action = "STOP DRIVE"
+		prompt_y = 465.0
+	elif closest.content_key == &"gauge":
+		prompt_y = 142.0
+		if _incident_active():
+			action = "OPEN CONTROL CONSOLE"
+	elif closest.content_key == &"route":
+		prompt_y = 190.0
+	ui.show_prompt(closest.display_name, closest.approach_x, action, prompt_y)
 
 
-func nearest_hotspot(feet_x: float) -> Node:
-	var best: Node = null
-	var best_distance := INF
-	for hotspot in hotspots:
-		if hotspot == stop_hotspot and not _incident_active():
-			continue
-		if not hotspot.is_reachable(feet_x):
-			continue
-		var distance: float = hotspot.distance_from(feet_x)
-		if distance < best_distance:
-			best = hotspot
-			best_distance = distance
-	return best
+func _room_input(event: InputEvent) -> bool:
+	match mode:
+		&"console":
+			if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+				selected_lever = 4 if selected_lever == 2 else 2
+				_update_console()
+				return true
+			if event.is_action_pressed("interact"):
+				_operate_selected_lever()
+				return true
+		&"gauge":
+			if event.is_action_pressed("advance_dialogue"):
+				_confirm_gauge_reading()
+				return true
+	return false
 
 
 func _inspect(hotspot: Node) -> void:
@@ -221,24 +116,26 @@ func _inspect(hotspot: Node) -> void:
 		return_exit.request_exit()
 		return
 	if hotspot == service_road_exit:
-		if not state.flags.get("incident_complete", false):
-			_start_dialogue(["I should finish dealing with the machine before taking the service road."])
-		else:
+		if _flag("incident_complete"):
 			service_road_exit.request_exit()
+		else:
+			_start_dialogue(["I should finish dealing with the machine before taking the service road."])
 		return
 	match hotspot.content_key:
 		&"gauge":
 			if _incident_active():
-				selected_lever = 2 if not state.flags.get("incident_valve_two_open", false) else 4
+				selected_lever = 4 if _flag("incident_valve_two_open") else 2
 				_set_mode(&"console")
-				ui.show_emergency_console(bool(state.flags.get("incident_valve_two_open", false)), bool(state.flags.get("incident_valve_four_open", false)), bool(state.flags.get("incident_drive_stopped", false)), selected_lever)
+				ui.show_emergency_console(_flag("incident_valve_two_open"), _flag("incident_valve_four_open"), _flag("incident_drive_stopped"), selected_lever)
 			else:
 				wick.react_to(1136.0, 310.0)
 				_set_mode(&"gauge")
-				ui.show_gauge_inspection(bool(state.flags.get("machine_baseline_recorded", false)))
+				ui.show_gauge_inspection(_flag("machine_baseline_recorded"))
 		&"route":
-			pending_inspection = &"service-route"
-			_start_dialogue(["Two lines lead toward the Observatory Castle: an Archive auxiliary line and a status wire.", "The diagram marks a separate ring drive inside the Castle. This stop switch belongs to the Archive side; I still don't know whether the faults are related."])
+			_start_note_dialogue(&"service-route", ROUTE_NOTE["title"], ROUTE_NOTE["body"], [
+				"Two lines lead toward the Observatory Castle: an Archive auxiliary line and a status wire.",
+				"The diagram marks a separate ring drive inside the Castle. This stop switch belongs to the Archive side; I still don't know whether the faults are related.",
+			])
 		&"stop":
 			if _incident_active():
 				_operate_emergency_stop()
@@ -248,146 +145,99 @@ func _inspect(hotspot: Node) -> void:
 
 func _confirm_gauge_reading() -> void:
 	ui.hide_modals()
-	if not state.flags.get("machine_baseline_recorded", false):
-		state.add_note_once(&"machine-reading", "Machine-room reading", "The needle rests one division above the previous mark, still below the red sector.")
-		state.flags["machine_baseline_recorded"] = true
-		record_audio.play()
-		_start_dialogue(["One division higher than the last mark. Still below the red sector.", "I've written down what I can see. I don't know what the scale measures."])
-	else:
+	if _flag("machine_baseline_recorded"):
 		_set_mode(&"roam")
-
-
-func _start_dialogue(lines: Array[String]) -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	_set_mode(&"dialogue")
-	ui.show_dialogue(dialogue_lines[0], kath.global_position)
-
-
-func _advance_dialogue() -> void:
-	dialogue_index += 1
-	if dialogue_index < dialogue_lines.size():
-		ui.show_dialogue(dialogue_lines[dialogue_index], kath.global_position)
-	else:
-		_close_dialogue(true)
-
-
-func _close_dialogue(completed: bool) -> void:
-	var inspected_id := pending_inspection
-	pending_inspection = &""
-	_close_modal()
-	if completed and inspected_id == &"service-route":
-		state.add_note_once(&"service-route", ROUTE_NOTE["title"], ROUTE_NOTE["body"])
-
-
-func _close_modal() -> void:
-	if mode == &"dialogue":
-		pending_inspection = &""
-	ui.hide_modals()
-	_set_mode(&"roam")
-
-
-func _show_journal() -> void:
-	ui.show_journal(state.notes, state.hall_checks_complete(), bool(state.flags.get("machine_baseline_recorded", false)), bool(state.flags.get("stacks_bucket_moved", false)), bool(state.flags.get("stacks_page_collected", false)), bool(state.flags.get("room_notebook_compared", false)), bool(state.flags.get("incident_complete", false)), state.room_preparation_complete(), bool(state.flags.get("machine_incident_active", false)))
-
-
-func _return_from_saved_page() -> void:
-	_set_mode(&"journal")
-	_show_journal()
-
-
-func _set_mode(value: StringName) -> void:
-	mode = value
-	kath.controls_enabled = mode == &"roam"
-
-
-func _incident_active() -> bool:
-	return bool(state.flags.get("machine_incident_active", false)) and not bool(state.flags.get("incident_complete", false))
+		return
+	state.add_note_once(&"machine-reading", "Machine-room reading", "The needle rests one division above the previous mark, still below the red sector.")
+	state.flags["machine_baseline_recorded"] = true
+	_play_effect(PENCIL_SOUND, MACHINE_SOUND_DB)
+	_start_dialogue(["One division higher than the last mark. Still below the red sector.", "I've written down what I can see. I don't know what the scale measures."])
 
 
 func _set_incident_visuals() -> void:
 	var active := _incident_active()
-	lever_two.frame = 1 if state.flags.get("incident_valve_two_open", false) else 0
-	lever_four.frame = 1 if state.flags.get("incident_valve_four_open", false) else 0
-	lamp_one.frame = 0 if state.flags.get("incident_complete", false) else (2 if active else 1)
-	lamp_two.frame = 0 if state.flags.get("incident_complete", false) else (2 if active else 1)
-	stop_switch.frame = 1 if state.flags.get("incident_drive_stopped", false) else 0
+	var complete := _flag("incident_complete")
+	lever_two.frame = 1 if _flag("incident_valve_two_open") else 0
+	lever_four.frame = 1 if _flag("incident_valve_four_open") else 0
+	lamp_one.frame = 0 if complete else (2 if active else 1)
+	lamp_two.frame = lamp_one.frame
+	stop_switch.frame = 1 if _flag("incident_drive_stopped") else 0
 	if active:
-		needle.rotation = -0.54 if state.flags.get("incident_needle_rebounded", false) else (-1.29 if state.flags.get("incident_valve_two_open", false) or state.flags.get("incident_valve_four_open", false) else -0.76)
-	elif state.flags.get("incident_complete", false):
-		needle.rotation = -1.3
+		if _flag("incident_needle_rebounded"):
+			needle.rotation = NEEDLE_REBOUND
+		elif _flag("incident_valve_two_open") or _flag("incident_valve_four_open"):
+			needle.rotation = NEEDLE_UNLOADED
+		else:
+			needle.rotation = NEEDLE_RISING
+	elif complete:
+		needle.rotation = NEEDLE_RESTED
 
 
 func _update_console() -> void:
-	ui.update_emergency_console(bool(state.flags.get("incident_valve_two_open", false)), bool(state.flags.get("incident_valve_four_open", false)), bool(state.flags.get("incident_drive_stopped", false)), selected_lever)
+	ui.update_emergency_console(_flag("incident_valve_two_open"), _flag("incident_valve_four_open"), _flag("incident_drive_stopped"), selected_lever)
 
 
 func _operate_selected_lever() -> void:
-	if selected_lever == 2 and not state.flags.get("incident_valve_two_open", false):
-		state.flags["incident_valve_two_open"] = true
-		lever_two.frame = 1
-		needle.rotation = -1.29
-		if not state.flags.get("incident_drive_stopped", false):
-			incident_rebound_timer = 1.8
-		_play_incident_sound(LEVER_SOUND)
-	elif selected_lever == 4 and not state.flags.get("incident_valve_four_open", false):
-		state.flags["incident_valve_four_open"] = true
-		lever_four.frame = 1
-		needle.rotation = -1.29
-		if not state.flags.get("incident_drive_stopped", false):
-			incident_rebound_timer = 1.8
-		_play_incident_sound(LEVER_SOUND)
-	selected_lever = 4 if not state.flags.get("incident_valve_four_open", false) else 2
+	if selected_lever == 2:
+		_open_valve("incident_valve_two_open", lever_two)
+	else:
+		_open_valve("incident_valve_four_open", lever_four)
+	selected_lever = 2 if _flag("incident_valve_four_open") else 4
 	_update_console()
-	if state.flags.get("incident_valve_two_open", false) and state.flags.get("incident_valve_four_open", false):
+	if _flag("incident_valve_two_open") and _flag("incident_valve_four_open"):
 		state.flags["incident_valves_complete"] = true
-		if state.flags.get("incident_drive_stopped", false):
+		if _flag("incident_drive_stopped"):
 			_complete_incident()
 		else:
 			ui.show_hint("THE NEEDLE DROPS, THEN RISES AGAIN  ·  STOP THE LOCAL DRIVE", 7.0)
 
 
+## Opening either relief lever unloads the needle briefly until the drive stops.
+func _open_valve(flag: String, lever: AnimatedSprite2D) -> void:
+	if _flag(flag):
+		return
+	state.flags[flag] = true
+	lever.frame = 1
+	needle.rotation = NEEDLE_UNLOADED
+	if not _flag("incident_drive_stopped"):
+		incident_rebound_timer = REBOUND_SECONDS
+	_play_effect(LEVER_SOUND, MACHINE_SOUND_DB)
+
+
 func _operate_emergency_stop() -> void:
-	if state.flags.get("incident_drive_stopped", false):
+	if _flag("incident_drive_stopped"):
 		return
 	state.flags["incident_drive_stopped"] = true
 	stop_switch.frame = 1
 	incident_rebound_timer = -1.0
-	_play_incident_sound(STOP_SOUND)
-	if not state.flags.get("incident_valves_complete", false):
-		_start_dialogue(["The Archive drive is stopped. The emergency card still calls for levers 2 and 4 to unload and isolate this line."])
-	else:
+	_play_effect(STOP_SOUND, MACHINE_SOUND_DB)
+	if _flag("incident_valves_complete"):
 		_complete_incident()
+	else:
+		_start_dialogue(["The Archive drive is stopped. The emergency card still calls for levers 2 and 4 to unload and isolate this line."])
 
 
 func _complete_incident() -> void:
-	if incident_busy or state.flags.get("incident_tilt_observed", false):
+	if incident_busy or _flag("incident_tilt_observed"):
 		return
 	incident_busy = true
 	state.flags["incident_tilt_started"] = true
 	_set_mode(&"cutscene")
 	ui.hide_modals()
 	await ui.play_castle_tilt()
+	incident_busy = false
 	if not state.transition_castle_pose(&"tilted"):
-		incident_busy = false
 		_set_mode(&"roam")
 		return
 	state.flags["incident_tilt_observed"] = true
 	state.flags["incident_complete"] = true
 	state.add_note_once(&"castle-alarm", "Remote tilt observed", "The Archive auxiliary drive and line were stopped and isolated. The Castle's status signal remained unstable, and its supported wing tilted about 12 degrees while the fixed tower stayed upright. The Castle has its own ring drive; I do not yet know whether these failures share a cause.")
-	incident_busy = false
-	_set_mode(&"dialogue")
 	_start_dialogue(["The Archive auxiliary drive is stopped, but the Castle's status signal still behaves abnormally.", "The fixed tower stayed upright while the supported wing tilted. Its ring drive is separate; I can't tell whether the two failures are connected."])
-
-
-func _play_incident_sound(stream: AudioStream) -> void:
-	record_audio.stop()
-	record_audio.stream = stream
-	record_audio.play()
 
 
 func _on_exit_requested(destination_scene: String, spawn_tag: String) -> void:
 	state.flags["returned_from_machine_room"] = true
-	if destination_scene == HALL_SCENE and state.flags.get("machine_baseline_recorded", false) and not state.flags.get("dawn_reached", false):
+	var destination := HALL_SCENE if destination_scene.is_empty() else destination_scene
+	if destination == HALL_SCENE and _flag("machine_baseline_recorded") and not _flag("dawn_reached"):
 		state.flags["hall_rain_heavy"] = true
-	state.travel_to(destination_scene if not destination_scene.is_empty() else HALL_SCENE, StringName(spawn_tag))
+	state.travel_to(destination, StringName(spawn_tag))

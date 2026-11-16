@@ -8,10 +8,12 @@ const GAUGE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/gau
 const NEWTON_NOTE_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/newton-note.png")
 const CASTLE_WING_TEXTURE: Texture2D = preload("res://prologue-asset-pack-v1/props/castle-wing-upright.png")
 const SERVICE_ROAD_FAR: Texture2D = preload("res://prologue-asset-pack-v1/far/05-service-road-far.png")
-const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"duty-keys"]
 const INK := Color("2b304c")
 const CREAM := Color("fff4db")
 const GOLD := Color("f5dba6")
+
+@onready var story: Node = get_node("/root/PrologueState")
+@onready var settings: Node = get_node("/root/GameSettings")
 
 var prompt: Label
 var hint: Label
@@ -555,7 +557,7 @@ func _process(delta: float) -> void:
 		guide_bubble.visible = false
 		return
 	_update_discovery(scene, objective)
-	if not get_node("/root/GameSettings").hints_enabled:
+	if not settings.hints_enabled:
 		guide_bubble.visible = false
 		return
 	var kath: Node2D = scene.get_node_or_null("Kath")
@@ -564,17 +566,17 @@ func _process(delta: float) -> void:
 	if objective["id"] == "complete":
 		return
 	objective_idle_seconds += delta
-	get_node("/root/PrologueState").guide_idle_seconds = objective_idle_seconds
+	story.guide_idle_seconds = objective_idle_seconds
 	if not objective_reminder_shown and hint_level == 0 and objective_idle_seconds >= 75.0:
 		objective_reminder_shown = true
-		get_node("/root/PrologueState").guide_reminder_shown = true
+		story.guide_reminder_shown = true
 		_point_wick(objective)
 		var area_lead := " Try %s." % objective["next_area"] if scene.scene_file_path != objective["focus_scene"] else ""
 		_show_guide("Still looking? %s.%s Press H for a closer hint, or J for your notes." % [objective["title"], area_lead], 7.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not get_node("/root/GameSettings").hints_enabled or not event.is_action_pressed("request_hint") or (event is InputEventKey and event.echo):
+	if not settings.hints_enabled or not event.is_action_pressed("request_hint") or (event is InputEventKey and event.echo):
 		return
 	var scene := get_parent()
 	if scene == null or scene.get("mode") != &"roam":
@@ -585,36 +587,32 @@ func _unhandled_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	hint_level = mini(hint_level + 1, 3)
 	objective_reminder_shown = true
-	var story_state: Node = get_node("/root/PrologueState")
-	story_state.guide_hint_level = hint_level
-	story_state.guide_reminder_shown = true
+	story.guide_hint_level = hint_level
+	story.guide_reminder_shown = true
 	var kath: Node2D = scene.get_node_or_null("Kath")
 	var kath_x := kath.position.x if kath != null else 0.0
-	_show_guide("HINT %d/3 · %s" % [hint_level, StoryGuide.hint_text(story_state, objective, hint_level, scene.scene_file_path, kath_x)], 11.0)
+	_show_guide("HINT %d/3 · %s" % [hint_level, StoryGuide.hint_text(story, objective, hint_level, scene.scene_file_path, kath_x)], 11.0)
 	_point_wick(objective)
 
 
 func _sync_objective() -> Dictionary:
-	var story_state: Node = get_node_or_null("/root/PrologueState")
-	if story_state == null:
-		return {}
-	var objective: Dictionary = StoryGuide.current(story_state)
-	if story_state.guide_objective_id != objective["id"]:
-		story_state.reset_guide_progress()
-		story_state.guide_objective_id = objective["id"]
-	var progress_signature: String = StoryGuide.progress_signature(story_state)
-	if story_state.guide_progress_signature != progress_signature:
-		story_state.guide_progress_signature = progress_signature
-		story_state.guide_idle_seconds = 0.0
-		story_state.guide_reminder_shown = false
-		story_state.guide_hint_level = 0
+	var objective: Dictionary = StoryGuide.current(story)
+	if story.guide_objective_id != objective["id"]:
+		story.reset_guide_progress()
+		story.guide_objective_id = objective["id"]
+	var progress_signature: String = StoryGuide.progress_signature(story)
+	if story.guide_progress_signature != progress_signature:
+		story.guide_progress_signature = progress_signature
+		story.guide_idle_seconds = 0.0
+		story.guide_reminder_shown = false
+		story.guide_hint_level = 0
 		guide_bubble.visible = false
 	if objective_id != objective["id"]:
 		guide_bubble.visible = false
 		objective_id = objective["id"]
-	objective_idle_seconds = story_state.guide_idle_seconds
-	objective_reminder_shown = story_state.guide_reminder_shown
-	hint_level = story_state.guide_hint_level
+	objective_idle_seconds = story.guide_idle_seconds
+	objective_reminder_shown = story.guide_reminder_shown
+	hint_level = story.guide_hint_level
 	return objective
 
 
@@ -625,7 +623,7 @@ func _point_wick(objective: Dictionary) -> bool:
 	var kath: Node2D = scene.get_node_or_null("Kath")
 	if kath == null:
 		return false
-	var target: Dictionary = StoryGuide.focus_target(get_node("/root/PrologueState"), objective, scene.scene_file_path, kath.position.x)
+	var target: Dictionary = StoryGuide.focus_target(story, objective, scene.scene_file_path, kath.position.x)
 	if target.is_empty():
 		return false
 	var focus: Vector2 = target["position"]
@@ -649,7 +647,7 @@ func _show_guide(message: String, seconds: float) -> void:
 	if kath == null:
 		return
 	hint.visible = false
-	guide_text.text = get_node("/root/GameSettings").control_text(message)
+	guide_text.text = settings.control_text(message)
 	guide_bubble.position = Vector2(clampf(kath.position.x - 295.0, 24.0, 1058.0), clampf(kath.position.y - 425.0, 42.0, 665.0))
 	guide_deadline = Time.get_ticks_msec() + int(seconds * 1000.0)
 	guide_bubble.visible = true
@@ -687,7 +685,7 @@ func _update_discovery(scene: Node, objective: Dictionary) -> void:
 		_hide_discovery()
 		return
 	var nearby: Array[Dictionary] = []
-	var focus: Dictionary = StoryGuide.focus_target(get_node("/root/PrologueState"), objective, scene.scene_file_path, kath.position.x)
+	var focus: Dictionary = StoryGuide.focus_target(story, objective, scene.scene_file_path, kath.position.x)
 	var focus_id: StringName = focus.get("id", &"")
 	for child in [] if kath.get("locomotion_mode") == &"climb" else scene.get_children():
 		if not child.has_method("marker_position"):
@@ -722,7 +720,7 @@ func _update_discovery(scene: Node, objective: Dictionary) -> void:
 
 
 func show_prompt(name: String, screen_x: float, action: String = "INSPECT", screen_y: float = 415.0) -> void:
-	prompt.text = "%s  %s  ·  %s" % [get_node("/root/GameSettings").key_label("interact"), action, name.to_upper()]
+	prompt.text = "%s  %s  ·  %s" % [settings.key_label("interact"), action, name.to_upper()]
 	prompt.position = Vector2(clampf(screen_x - 240.0, 24.0, 1168.0), clampf(screen_y, 24.0, 850.0))
 	prompt.visible = true
 
@@ -733,7 +731,7 @@ func hide_prompt() -> void:
 
 func show_hint(message: String, seconds: float = 4.0) -> void:
 	guide_bubble.visible = false
-	hint.text = get_node("/root/GameSettings").control_text(message)
+	hint.text = settings.control_text(message)
 	hint_deadline = Time.get_ticks_msec() + int(seconds * 1000.0)
 	hint.visible = true
 
@@ -800,19 +798,31 @@ func show_gauge_inspection(recorded: bool) -> void:
 	hide_prompt()
 
 
-func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, leak_contained: bool = false, page_collected: bool = false, room_compared: bool = false, incident_complete: bool = false, room_prepared: bool = false, incident_active: bool = false, service_gate_open: bool = false, service_road_end_reached: bool = false) -> void:
+## Rebuild the notes panel from PrologueState, the single source of truth.
+func show_journal() -> void:
 	hide_modals()
+	var flags: Dictionary = story.flags
+	var entries: Array[Dictionary] = story.notes
+	var hall_complete: bool = story.hall_checks_complete()
+	var machine_recorded := bool(flags.get("machine_baseline_recorded", false))
+	var leak_contained := bool(flags.get("stacks_bucket_moved", false))
+	var page_collected := bool(flags.get("stacks_page_collected", false))
+	var room_compared := bool(flags.get("room_notebook_compared", false))
+	var incident_complete := bool(flags.get("incident_complete", false))
+	var room_prepared: bool = story.room_preparation_complete()
+	var incident_active := bool(flags.get("machine_incident_active", false))
+	var service_gate_open := bool(flags.get("service_gate_open", false))
+	var service_road_end_reached := bool(flags.get("service_road_end_reached", false))
 	var objective := _sync_objective()
 	var discovered: Dictionary = {}
 	for entry in entries:
 		discovered[entry["id"]] = true
 	var hall_count := 0
-	for note_id in HALL_NOTE_IDS:
+	for note_id in story.HALL_NOTE_IDS:
 		if discovered.has(note_id):
 			hall_count += 1
-	var hall_state: Node = get_node("/root/PrologueState")
-	var door_done: bool = bool(hall_state.flags.get("hall_door_latched", false)) or discovered.has(&"archive-door")
-	var window_done: bool = bool(hall_state.flags.get("hall_window_fixed", false)) or discovered.has(&"archive-door")
+	var door_done: bool = bool(story.flags.get("hall_door_latched", false)) or discovered.has(&"archive-door")
+	var window_done: bool = bool(story.flags.get("hall_window_fixed", false)) or discovered.has(&"archive-door")
 	journal_progress.text = "HALL PATROL  %d / 3\n%s  Doors and windows (door %s · window %s)\n%s  Old clock\n%s  Duty keys\n%s  Round book filed\n\nMACHINE ROOM  %s\n\nUPPER STACKS  %d / 2\n%s  Leak caught\n%s  Page recovered\n\nKATH'S ROOM  %s\n\nMACHINE INCIDENT  %s" % [
 		hall_count,
 		"[x]" if discovered.has(&"archive-door") else "[ ]",
@@ -820,7 +830,7 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 		"fixed" if window_done else "loose",
 		"[x]" if discovered.has(&"clock-housing") else "[ ]",
 		"[x]" if discovered.has(&"duty-keys") else "[ ]",
-		"[x]" if hall_state.flags.get("hall_round_filed", false) or discovered.has(&"evening-round-filed") else "[ ]",
+		"[x]" if story.flags.get("hall_round_filed", false) or discovered.has(&"evening-round-filed") else "[ ]",
 		"1 / 1  Reading recorded" if machine_recorded else "0 / 1  Reading pending",
 		int(leak_contained) + int(page_collected),
 		"[x]" if leak_contained else "[ ]",
@@ -830,10 +840,10 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	]
 	if hall_complete and hall_count == 3:
 		journal_progress.text = journal_progress.text.replace("HALL PATROL  3 / 3", "HALL PATROL  3 / 3  COMPLETE")
-	if hall_state.flags.get("hall_round_filed", false):
+	if story.flags.get("hall_round_filed", false):
 		journal_progress.text = journal_progress.text.replace("[x]  Round book filed\n\nMACHINE ROOM", "[x]  Round book filed\nCURRENT TASK PAGE  Blank\nARCHIVE  Checked round available in the book\n\nMACHINE ROOM")
 	var weather_label := "Storm approaching"
-	match hall_state.weather_phase():
+	match story.weather_phase():
 		&"rain":
 			weather_label = "Rain started"
 		&"heavy":
@@ -883,10 +893,9 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 			thread.append("The formula's meaning is still unknown. Keep the page for comparison.")
 		thread_text = "\n".join(thread) + "\n\n"
 	if not objective.is_empty():
-		var story_state: Node = get_node("/root/PrologueState")
-		var clues: PackedStringArray = StoryGuide.discovered_clues(story_state, objective)
+		var clues: PackedStringArray = StoryGuide.discovered_clues(story, objective)
 		var clue_text := "\n• ".join(clues) if not clues.is_empty() else "No related observation recorded yet."
-		var hint_status := "%s  OPTIONAL HINT" % get_node("/root/GameSettings").key_label("request_hint") if get_node("/root/GameSettings").hints_enabled else "OPTIONAL HINTS OFF"
+		var hint_status := "%s  OPTIONAL HINT" % settings.key_label("request_hint") if settings.hints_enabled else "OPTIONAL HINTS OFF"
 		journal_progress.text = "CURRENT OBJECTIVE\n%s\nNEXT RELEVANT AREA  %s\n\nDISCOVERED CLUES\n• %s\n\n%s\n\n" % [objective["title"], objective["next_area"], clue_text, hint_status] + thread_text + journal_progress.text
 	else:
 		journal_progress.text = thread_text + journal_progress.text
@@ -897,7 +906,7 @@ func show_journal(entries: Array, hall_complete: bool, machine_recorded: bool, l
 	var lines := PackedStringArray()
 	for entry in entries:
 		lines.append("• %s\n%s" % [entry["title"], entry["body"]])
-	journal_entries.text = "\n\n".join(lines) if not lines.is_empty() else get_node("/root/GameSettings").control_text("Nothing recorded yet.\n\nLook around the hall and press E to examine an object.")
+	journal_entries.text = "\n\n".join(lines) if not lines.is_empty() else settings.control_text("Nothing recorded yet.\n\nLook around the hall and press E to examine an object.")
 	journal_scroll.scroll_vertical = 0
 	journal_progress_scroll.scroll_vertical = 0
 	journal.visible = true
@@ -939,7 +948,7 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 		shaft_winch_fill.size.x = 700.0 * clampf(tension_level, 0.0, 1.0)
 		shaft_winch_path.text = "Erin is inside. The upper catch stays secured while the winch takes up slack."
 		shaft_winch_status.text = "Rope tension: %s" % ("stable" if tension_level >= 0.995 else "increasing" if tension_level > 0.01 else "not yet checked")
-		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("The brake held. Close this view, then E at the winch to check the load.") if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
+		shaft_winch_instruction.text = settings.control_text("The brake held. Close this view, then E at the winch to check the load.") if tension_level >= 0.995 and not Input.is_action_pressed("move_up") else "Hold ↑ until the indicator settles, then release ↑ to test the brake."
 		return
 	if operation == &"passenger_descent":
 		shaft_winch_measure.text = "Two supporting strands · brake before the lower berth"
@@ -966,7 +975,7 @@ func update_shaft_winch(progress: float, rail_removed: bool, passenger_test: boo
 	if rail_removed:
 		shaft_winch_instruction.text = "Hold ↓ to lower the empty basket."
 	elif progress >= 0.995:
-		shaft_winch_instruction.text = get_node("/root/GameSettings").control_text("Basket at Erin's ledge. E to dock and pass the tools.")
+		shaft_winch_instruction.text = settings.control_text("Basket at Erin's ledge. E to dock and pass the tools.")
 	else:
 		shaft_winch_instruction.text = "Hold ↑ to reel in. Hold ↓ to lower."
 
@@ -991,7 +1000,7 @@ func update_shaft_load_check(checked: Array[StringName], selected: int) -> void:
 	for index in 4:
 		lines.append("%s  %s  %s" % ["›" if index == selected else " ", "✓" if checked.has(ids[index]) else "○", titles[index]])
 	shaft_load_selection.text = "\n".join(lines)
-	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else get_node("/root/GameSettings").control_text("E to compare: ") + details[selected]
+	shaft_load_detail.text = details[selected] if checked.has(ids[selected]) else settings.control_text("E to compare: ") + details[selected]
 
 
 func show_shaft_rigging(step: int) -> void:
@@ -1006,7 +1015,7 @@ func show_engine_maintenance(title: String, body: String, status: String, footer
 	engine_title.text = title
 	engine_body.text = body
 	engine_status.text = status
-	engine_footer.text = get_node("/root/GameSettings").control_text(footer)
+	engine_footer.text = settings.control_text(footer)
 	engine_panel.visible = true
 	hide_prompt()
 
@@ -1014,7 +1023,7 @@ func show_engine_maintenance(title: String, body: String, status: String, footer
 func update_engine_maintenance(status: String, footer: String = "") -> void:
 	engine_status.text = status
 	if footer != "":
-		engine_footer.text = get_node("/root/GameSettings").control_text(footer)
+		engine_footer.text = settings.control_text(footer)
 
 
 func update_shaft_rigging(step: int) -> void:
@@ -1048,7 +1057,7 @@ func play_castle_tilt() -> void:
 	hide_modals()
 	castle_rotation.visible = true
 	var pivot := castle_rotation.get_node("CastleWingPivot") as Node2D
-	var state: Node = get_node("/root/PrologueState")
+	var state: Node = story
 	var start_angle: float = state.castle_pose_angle_radians(&"upright")
 	var target_angle: float = state.castle_pose_angle_radians(&"tilted")
 	pivot.rotation = start_angle
@@ -1168,7 +1177,7 @@ func _page_sketch_stroke(parent: Node2D, points: PackedVector2Array) -> void:
 
 func _label(parent: Control, rect: Rect2, value: String, font_size: int, color: Color) -> Label:
 	var result := Label.new()
-	result.text = get_node("/root/GameSettings").control_text(value)
+	result.text = settings.control_text(value)
 	result.set_meta("control_base_text", value)
 	result.set_meta("control_rendered_text", result.text)
 	result.position = rect.position

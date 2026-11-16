@@ -1,4 +1,4 @@
-extends Node2D
+extends StoryRoom
 ## First official route into the rotating wing: identify the real down direction.
 
 const CONTROL_WALKWAY_SCENE := "res://scenes/castle_control_walkway.tscn"
@@ -6,12 +6,12 @@ const MAINTENANCE_SHAFT_SCENE := "res://scenes/chapter1_maintenance_shaft.tscn"
 const FLOOR_Y := 806.0
 const LADDER_X := 1510.0
 const LADDER_TOP_Y := 475.0
+const LADDER_TOP_REACH := 18.0
 const LADDER_FOOT_X := 1460.0
 const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/water-drop.wav")
+const CHALK := Color(231 / 255.0, 220 / 255.0, 196 / 255.0)  # #e7dcc4
+const CHALK_SHADOW := Color(24 / 255.0, 35 / 255.0, 55 / 255.0)  # #182337
 
-@onready var kath: CharacterBody2D = $Kath
-@onready var wick: Node2D = $Wick
-@onready var ui: CanvasLayer = $HallUI
 @onready var falling_water: Sprite2D = $FallingWater
 @onready var shaft_hatch_art: Sprite2D = $ShaftHatchArt
 @onready var return_hatch: Node2D = $ReturnHatch
@@ -20,13 +20,7 @@ const DRIP_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/wate
 @onready var water_path: Node2D = $WaterPath
 @onready var fallen_furniture: Node2D = $FallenFurniture
 @onready var shaft_ladder: Node2D = $ShaftLadder
-@onready var state: Node = get_node("/root/PrologueState")
-@onready var hotspots: Array[Node] = [return_hatch, chalk_patch, plumb_weight, water_path, fallen_furniture, shaft_ladder]
 
-var mode: StringName = &"roam"
-var dialogue_lines: Array[String] = []
-var dialogue_index := 0
-var pending_dialogue_action: StringName = &""
 var drip_player: AudioStreamPlayer
 var drip_elapsed := 0.0
 var guess_choice := -1
@@ -35,6 +29,7 @@ var chalk_stroke: Line2D
 
 
 func _ready() -> void:
+	hotspots = [return_hatch, chalk_patch, plumb_weight, water_path, fallen_furniture, shaft_ladder]
 	var spawn_tag: StringName = state.take_spawn_tag()
 	kath.floor_y = FLOOR_Y
 	kath.floor_slope = 0.0
@@ -42,43 +37,55 @@ func _ready() -> void:
 	kath.right_limit = 1470.0
 	kath.position = Vector2(390.0, FLOOR_Y)
 	shaft_hatch_art.visible = state.castle_pose == &"inverted"
-	drip_player = AudioStreamPlayer.new()
-	get_node("/root/GameSettings").configure_audio(drip_player, true)
-	drip_player.stream = DRIP_SOUND
-	drip_player.volume_db = -22.0
-	add_child(drip_player)
+	drip_player = _add_audio("DripAudio", DRIP_SOUND, -22.0, true, false)
+	_build_chalk_mark()
+	_refresh_chalk()
+	if not _room_settled():
+		_start_dialogue(["This passage is only safe after the wing has stopped moving. I should return to the fixed tower."])
+	elif spawn_tag == &"from-maintenance-shaft":
+		kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, LADDER_TOP_Y)
+		ui.show_hint("W/S climb down. E at the top returns to the shaft.", 4.0)
+	elif not _flag("inverted_room_intro_seen"):
+		state.flags["inverted_room_intro_seen"] = true
+		_start_dialogue([
+			"The fixed tower's lower duct runs through the ring's service hub. Its low hatch opens onto the turned wing's old ceiling.",
+			"The stone beneath me used to be the ceiling. Before I cross, I need to check which way loose things actually fall."
+		])
+	elif _flag("castle_down_confirmed"):
+		ui.show_hint("Follow the old ceiling toward the maintenance ladder.", 4.0)
+	else:
+		ui.show_hint("Compare the leaking water with the hanging weight.", 4.0)
+
+
+func _build_chalk_mark() -> void:
 	chalk_arrow = Label.new()
 	chalk_arrow.position = Vector2(650, 744)
 	chalk_arrow.rotation = -0.09
 	chalk_arrow.z_index = 1
 	chalk_arrow.add_theme_font_size_override("font_size", 40)
-	chalk_arrow.add_theme_color_override("font_color", Color("e7dcc4"))
-	chalk_arrow.add_theme_color_override("font_shadow_color", Color("182337"))
+	chalk_arrow.add_theme_color_override("font_color", CHALK)
+	chalk_arrow.add_theme_color_override("font_shadow_color", CHALK_SHADOW)
 	chalk_arrow.add_theme_constant_override("shadow_offset_x", 2)
 	chalk_arrow.add_theme_constant_override("shadow_offset_y", 2)
 	add_child(chalk_arrow)
 	chalk_stroke = Line2D.new()
 	chalk_stroke.z_index = 1
 	chalk_stroke.width = 6.0
-	chalk_stroke.default_color = Color("e7dcc4")
+	chalk_stroke.default_color = CHALK
 	chalk_stroke.antialiased = true
 	add_child(chalk_stroke)
-	_refresh_chalk()
-	if state.castle_pose != &"inverted" or not state.flags.get("control_inversion_complete", false):
-		_start_dialogue(["This passage is only safe after the wing has stopped moving. I should return to the fixed tower."])
-	elif spawn_tag == &"from-maintenance-shaft":
-		kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, LADDER_TOP_Y)
-		ui.show_hint("W/S climb down. E at the top returns to the shaft.", 4.0)
-	elif not state.flags.get("inverted_room_intro_seen", false):
-		state.flags["inverted_room_intro_seen"] = true
-		_start_dialogue([
-			"The fixed tower's lower duct runs through the ring's service hub. Its low hatch opens onto the turned wing's old ceiling.",
-			"The stone beneath me used to be the ceiling. Before I cross, I need to check which way loose things actually fall."
-		])
-	elif state.flags.get("castle_down_confirmed", false):
-		ui.show_hint("Follow the old ceiling toward the maintenance ladder.", 4.0)
-	else:
-		ui.show_hint("Compare the leaking water with the hanging weight.", 4.0)
+
+
+func _flag(key: String) -> bool:
+	return bool(state.flags.get(key, false))
+
+
+func _room_settled() -> bool:
+	return state.castle_pose == &"inverted" and _flag("control_inversion_complete")
+
+
+func _at_ladder_top() -> bool:
+	return kath.locomotion_mode == &"climb" and kath.position.y <= LADDER_TOP_Y + LADDER_TOP_REACH
 
 
 func _process(delta: float) -> void:
@@ -93,13 +100,13 @@ func _process(delta: float) -> void:
 	if kath.locomotion_mode == &"climb":
 		if kath.position.y >= FLOOR_Y - 1.0:
 			_leave_ladder_at_foot()
-		elif kath.position.y <= LADDER_TOP_Y + 18.0:
+		elif _at_ladder_top():
 			ui.show_prompt("Shaft Hatch", 1300.0, "ENTER", 550.0)
 			return
 		else:
 			ui.hide_prompt()
 			return
-	var closest: Node = nearest_hotspot(kath.position.x)
+	var closest := nearest_hotspot(kath.position.x)
 	if closest == null:
 		ui.hide_prompt()
 		return
@@ -109,118 +116,58 @@ func _process(delta: float) -> void:
 		action = "RETURN"
 		prompt_y = 475.0
 	elif closest == chalk_patch:
-		action = "MARK GUESS" if not state.flags.get("castle_down_confirmed", false) else "INSPECT"
+		action = "INSPECT" if _flag("castle_down_confirmed") else "MARK GUESS"
 		prompt_y = 475.0
 	elif closest == shaft_ladder:
-		action = "CLIMB" if state.flags.get("room_ladder_checked", false) else "CHECK"
+		action = "CLIMB" if _flag("room_ladder_checked") else "CHECK"
 		prompt_y = 390.0
 	ui.show_prompt(closest.display_name, closest.approach_x, action, prompt_y)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.echo:
-		return
-	if event.is_action_pressed("ui_cancel"):
-		get_viewport().set_input_as_handled()
-		if mode == &"roam":
-			_set_mode(&"paused")
-			ui.show_pause()
+func _room_input(event: InputEvent) -> bool:
+	if mode != &"guess":
+		return false
+	if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
+		guess_choice = 0 if event.is_action_pressed("move_left") else 1
+		_update_guess_bubble()
+		return true
+	if event.is_action_pressed("advance_dialogue"):
+		if guess_choice < 0:
+			_update_guess_bubble()
 		else:
+			state.flags["room_down_guess"] = "old_floor" if guess_choice == 0 else "old_ceiling"
 			_close_overlay()
-		return
-	if mode == &"roam":
-		if event.is_action_pressed("interact"):
-			get_viewport().set_input_as_handled()
-			if kath.locomotion_mode == &"climb":
-				if kath.position.y <= LADDER_TOP_Y + 18.0:
-					_set_mode(&"travel")
-					ui.hide_modals()
-					state.travel_to(MAINTENANCE_SHAFT_SCENE, &"from-inverted-room")
-				return
-			var closest: Node = nearest_hotspot(kath.position.x)
-			if closest != null:
-				_inspect(closest)
-		elif event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"journal")
-			_show_journal()
-	elif mode == &"dialogue" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_advance_dialogue()
-	elif mode == &"guess":
-		if event.is_action_pressed("move_left"):
-			get_viewport().set_input_as_handled()
-			guess_choice = 0
-			_update_guess_bubble()
-		elif event.is_action_pressed("move_right"):
-			get_viewport().set_input_as_handled()
-			guess_choice = 1
-			_update_guess_bubble()
-		elif event.is_action_pressed("advance_dialogue"):
-			get_viewport().set_input_as_handled()
-			if guess_choice < 0:
-				_update_guess_bubble()
-			else:
-				state.flags["room_down_guess"] = "old_floor" if guess_choice == 0 else "old_ceiling"
-				_close_overlay()
-				_refresh_chalk()
-				ui.show_hint("Guess marked. Check the drops and the hanging weight.", 4.0)
-	elif mode == &"journal":
-		if event.is_action_pressed("toggle_journal"):
-			get_viewport().set_input_as_handled()
-			_close_overlay()
-		elif event.is_action_pressed("advance_dialogue") and state.has_note(&"newton-note"):
-			get_viewport().set_input_as_handled()
-			_set_mode(&"paper")
-			ui.show_torn_page(true)
-		elif event.is_action_pressed("move_up"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(-1)
-		elif event.is_action_pressed("move_down"):
-			get_viewport().set_input_as_handled()
-			ui.scroll_journal(1)
-	elif mode == &"paper" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_set_mode(&"journal")
-		_show_journal()
-	elif mode == &"paused" and event.is_action_pressed("advance_dialogue"):
-		get_viewport().set_input_as_handled()
-		_close_overlay()
+			_refresh_chalk()
+			ui.show_hint("Guess marked. Check the drops and the hanging weight.", 4.0)
+		return true
+	return false
 
 
-func nearest_hotspot(feet_x: float) -> Node:
-	if kath.locomotion_mode == &"climb":
-		return null
-	var best: Node = null
-	var best_distance := INF
-	for hotspot in hotspots:
-		if not hotspot.is_reachable(feet_x):
-			continue
-		var distance: float = hotspot.distance_from(feet_x)
-		if distance < best_distance:
-			best = hotspot
-			best_distance = distance
-	return best
+func _interact() -> void:
+	if kath.locomotion_mode != &"climb":
+		super()
+	elif _at_ladder_top():
+		_travel(MAINTENANCE_SHAFT_SCENE, &"from-inverted-room")
+
+
+func _is_hotspot_available(_hotspot: Node) -> bool:
+	return kath.locomotion_mode != &"climb"
 
 
 func _inspect(hotspot: Node) -> void:
 	if hotspot == return_hatch:
-		_set_mode(&"travel")
-		ui.hide_modals()
-		state.travel_to(CONTROL_WALKWAY_SCENE, &"from-inverted-room")
+		_travel(CONTROL_WALKWAY_SCENE, &"from-inverted-room")
 		return
 	if hotspot == chalk_patch:
-		if state.flags.get("castle_down_confirmed", false):
+		if _flag("castle_down_confirmed"):
 			_start_dialogue(["The chalk guess is still beside the two observations. I can see where it held and where it failed."])
 		else:
-			guess_choice = 0 if state.flags.get("room_down_guess", "") == "old_floor" else 1 if state.flags.get("room_down_guess", "") == "old_ceiling" else -1
+			var guess: String = state.flags.get("room_down_guess", "")
+			guess_choice = 0 if guess == "old_floor" else (1 if guess == "old_ceiling" else -1)
 			_set_mode(&"guess")
 			_update_guess_bubble()
 		return
-	if not state.flags.get("castle_down_confirmed", false) \
-		and state.flags.get("room_water_observed", false) \
-		and state.flags.get("room_plumb_observed", false) \
-		and hotspot in [plumb_weight, water_path, shaft_ladder]:
+	if _ready_to_compare() and hotspot in [plumb_weight, water_path, shaft_ladder]:
 		_start_down_comparison()
 		return
 	if hotspot == water_path:
@@ -228,21 +175,21 @@ func _inspect(hotspot: Node) -> void:
 		_start_dialogue([
 			"The pipe broke above me, but its drops keep falling toward this stone ledge.",
 			"The stream lands on what used to be the ceiling. I can trace its path with my eyes."
-		], &"observe_water" if not state.flags.get("room_water_observed", false) else &"")
+		], &"" if _flag("room_water_observed") else &"observe_water")
 	elif hotspot == plumb_weight:
 		wick.react_to(704.0, 600.0)
 		_start_dialogue([
 			"This weight hangs straight below its chain mount, toward the same ledge as the water.",
 			"The mount moved with the room. The hanging direction did not."
-		], &"observe_plumb" if not state.flags.get("room_plumb_observed", false) else &"")
+		], &"" if _flag("room_plumb_observed") else &"observe_plumb")
 	elif hotspot == fallen_furniture:
 		_start_dialogue(["That chair slid from the old floor and stopped on the stone below me. I'll keep clear of the loose furniture."])
 	elif hotspot == shaft_ladder:
-		if state.castle_pose != &"inverted" or not state.flags.get("control_inversion_complete", false):
+		if not _room_settled():
 			_start_dialogue(["The wing must settle before this ladder is safe."])
-		elif not state.flags.get("castle_down_confirmed", false):
+		elif not _flag("castle_down_confirmed"):
 			_start_dialogue(["The ladder runs toward the maintenance shaft, but I need to check this room's safe lower surface first."])
-		elif not state.flags.get("room_ladder_checked", false):
+		elif not _flag("room_ladder_checked"):
 			_start_dialogue([
 				"The ladder bolts are still set in stone. This route leads on toward Erin's maintenance ledge.",
 				"I'll mark this access and check the shaft before I climb with any load."
@@ -250,6 +197,10 @@ func _inspect(hotspot: Node) -> void:
 		else:
 			kath.begin_climbing(LADDER_X, LADDER_TOP_Y, FLOOR_Y, FLOOR_Y - 30.0)
 			ui.show_hint("W/S climb. E at the top enters the maintenance shaft.", 4.0)
+
+
+func _ready_to_compare() -> bool:
+	return _flag("room_water_observed") and _flag("room_plumb_observed") and not _flag("castle_down_confirmed")
 
 
 func _leave_ladder_at_foot() -> void:
@@ -260,15 +211,16 @@ func _leave_ladder_at_foot() -> void:
 
 func _start_down_comparison() -> void:
 	var first_line := "The room turned. Down stayed down."
-	if state.flags.get("room_down_guess", "") == "old_floor":
-		first_line = "My chalk arrow pointed to the old floor. Both observations disagree with it."
-	elif state.flags.get("room_down_guess", "") == "old_ceiling":
-		first_line = "My chalk arrow pointed to the old ceiling. Both observations support it."
+	match state.flags.get("room_down_guess", ""):
+		"old_floor":
+			first_line = "My chalk arrow pointed to the old floor. Both observations disagree with it."
+		"old_ceiling":
+			first_line = "My chalk arrow pointed to the old ceiling. Both observations support it."
 	_start_dialogue([first_line, "Both the drops and the weight point to the old ceiling under my feet. I can cross this ledge toward the maintenance ladder."], &"confirm_down")
 
 
 func _update_guess_bubble() -> void:
-	var selected := "Choose with ← / →" if guess_choice < 0 else "OLD FLOOR ↑" if guess_choice == 0 else "OLD CEILING ↓"
+	var selected := "Choose with ← / →" if guess_choice < 0 else ("OLD FLOOR ↑" if guess_choice == 0 else "OLD CEILING ↓")
 	ui.show_dialogue("Before I check: which way is down?\n%s   ·   Enter mark   ·   Esc cancel" % selected, kath.global_position)
 
 
@@ -282,24 +234,6 @@ func _refresh_chalk() -> void:
 		chalk_stroke.points = PackedVector2Array([Vector2(630, 741), Vector2(630, 790), Vector2(616, 774), Vector2(630, 790), Vector2(644, 774)])
 
 
-func _start_dialogue(lines: Array[String], completion_action: StringName = &"") -> void:
-	dialogue_lines = lines
-	dialogue_index = 0
-	pending_dialogue_action = completion_action
-	_set_mode(&"dialogue")
-	ui.show_dialogue(dialogue_lines[dialogue_index], kath.global_position)
-
-
-func _advance_dialogue() -> void:
-	dialogue_index += 1
-	if dialogue_index < dialogue_lines.size():
-		ui.show_dialogue(dialogue_lines[dialogue_index], kath.global_position)
-		return
-	var action := pending_dialogue_action
-	_close_overlay()
-	_complete_dialogue_action(action)
-
-
 func _complete_dialogue_action(action: StringName) -> void:
 	match action:
 		&"observe_water":
@@ -311,44 +245,15 @@ func _complete_dialogue_action(action: StringName) -> void:
 		&"confirm_down":
 			state.flags["castle_down_confirmed"] = true
 			var comparison := " No chalk guess was marked before the test."
-			if state.flags.get("room_down_guess", "") == "old_floor":
-				comparison = " My earlier chalk guess pointed the other way; the observations corrected it."
-			elif state.flags.get("room_down_guess", "") == "old_ceiling":
-				comparison = " My chalk guess matched both observations."
+			match state.flags.get("room_down_guess", ""):
+				"old_floor":
+					comparison = " My earlier chalk guess pointed the other way; the observations corrected it."
+				"old_ceiling":
+					comparison = " My chalk guess matched both observations."
 			state.add_note_once(&"castle-down-confirmed", "The lower surface", "The wing rotated, but the water and hanging weight still point in the same down direction. The old ceiling is now the safe lower ledge toward the maintenance ladder." + comparison)
 			ui.show_hint("The lower ledge leads toward the maintenance ladder.", 4.0)
 		&"mark_ladder":
 			state.flags["room_ladder_checked"] = true
 			state.add_note_once(&"castle-shaft-access", "Maintenance shaft access", "A wall ladder at the far end of the turned room leads toward Erin's maintenance ledge. Its stone anchors are visible; the shaft beyond still needs inspection.")
-	if action in [&"observe_water", &"observe_plumb"] \
-		and state.flags.get("room_water_observed", false) \
-		and state.flags.get("room_plumb_observed", false) \
-		and not state.flags.get("castle_down_confirmed", false):
+	if action in [&"observe_water", &"observe_plumb"] and _ready_to_compare():
 		_start_down_comparison()
-
-
-func _show_journal() -> void:
-	ui.show_journal(
-		state.notes,
-		state.hall_checks_complete(),
-		bool(state.flags.get("machine_baseline_recorded", false)),
-		bool(state.flags.get("stacks_bucket_moved", false)),
-		bool(state.flags.get("stacks_page_collected", false)),
-		bool(state.flags.get("room_notebook_compared", false)),
-		bool(state.flags.get("incident_complete", false)),
-		state.room_preparation_complete(),
-		bool(state.flags.get("machine_incident_active", false)),
-		bool(state.flags.get("service_gate_open", false)),
-		bool(state.flags.get("service_road_end_reached", false))
-	)
-
-
-func _close_overlay() -> void:
-	ui.hide_modals()
-	pending_dialogue_action = &""
-	_set_mode(&"roam")
-
-
-func _set_mode(value: StringName) -> void:
-	mode = value
-	kath.controls_enabled = mode == &"roam"
