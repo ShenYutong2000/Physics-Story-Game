@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grand Archive Hall — art review</title>
+  <style>
+    :root { color-scheme: dark; font-family: Georgia, serif; }
+    body { margin: 0; background: #13192d; color: #f9e9c4; }
+    header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 20px; background: #1b2541; }
+    h1 { font-size: 22px; margin: 0 20px 0 0; }
+    select, button { font: 17px Georgia, serif; color: #f9e9c4; background: #26385d; border: 1px solid #b68b4f; border-radius: 5px; padding: 7px 12px; }
+    button[aria-pressed="true"] { background: #6b493e; border-color: #f2c579; }
+    .screen-wrap { overflow: auto; padding: 16px; }
+    canvas { display: block; max-width: none; box-shadow: 0 8px 35px #0009; border: 1px solid #be955e; }
+    p { margin: 0 20px 20px; color: #cbd5ea; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Grand Archive Hall · Art Review</h1>
+    <label>Asset <select id="asset">
+      <option value="hall">Starting hall · before rain</option>
+      <option value="door">Door latch</option>
+      <option value="window">Window catch</option>
+      <option value="clock">Hall clock</option>
+      <option value="keys">Duty keys</option>
+      <option value="book">Round book</option>
+      <option value="emergency">Emergency page</option>
+      <option value="plaque">Old plaque</option>
+      <option value="cover">Clock inner cover</option>
+      <option value="catalogue">Catalogue card</option>
+    </select></label>
+    <button id="before" aria-pressed="true">Before</button>
+    <button id="after" aria-pressed="false">After</button>
+    <button id="size">1672 × 941</button>
+  </header>
+  <div class="screen-wrap"><canvas id="screen" width="1672" height="941"></canvas></div>
+  <p>Review only. English lettering is a live overlay; in-game text will be rendered by Godot. Switch size to inspect the 1280 × 720 scale.</p>
+  <script>
+    const cvs = document.getElementById('screen');
+    const ctx = cvs.getContext('2d');
+    const select = document.getElementById('asset');
+    const files = {
+      hall: ['archive-prestorm-city.png', '../mid/01-library-hall-mid.png', '../foregrounds/01-library-hall-front.png'],
+      door: ['door-latch-states.png', 887, 887], window: ['window-catch-states.png', 768, 1024],
+      clock: ['clock-winding-detail-states.png', 836, 941], keys: ['duty-keys-states.png', 887, 887],
+      book: ['round-book-page-states.png', 836, 941], emergency: ['round-book-emergency-page.png', 1672, 941],
+      plaque: ['old-plaque-states.png', 887, 887], cover: ['clock-inner-cover-states.png', 887, 887],
+      catalogue: ['catalogue-card-states.png', 836, 941]
+    };
+    const labels = {
+      hall: ['PRE-STORM EVENING', 'The windows are dry. Kath begins her evening round.'],
+      door: ['DOOR LATCH', 'The bolt has slipped short of its keeper.', 'The bolt is set. I still need to check the window.'],
+      window: ['EAST WINDOW', 'The loose catch lets the frame knock in the wind.', "The frame's quiet now. The wind isn't."],
+      clock: ['HALL CLOCK', 'The pendulum is slowing. The winding crank is ready.', "Steady again. I'll write down the hour."],
+      keys: ['DUTY KEYS', 'The east key hangs on a temporary nail.', 'The east key hangs on the EAST SERVICE WAY hook.'],
+      book: ['EVENING ROUND', 'Three boxes: doors and windows, clock, duty keys.', 'ROUND FILED. The current task page is blank.'],
+      emergency: ['EMERGENCY PROCEDURE', 'If the upper needle crosses the red line, pull lever 2, then lever 4. Check the needle again.'],
+      plaque: ['OLD NAMEPLATE', 'The old brass plate is dusty.', 'Grand Archive · Public Library'],
+      cover: ['CLOCK INNER COVER', 'The inner cover is closed.', "These marks aren't hours. What were they checking?"],
+      catalogue: ['CATALOGUE CARD', 'PUBLIC LIBRARY — LOCAL HISTORY', 'GRAND ARCHIVE — OBSERVATIONS']
+    };
+    const loaded = {};
+    const load = src => loaded[src] || (loaded[src] = new Promise((resolve, reject) => {
+      const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = src;
+    }));
+    let state = 0, compact = false;
+    function fit(img, sx, sy, sw, sh, box) {
+      const scale = Math.min(box[2] / sw, box[3] / sh);
+      const dw = sw * scale, dh = sh * scale;
+      ctx.drawImage(img, sx, sy, sw, sh, box[0] + (box[2] - dw) / 2, box[1] + (box[3] - dh) / 2, dw, dh);
+    }
+    function wrap(s, x, y, max, line) {
+      let words = s.split(' '), row = '';
+      for (const word of words) {
+        const next = row ? row + ' ' + word : word;
+        if (ctx.measureText(next).width > max && row) { ctx.fillText(row, x, y); y += line; row = word; }
+        else row = next;
+      }
+      if (row) ctx.fillText(row, x, y);
+    }
+    async function draw() {
+      const id = select.value, entry = files[id];
+      ctx.fillStyle = '#151b30'; ctx.fillRect(0, 0, 1672, 941);
+      if (id === 'hall') {
+        for (const src of entry) ctx.drawImage(await load(src), 0, 0, 1672, 941);
+      } else {
+        const img = await load(entry[0]);
+        const sx = id === 'emergency' ? 0 : state ? (entry[3] || entry[1]) : 0;
+        fit(img, sx, 0, entry[1], entry[2], [150, 38, 1372, 750]);
+      }
+      if (id === 'book' && !state) {
+        ctx.fillStyle = '#39344d'; ctx.textBaseline = 'top';
+        ctx.font = 'bold 32px Georgia'; ctx.fillText('EVENING ROUND', 665, 108);
+        ctx.font = '28px Georgia';
+        ctx.fillText('Check doors and windows', 680, 218);
+        ctx.fillText('before the storm', 680, 252);
+        ctx.fillText('Wind the hall clock', 680, 358);
+        ctx.fillText('Check the duty keys', 680, 498);
+      }
+      if (id === 'emergency') {
+        ctx.fillStyle = '#39344d'; ctx.textBaseline = 'top';
+        ctx.font = 'bold 40px Georgia'; ctx.fillText('EMERGENCY PROCEDURE', 495, 183);
+        ctx.font = '37px Georgia';
+        ctx.fillText('If the upper needle crosses the red line,', 385, 338);
+        ctx.fillText('pull lever 2, then lever 4.', 385, 385);
+        ctx.fillText('Check the needle again.', 385, 563);
+      }
+      const [title, beforeDetail, afterDetail] = labels[id];
+      const detail = state && afterDetail ? afterDetail : beforeDetail;
+      ctx.fillStyle = 'rgba(15, 25, 47, 0.92)'; ctx.fillRect(0, 791, 1672, 150);
+      ctx.strokeStyle = '#b99057'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 791); ctx.lineTo(1672, 791); ctx.stroke();
+      ctx.fillStyle = '#f8d997'; ctx.font = 'bold 28px Georgia'; ctx.fillText(title + (id === 'hall' || id === 'emergency' ? '' : state ? ' · AFTER' : ' · BEFORE'), 55, 839);
+      ctx.fillStyle = '#fff4da'; ctx.font = '27px Georgia'; wrap(detail, 55, 888, 1550, 33);
+    }
+    select.onchange = draw;
+    document.getElementById('before').onclick = () => setState(0);
+    document.getElementById('after').onclick = () => setState(1);
+    function setState(n) { state = n; document.getElementById('before').setAttribute('aria-pressed', n === 0); document.getElementById('after').setAttribute('aria-pressed', n === 1); draw(); }
+    document.getElementById('size').onclick = () => {
+      compact = !compact; cvs.style.width = compact ? '1280px' : '1672px'; cvs.style.height = compact ? '720px' : '941px';
+      document.getElementById('size').textContent = compact ? '1280 × 720' : '1672 × 941';
+    };
+    draw().catch(err => { document.querySelector('p').textContent = 'Could not load an image: ' + err; });
+  </script>
+</body>
+</html>

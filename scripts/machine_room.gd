@@ -19,6 +19,7 @@ const DAWN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-d
 @onready var service_road_exit: Node2D = $ServiceRoadExit
 @onready var stop_hotspot: Node2D = $StopHotspot
 @onready var far: Sprite2D = $Far
+@onready var rain_streaks: Node2D = $RainStreaks
 @onready var needle: Sprite2D = $Gauge/Needle
 @onready var lever_two: AnimatedSprite2D = $LeverTwo
 @onready var lever_four: AnimatedSprite2D = $LeverFour
@@ -44,11 +45,17 @@ func _ready() -> void:
 	var spawn_tag: StringName = state.take_spawn_tag()
 	if state.flags.get("dawn_reached", false):
 		far.texture = DAWN_CITY
+		far.modulate = Color.WHITE
+		rain_streaks.set_strength(0.0)
+	else:
+		state.flags["hall_rain_started"] = true
+		far.modulate = Color(0.76, 0.82, 0.94) if state.flags.get("hall_rain_heavy", false) else Color.WHITE
+		rain_streaks.set_strength(1.0 if state.flags.get("hall_rain_heavy", false) else 0.25)
 	if spawn_tag == &"from-hall":
 		kath.position.x = 250.0
 		if not state.flags.get("machine_intro_seen", false):
 			state.flags["machine_intro_seen"] = true
-			_start_dialogue(["No warning lamp. The upper needle is still below the red sector.", "I should compare it with yesterday's mark before I leave."])
+			_start_dialogue(["Rain is tapping the vents. No warning lamp; the upper needle is still below red.", "I should compare it with yesterday's mark before I leave."])
 	elif spawn_tag == &"from-service-road":
 		kath.position.x = 1510.0
 	else:
@@ -381,4 +388,6 @@ func _play_incident_sound(stream: AudioStream) -> void:
 
 func _on_exit_requested(destination_scene: String, spawn_tag: String) -> void:
 	state.flags["returned_from_machine_room"] = true
+	if destination_scene == HALL_SCENE and state.flags.get("machine_baseline_recorded", false) and not state.flags.get("dawn_reached", false):
+		state.flags["hall_rain_heavy"] = true
 	state.travel_to(destination_scene if not destination_scene.is_empty() else HALL_SCENE, StringName(spawn_tag))

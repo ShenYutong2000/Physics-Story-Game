@@ -25,6 +25,7 @@ const COAT_REACH := 55.0
 @onready var wick: Node2D = $Wick
 @onready var ui: CanvasLayer = $HallUI
 @onready var far: Sprite2D = $Far
+@onready var rain_streaks: Node2D = $RainStreaks
 @onready var night_tint: CanvasModulate = $NightTint
 @onready var lamp: AnimatedSprite2D = $DeskLamp
 @onready var satchel: AnimatedSprite2D = $Satchel
@@ -44,6 +45,8 @@ func _ready() -> void:
 	if spawn_tag == &"from-upper-stacks":
 		kath.position.x = 210.0
 	far.texture = DAWN_CITY if state.flags.get("dawn_reached", false) else NIGHT_CITY
+	far.modulate = Color(0.76, 0.82, 0.94) if state.flags.get("hall_rain_heavy", false) and not state.flags.get("dawn_reached", false) else Color.WHITE
+	rain_streaks.set_strength(0.0 if state.flags.get("dawn_reached", false) else (1.0 if state.flags.get("hall_rain_heavy", false) else 0.25))
 	if state.flags.get("room_lamp_on", false):
 		lamp.frame = 1
 	if state.flags.get("room_bag_packed", false):
@@ -205,6 +208,8 @@ func _interact() -> void:
 		state.flags["room_rested"] = true
 		state.flags["dawn_reached"] = true
 		far.texture = DAWN_CITY
+		far.modulate = Color.WHITE
+		rain_streaks.set_strength(0.0)
 		var dawn_tween := create_tween()
 		dawn_tween.tween_property(night_tint, "color", Color.WHITE, 1.8)
 		_play_effect(PAGE_SOUND)

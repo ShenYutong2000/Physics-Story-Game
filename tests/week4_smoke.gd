@@ -37,6 +37,7 @@ func _run() -> void:
 	hall._close_dialogue(false)
 	for note_id in state.HALL_NOTE_IDS:
 		state.add_note_once(note_id, String(note_id), "Observation")
+	state.flags["hall_round_filed"] = true
 	state.flags["machine_baseline_recorded"] = true
 	state.add_note_once(&"machine-reading", "Machine-room reading", "The needle is one division above its previous mark.")
 	hall.kath.position.x = 1530.0

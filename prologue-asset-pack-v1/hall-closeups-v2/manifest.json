@@ -1,0 +1,17 @@
+{
+  "base_canvas": [1672, 941],
+  "review_sizes": [[1672, 941], [1280, 720]],
+  "far_prestorm": "archive-prestorm-city.png",
+  "main_state_sheets": {
+    "door": {"file": "door-latch-states.png", "left": [0, 0, 887, 887], "right": [887, 0, 887, 887], "moving_layer": "layer-door-bolt.png"},
+    "window": {"file": "window-catch-states.png", "left": [0, 0, 768, 1024], "right": [768, 0, 768, 1024], "moving_layer": "layer-window-catch.png"},
+    "clock": {"file": "clock-winding-detail-states.png", "left": [0, 0, 836, 941], "right": [836, 0, 836, 941], "full_view": "hall-clock-states.png", "moving_layers": ["layer-clock-crank.png", "layer-clock-pendulum.png"]},
+    "keys": {"file": "duty-keys-states.png", "left": [0, 0, 887, 887], "right": [887, 0, 887, 887], "moving_layer": "layer-east-key.png"},
+    "round_book": {"file": "round-book-page-states.png", "left": [0, 0, 836, 941], "right": [836, 0, 836, 941], "full_book": "round-book-states.png", "emergency": "round-book-emergency-page.png", "moving_layer": "layer-round-stamp.png"}
+  },
+  "optional_state_sheets": {
+    "plaque": {"file": "old-plaque-states.png", "left": [0, 0, 887, 887], "right": [887, 0, 887, 887]},
+    "clock_cover": {"file": "clock-inner-cover-states.png", "left": [0, 0, 887, 887], "right": [887, 0, 887, 887]},
+    "catalogue": {"file": "catalogue-card-states.png", "left": [0, 0, 836, 941], "right": [836, 0, 836, 941]}
+  }
+}

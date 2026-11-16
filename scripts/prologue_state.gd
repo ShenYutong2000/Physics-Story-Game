@@ -1,7 +1,7 @@
 extends Node
 ## Story state, single-slot checkpoints, and first-play timing.
 
-const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"maintenance-sheet"]
+const HALL_NOTE_IDS := [&"archive-door", &"clock-housing", &"duty-keys"]
 const UPPER_STACKS_NOTE_IDS := [&"leak-observation", &"newton-note"]
 const ROOM_NOTE_IDS := [&"notebook-match", &"castle-alarm"]
 const CASTLE_POSE_ORDER := [&"upright", &"tilted", &"inverted", &"restored"]
@@ -11,7 +11,7 @@ const CASTLE_POSE_ANGLES_DEGREES := {
 	&"inverted": 180.0,
 	&"restored": 0.0,
 }
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const SAVE_PATH := "user://footnotes-chapter1-save.json"
 const STORY_SCENES := [
 	"res://scenes/library_hall.tscn",
@@ -296,10 +296,25 @@ func has_note(note_id: StringName) -> bool:
 
 
 func hall_checks_complete() -> bool:
+	# A patrol from the earlier build may already have reached the machine room.
+	if flags.get("machine_baseline_recorded", false):
+		return true
+	if not flags.get("hall_round_filed", false):
+		return false
 	for note_id in HALL_NOTE_IDS:
 		if not has_note(note_id):
 			return false
 	return true
+
+
+func weather_phase() -> StringName:
+	if flags.get("dawn_reached", false):
+		return &"dawn"
+	if flags.get("hall_rain_heavy", false):
+		return &"heavy"
+	if flags.get("hall_rain_started", false):
+		return &"rain"
+	return &"prestorm"
 
 
 func upper_stacks_unlocked() -> bool:

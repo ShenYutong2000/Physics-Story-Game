@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/upper_stacks.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="2_far"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/effects/rain-drop.png" id="10_drop"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/leak-bucket.png" id="11_bucket"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/rolling-ladder.png" id="12_ladder"]
+[ext_resource type="Script" path="res://scripts/archive_rain.gd" id="13_rain"]
 [sub_resource type="AtlasTexture" id="AtlasTexture_drop"]
 atlas = ExtResource("10_drop")
 region = Rect2(760, 320, 160, 300)
@@ -23,6 +24,10 @@ script = ExtResource("1_script")
 z_index = -20
 texture = ExtResource("2_far")
 centered = false
+
+[node name="RainStreaks" type="Node2D" parent="."]
+z_index = -15
+script = ExtResource("13_rain")
 
 [node name="Mid" type="Sprite2D" parent="."]
 z_index = -10

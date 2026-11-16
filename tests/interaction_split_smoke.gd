@@ -29,14 +29,16 @@ func _run() -> void:
 		_fail("F activated the inspect-only clock.")
 		return
 	hall._unhandled_input(_key(KEY_E))
-	if hall.mode != &"dialogue":
-		_fail("E did not inspect the clock.")
+	if hall.mode != &"focus":
+		_fail("E did not focus the clock.")
 		return
-	hall._close_dialogue(false)
+	hall._unhandled_input(_key(KEY_ESCAPE))
+	await create_timer(0.2).timeout
 
 	# An available doorway uses the same E key to enter.
-	for note_id in [&"archive-door", &"clock-housing", &"maintenance-sheet"]:
+	for note_id in state.HALL_NOTE_IDS:
 		state.add_note_once(note_id, String(note_id), "Observation")
+	state.flags["hall_round_filed"] = true
 	hall.kath.position.x = hall.archive_door.approach_x
 	hall._process(0.0)
 	if hall.ui.prompt.text.find("E  ENTER") == -1 or hall.ui.prompt.text.find("F  ") != -1:

@@ -1,16 +1,24 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
-[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/far/archive-night-city.png" id="1_far"]
+[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/hall-closeups-v2/archive-prestorm-city.png" id="1_far"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/mid/01-library-hall-mid.png" id="2_mid"]
 [ext_resource type="PackedScene" path="res://scenes/kath.tscn" id="3_kath"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/foregrounds/01-library-hall-front.png" id="4_front"]
 [ext_resource type="PackedScene" path="res://scenes/hall_hotspot.tscn" id="5_hotspot"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/archive-door.png" id="6_door"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/clock-housing.png" id="7_clock"]
-[ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/props/maintenance-sheet.png" id="8_sheet"]
+[ext_resource type="Script" path="res://scripts/hall_round_book_world.gd" id="8_sheet"]
 [ext_resource type="PackedScene" path="res://scenes/wick.tscn" id="9_wick"]
 [ext_resource type="PackedScene" path="res://scenes/hall_ui.tscn" id="10_ui"]
+[ext_resource type="PackedScene" path="res://scenes/hall_prop_focus.tscn" id="11_focus"]
+[ext_resource type="Script" path="res://scripts/hall_latch_visual.gd" id="12_latch_visual"]
+[ext_resource type="Script" path="res://scripts/hall_clock_motion.gd" id="13_clock_motion"]
+[ext_resource type="Script" path="res://scripts/hall_key_rack.gd" id="14_key_rack"]
+[ext_resource type="PackedScene" path="res://scenes/hall_round_book.tscn" id="15_round_book"]
+[ext_resource type="Script" path="res://scripts/hall_catalogue_card_world.gd" id="16_catalogue"]
+[ext_resource type="Script" path="res://scripts/hall_optional_detail_world.gd" id="17_optional_detail"]
+[ext_resource type="Script" path="res://scripts/archive_rain.gd" id="18_rain"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
@@ -19,6 +27,10 @@ script = ExtResource("0_hall")
 z_index = -20
 texture = ExtResource("1_far")
 centered = false
+
+[node name="RainStreaks" type="Node2D" parent="."]
+z_index = -15
+script = ExtResource("18_rain")
 
 [node name="Mid" type="Sprite2D" parent="."]
 z_index = -10
@@ -41,6 +53,42 @@ position = Vector2(0, -217)
 scale = Vector2(0.321, 0.321)
 texture = ExtResource("6_door")
 
+[node name="DoorBoltWorld" type="Node2D" parent="."]
+position = Vector2(127, 519)
+z_index = -4
+script = ExtResource("12_latch_visual")
+
+[node name="OldPlaque" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(216, 740)
+interaction_id = &"old-plaque"
+display_name = "Old nameplate"
+approach_x = 216.0
+reach_radius = 75.0
+discovery_radius = 150.0
+content_key = &"plaque"
+discovery_anchor = Vector2(160, 570)
+
+[node name="OldPlaqueVisual" type="Sprite2D" parent="."]
+position = Vector2(68, 578)
+scale = Vector2(0.25, 0.25)
+z_index = -3
+script = ExtResource("17_optional_detail")
+
+[node name="HighWindow" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(476, 714)
+z_index = -5
+interaction_id = &"high-window"
+display_name = "High window"
+approach_x = 476.0
+reach_radius = 140.0
+content_key = &"window"
+
+[node name="WindowCatchWorld" type="Node2D" parent="."]
+position = Vector2(602, 501)
+z_index = -4
+script = ExtResource("12_latch_visual")
+kind = 1
+
 [node name="OldClock" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(967, 739)
 z_index = -5
@@ -55,19 +103,71 @@ position = Vector2(0, -183)
 scale = Vector2(0.258, 0.258)
 texture = ExtResource("7_clock")
 
+[node name="ClockMotion" type="Node2D" parent="OldClock"]
+position = Vector2(0, -236)
+script = ExtResource("13_clock_motion")
+
+[node name="ClockInnerCover" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1054, 739)
+interaction_id = &"clock-inner-cover"
+display_name = "Clock inner cover"
+approach_x = 1054.0
+reach_radius = 80.0
+discovery_radius = 145.0
+content_key = &"clock-cover"
+discovery_anchor = Vector2(971, 555)
+
+[node name="ClockCoverVisual" type="Sprite2D" parent="."]
+position = Vector2(967, 686)
+scale = Vector2(0.12, 0.12)
+z_index = -3
+script = ExtResource("17_optional_detail")
+kind = 1
+
+[node name="CatalogueCard" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1114, 704)
+interaction_id = &"catalogue-card"
+display_name = "Catalogue card"
+approach_x = 1114.0
+reach_radius = 72.0
+discovery_radius = 145.0
+content_key = &"catalogue"
+discovery_anchor = Vector2(1114, 610)
+
+[node name="CardVisual" type="Sprite2D" parent="CatalogueCard"]
+position = Vector2(0, -106)
+scale = Vector2(0.16, 0.16)
+z_index = -4
+script = ExtResource("16_catalogue")
+
 [node name="MaintenanceSheet" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(1212, 575)
 z_index = -5
 interaction_id = &"maintenance-sheet"
-display_name = "Maintenance sheet"
+display_name = "Round book"
 approach_x = 1212.0
 reach_radius = 145.0
 content_key = &"sheet"
 
 [node name="Sprite2D" parent="MaintenanceSheet" index="0"]
-position = Vector2(0, -35)
-scale = Vector2(0.071, 0.071)
-texture = ExtResource("8_sheet")
+position = Vector2(0, -18)
+scale = Vector2(0.18, 0.18)
+script = ExtResource("8_sheet")
+
+[node name="DutyKeys" parent="." instance=ExtResource("5_hotspot")]
+position = Vector2(1370, 700)
+z_index = -5
+interaction_id = &"duty-keys"
+display_name = "Duty keys"
+approach_x = 1370.0
+reach_radius = 115.0
+content_key = &"keys"
+discovery_anchor = Vector2(1370, 506)
+
+[node name="RackVisual" type="Sprite2D" parent="DutyKeys"]
+position = Vector2(0, -157)
+scale = Vector2(0.19, 0.19)
+script = ExtResource("14_key_rack")
 
 [node name="UpperStacksEntry" parent="." instance=ExtResource("5_hotspot")]
 position = Vector2(1530, 778)
@@ -91,3 +191,7 @@ texture = ExtResource("4_front")
 centered = false
 
 [node name="HallUI" parent="." instance=ExtResource("10_ui")]
+
+[node name="HallPropFocus" parent="." instance=ExtResource("11_focus")]
+
+[node name="HallRoundBook" parent="." instance=ExtResource("15_round_book")]
