@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bp5sp1wndxkbi"
+
+[deps]
+
+files=["res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.section.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.speaker.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.english.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.origin.translation"]
+
+source_file="res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.csv"
+dest_files=["res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.section.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.speaker.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.english.translation", "res://docs/prologue/Kath_Prologue_Dialogue_Lines_v1_3.origin.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

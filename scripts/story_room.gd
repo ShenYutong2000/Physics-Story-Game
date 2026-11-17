@@ -12,6 +12,8 @@ extends Node2D
 ##   _complete_dialogue_action(id) follow-up after a finished dialogue
 ##   _close_saved_page()           leaving the torn page view
 
+const Lines = preload("res://scripts/prologue_lines.gd")
+
 const PENCIL_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/pencil-write.wav")
 const PRESTORM_CITY: Texture2D = preload("res://prologue-asset-pack-v1/hall-closeups-v2/archive-prestorm-city.png")
 const RAIN_CITY: Texture2D = preload("res://prologue-asset-pack-v1/far/archive-night-city.png")
@@ -86,6 +88,17 @@ func _start_dialogue(lines: Array[String], completion_action: StringName = &"", 
 func _start_note_dialogue(note_id: StringName, title: String, body: String, lines: Array[String]) -> void:
 	_start_dialogue(lines)
 	pending_note = {"id": note_id, "title": title, "body": body}
+
+
+## Kath says one line by Dialogue ID as a caption that never blocks the player.
+## With `once`, a line already heard in this journey stays silent. Returns true if shown.
+func _say(line_id: String, once: bool = true) -> bool:
+	var key := "line_" + line_id
+	if once and bool(state.flags.get(key, false)):
+		return false
+	state.flags[key] = true
+	ui.show_caption(Lines.text(line_id))
+	return true
 
 
 func _show_dialogue_line() -> void:

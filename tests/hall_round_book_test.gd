@@ -29,7 +29,7 @@ func _run() -> void:
 	if not await _capture("interactive-book-emergency"):
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode != &"roam" or state.flags.get("hall_round_filed", false):
 		_fail("Closing the early emergency page filed the round.")
 		return
@@ -53,7 +53,7 @@ func _run() -> void:
 		_fail("The stamp animation did not start.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if state.flags.get("hall_round_filed", false) or state.has_note(&"evening-round-filed"):
 		_fail("Esc during the stamp committed an unfinished operation.")
 		return
@@ -83,7 +83,7 @@ func _run() -> void:
 		_fail("The red tab was lost after filing.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode != &"dialogue" or not hall.completion_played:
 		_fail("Filing did not trigger the single hall completion response.")
 		return

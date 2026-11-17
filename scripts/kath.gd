@@ -4,11 +4,14 @@ extends CharacterBody2D
 const IDLE_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-idle.tres")
 const WALK_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-walk.tres")
 const CLIMB_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-climb.tres")
+const INTERACT_FRAMES: SpriteFrames = preload("res://prologue-asset-pack-v1/godot/frames/kath-interact.tres")
 # Canonical rendered height for Kath in every scene that instances scenes/kath.tscn.
 const DISPLAY_HEIGHT: float = 232.0 * 1.3
 const IDLE_SOURCE_HEIGHT: float = 771.0
 const WALK_SOURCE_HEIGHT: float = 484.0
 const CLIMB_SOURCE_HEIGHT: float = 753.0
+const INTERACT_SOURCE_HEIGHT: float = 766.0
+const REACH_FRAME := 1
 
 @export var walk_speed: float = 299.0
 @export var acceleration: float = 1170.0
@@ -26,6 +29,8 @@ const CLIMB_SOURCE_HEIGHT: float = 753.0
 
 var is_walking: bool = false
 var controls_enabled: bool = true
+## True while Kath holds her hand out to something she is operating.
+var reaching: bool = false
 var locomotion_mode: StringName = &"walk"
 var push_min_x: float = 0.0
 var push_max_x: float = 0.0
@@ -43,7 +48,8 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not controls_enabled:
 		velocity = Vector2.ZERO
-		_set_animation(false)
+		if not reaching:
+			_set_animation(false)
 		return
 	if locomotion_mode == &"push":
 		var push_direction: float = Input.get_axis("move_left", "move_right")
@@ -110,6 +116,32 @@ func stop_climbing() -> void:
 	locomotion_mode = &"walk"
 	position = Vector2(position.x, floor_height_at(position.x))
 	velocity = Vector2.ZERO
+	_set_animation(false)
+
+
+## Turn to a prop and hold a hand out to it while a close-up is open.
+## With `stand_x` she first takes a short step to that spot beside the prop.
+func reach_toward(world_x: float, stand_x: float = -1.0) -> void:
+	if locomotion_mode != &"walk":
+		return
+	reaching = true
+	is_walking = false
+	velocity = Vector2.ZERO
+	if stand_x >= 0.0:
+		create_tween().tween_property(self, "position:x", stand_x, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	animated_sprite.flip_h = world_x < (stand_x if stand_x >= 0.0 else position.x)
+	animated_sprite.speed_scale = 1.0
+	animated_sprite.sprite_frames = INTERACT_FRAMES
+	animated_sprite.scale = Vector2.ONE * (DISPLAY_HEIGHT / INTERACT_SOURCE_HEIGHT)
+	animated_sprite.offset = Vector2(0.0, -INTERACT_SOURCE_HEIGHT / 2.0)
+	animated_sprite.stop()
+	animated_sprite.frame = REACH_FRAME
+
+
+func stop_reaching() -> void:
+	if not reaching:
+		return
+	reaching = false
 	_set_animation(false)
 
 

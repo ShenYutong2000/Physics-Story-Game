@@ -28,7 +28,7 @@ func _run() -> void:
 		_fail("E did not focus the clock.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 
 	# An available doorway uses the same E key to enter.
 	for note_id in state.HALL_NOTE_IDS:

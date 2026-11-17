@@ -11,6 +11,11 @@ const CLICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/lev
 const WINDOW_RATTLE_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/step-wood.wav")
 const CLOCK_TICK_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/clock-tick.wav")
 const PAGE_TURN_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/page-turn.wav")
+const WIND_SOUND: AudioStream = preload("res://prologue-asset-pack-v1/audio/amb-road.wav")
+const WIND_DB := -23.0
+## After a hands-on task and Kath's line, an idle close-up eases back by itself.
+const AUTORETURN_SECONDS := 10.0
+const FIRST_SLIDE_TIP := "DRAG   ·   OR HOLD  E"
 const CLOSEUPS := "res://prologue-asset-pack-v1/hall-closeups-v2/"
 
 const INSPECTIONS := {
@@ -27,20 +32,35 @@ const INSPECTIONS := {
 ## Close-up views. "subject"/"part" pair views the player can switch between
 ## with Left/Right (door bolt <-> nameplate, clock handle <-> inner cover).
 const FOCUS_VIEWS := {
-	&"door": {"subject": &"door", "part": 0, "view": {
+	&"door": {"subject": &"door", "part": 0, "zoom": 2.2, "stand_x": 215.0, "view": {
 		"title": "ARCHIVE DOOR · LATCH",
 		"texture": preload(CLOSEUPS + "door-latch-states.png"),
 		"before_region": Rect2(0, 0, 887, 887),
 		"after_region": Rect2(887, 0, 887, 887),
 		"source": Vector2(106, 521),
 		"before_text": "The bolt has slipped short of its keeper.",
-		"after_text": "The bolt now sits flush in its keeper.",
+		"after_text": "Door latched.",
 		"verb": "SLIDE BOLT",
-		"control_override": "E  SLIDE BOLT  ·  →  NAMEPLATE  ·  ESC  RETURN",
+		"control_override": "DRAG  OR  HOLD E  ·  SLIDE BOLT   ·   →  NAMEPLATE   ·   ESC  RETURN",
+		# Hands-on: drag the bolt (or hold E) until it seats in the keeper.
+		# The bolt is stiff at first, then gives.
+		"gesture": {"handle": Rect2(380, 430, 660, 340), "track": Vector2(90, 0), "hint": Vector2(905, 462), "stick_pixels": 12.0, "stick_seconds": 0.12},
+		# Full-screen close shot: a 16:9 band of the sheet around the bolt, with Kath
+		# seen from behind, her hand on the bolt. Screen pixel = (sheet - crop origin) * 1.885.
+		"shot": {
+			"crop": Rect2(0, 187, 887, 499),
+			"rattle": true,
+			"light_gap": {"x": 336.0, "width": 6.0, "top": 330.0},
+			"status_at": Vector2(684, 716),
+			"figure": {"texture": preload("res://prologue-asset-pack-v1/characters/kath-climb.png"), "region": Rect2(41, 80, 414, 737), "grip": Vector2(372, 168), "scale": 1.25, "rotation": -0.1, "at": Vector2(754, 599), "travel": Vector2(52, 0)},
+			"links": [{"rect": Rect2(1100, 500, 490, 210), "view": &"plaque"}],
+		},
+		# Sheet pixels of the bolt's free end; see hall_prop_focus._place_pieces.
+		"stretch_slide": {"origin_x": 232.0, "stretch": 0.164, "regions": [Rect2(232, 452, 164, 106), Rect2(396, 486, 62, 49)]},
 		"done_control": "→  NAMEPLATE",
 		"parts": [{"label": "Door bolt", "action": "secure_door_bolt"}],
 	}},
-	&"plaque": {"subject": &"door", "part": 1, "view": {
+	&"plaque": {"subject": &"door", "part": 1, "zoom": 1.5, "view": {
 		"title": "ARCHIVE DOOR · OLD NAMEPLATE",
 		"texture": preload(CLOSEUPS + "old-plaque-states.png"),
 		"before_region": Rect2(0, 0, 887, 887),
@@ -59,7 +79,7 @@ const FOCUS_VIEWS := {
 		"inscription_color": Color(71 / 255.0, 50 / 255.0, 42 / 255.0),
 		"parts": [{"label": "Dusty plate", "action": "wipe_plaque"}],
 	}},
-	&"window": {"subject": &"", "part": 0, "view": {
+	&"window": {"subject": &"", "part": 0, "zoom": 1.4, "view": {
 		"title": "HIGH WINDOW · CATCH",
 		"texture": preload(CLOSEUPS + "window-catch-states.png"),
 		"before_region": Rect2(0, 0, 768, 1024),
@@ -98,7 +118,7 @@ const FOCUS_VIEWS := {
 		"hide_parts": true,
 		"parts": [{"label": "Inner cover", "action": "open_clock_cover"}],
 	}},
-	&"keys": {"subject": &"", "part": 0, "view": {
+	&"keys": {"subject": &"", "part": 0, "zoom": 1.2, "view": {
 		"title": "DUTY KEYS · EAST SERVICE WAY",
 		"texture": preload(CLOSEUPS + "duty-keys-states.png"),
 		"before_region": Rect2(0, 0, 887, 887),
@@ -136,7 +156,7 @@ const FOCUS_VIEWS := {
 	}},
 }
 ## Where Wick looks when Kath opens a close-up.
-const WICK_FOCUS_TARGETS := {&"clock": Vector2(967, 490), &"keys": Vector2(1370, 482), &"sheet": Vector2(1212, 450)}
+const WICK_FOCUS_TARGETS := {&"door": Vector2(190, 470), &"window": Vector2(560, 430), &"clock": Vector2(967, 490), &"keys": Vector2(1370, 482), &"sheet": Vector2(1212, 450)}
 
 @onready var focus: CanvasLayer = $HallPropFocus
 @onready var round_book: CanvasLayer = $HallRoundBook
@@ -153,6 +173,7 @@ const WICK_FOCUS_TARGETS := {&"clock": Vector2(967, 490), &"keys": Vector2(1370,
 @onready var upper_stacks_entry: Node2D = $UpperStacksEntry
 @onready var far: Sprite2D = $Far
 @onready var rain_streaks: Node2D = $RainStreaks
+@onready var camera: Camera2D = $Camera2D
 
 var first_note_hint_pending := false
 var completion_played := false
@@ -167,6 +188,16 @@ var clock_tick_seconds := 1.0
 var clock_winding_progress := 0.0
 var clock_wind_click_stage := 0
 var clock_winding_held := false
+var wind_audio: AudioStreamPlayer
+var slide_audio: AudioStreamPlayer
+var slide_tick_stage := 0
+## Kath's line waits a beat after the sound of the thing she just did.
+var pending_line_id := ""
+var pending_line_delay := 0.0
+var focus_autoreturn := -1.0
+## Where Kath stood before she stepped beside a prop for its close shot.
+var focus_return_x := -1.0
+var door_knock_audio: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -175,6 +206,10 @@ func _ready() -> void:
 	archive_door.exit_requested.connect(_on_exit_requested)
 	upper_stacks_entry.exit_requested.connect(_on_exit_requested)
 	focus.dismissed.connect(_on_focus_dismissed)
+	focus.gesture_progress.connect(_on_focus_gesture_progress)
+	focus.gesture_committed.connect(_run_focus_action)
+	focus.rattled.connect(_on_focus_rattled)
+	focus.broke_free.connect(_on_focus_broke_free)
 	round_book.dismissed.connect(_on_round_book_dismissed)
 	round_book.stamped.connect(_on_round_book_stamped)
 	round_book.page_turned.connect(_on_round_book_page_turned)
@@ -182,6 +217,12 @@ func _ready() -> void:
 	clock_tick_audio = _add_audio("HallClockTick", CLOCK_TICK_SOUND, -12.0)
 	clock_wind_audio = _add_audio("HallClockWinding", CLICK_SOUND, -9.0)
 	_add_audio("HallAmbience", AMBIENCE, -17.0, true)
+	wind_audio = _add_audio("HallWind", WIND_SOUND, WIND_DB, true)
+	slide_audio = _add_audio("FocusSlide", WINDOW_RATTLE_SOUND, -21.0)
+	slide_audio.pitch_scale = 0.7
+	door_knock_audio = _add_audio("DoorKnock", WINDOW_RATTLE_SOUND, -17.0)
+	door_knock_audio.pitch_scale = 0.52
+	_update_wind(false)
 	clock_winding_progress = 1.0 if _clock_is_wound() else clampf(float(state.flags.get("hall_clock_winding_progress", 0.0)), 0.0, 1.0)
 	clock_wind_click_stage = floori(clock_winding_progress * 4.0)
 	clock_motion.set_wound(_clock_is_wound())
@@ -208,7 +249,8 @@ func _ready() -> void:
 			_start_dialogue(["That alarm is coming from the machine room! The gauge was still below the red sector last night.", "I need to get back to the controls."])
 	elif not _flag("hall_intro_seen"):
 		state.flags["hall_intro_seen"] = true
-		_start_dialogue(["A storm is building. I'll secure the door and high window, wind the clock, check the keys, then file the round book."])
+		# Kath can walk at once; her first thought arrives a moment later.
+		_queue_line("D01", 1.0)
 
 
 func _play_machine_return_cue() -> void:
@@ -230,6 +272,16 @@ func _flag(key: String) -> bool:
 
 func _process(delta: float) -> void:
 	_update_clock_winding(delta)
+	if not pending_line_id.is_empty() and mode != &"paused":
+		pending_line_delay -= delta
+		if pending_line_delay <= 0.0:
+			var line_id := pending_line_id
+			pending_line_id = ""
+			_say(line_id)
+	if mode == &"focus" and focus_autoreturn > 0.0:
+		focus_autoreturn -= delta
+		if focus_autoreturn <= 0.0:
+			_cancel()
 	clock_tick_seconds -= delta
 	if clock_tick_seconds <= 0.0:
 		clock_tick_seconds = 1.12 if _clock_is_wound() else 2.7
@@ -259,11 +311,27 @@ func _process(delta: float) -> void:
 func _room_input(event: InputEvent) -> bool:
 	match mode:
 		&"focus":
+			var pressed: bool = (event is InputEventKey or event is InputEventMouseButton) and event.is_pressed()
+			if pressed:
+				# Any deliberate input means the player is still looking.
+				focus_autoreturn = -1.0
+			if focus.handle_event(event):
+				return true
+			if event is InputEventMouseButton and event.pressed:
+				# Right-click, or a click on the hall around the detail, steps back.
+				if event.button_index == MOUSE_BUTTON_RIGHT or (event.button_index == MOUSE_BUTTON_LEFT and focus.is_outside_picture(event.position)):
+					_cancel()
+				elif event.button_index == MOUSE_BUTTON_LEFT and focus.link_at(event.position) != &"":
+					# Something else in the shot, such as the nameplate beside the bolt.
+					_open_focus(focus.link_at(event.position))
+				return true
 			if event.is_action_released("interact"):
 				clock_winding_held = false
 				return true
 			if event.is_action_pressed("interact"):
-				_run_focus_action(focus.selected_action())
+				# A hands-on view is operated through its gesture, never by one press.
+				if not focus.uses_gesture():
+					_run_focus_action(focus.selected_action())
 				return true
 			if event.is_action_pressed("move_left") or event.is_action_pressed("move_right"):
 				if focus_subject in [&"door", &"clock"]:
@@ -285,8 +353,14 @@ func _cancel() -> void:
 	match mode:
 		&"focus":
 			clock_winding_held = false
+			focus_autoreturn = -1.0
+			door_bolt_world.set_preview(0.0)
 			_set_mode(&"focus_closing")
 			focus.close_view()
+			camera.release(focus.CLOSE_SECONDS)
+			if focus_return_x >= 0.0:
+				create_tween().tween_property(kath, "position:x", focus_return_x, focus.CLOSE_SECONDS * 0.8)
+				focus_return_x = -1.0
 		&"round_book":
 			_set_mode(&"focus_closing")
 			round_book.close_view()
@@ -341,12 +415,29 @@ func _inspect(hotspot: Node) -> void:
 
 func _open_focus(view: StringName) -> void:
 	var entry: Dictionary = FOCUS_VIEWS[view]
+	var anchor: Vector2 = entry["view"].get("source", Vector2(836, 470))
+	var zoom: float = entry.get("zoom", 1.35)
+	# Left/Right inside a close-up swaps the detail without leaving it.
+	var switching: bool = mode == &"focus" and focus.is_open()
 	focus_subject = entry["subject"]
 	focus_part = entry["part"]
+	focus_autoreturn = -1.0
+	slide_tick_stage = 0
+	door_bolt_world.set_preview(0.0)
 	ui.hide_modals()
 	ui.hide_prompt()
 	_set_mode(&"focus")
-	focus.open_view(entry["view"], _focus_done(view))
+	# The camera leads; the close view takes over while it is still moving.
+	camera.focus_on(anchor, zoom, 0.45)
+	if not switching:
+		# Kath steps beside the prop so her reach reads in the push-in.
+		var stand_x: float = entry.get("stand_x", -1.0)
+		if stand_x >= 0.0:
+			focus_return_x = kath.position.x
+		kath.reach_toward(anchor.x, stand_x)
+	if entry["view"].has("gesture") and not _flag("hint_slide_seen") and not _focus_done(view):
+		focus.first_time_tip = FIRST_SLIDE_TIP
+	focus.open_view(entry["view"], _focus_done(view), camera.screen_point_after_focus(anchor, zoom), switching)
 	if view == &"clock":
 		focus.set_hold_progress(clock_winding_progress)
 
@@ -428,8 +519,13 @@ func _secure_door_bolt() -> void:
 		return
 	state.flags["hall_door_latched"] = true
 	_refresh_world_latches()
-	_finish_focus_action(DOOR_LATCH_SOUND, &"", "The bolt caught. The door and window are both secure." if _window_is_fixed() else "The bolt caught. The door should hold when the wind rises.")
+	_update_wind()
+	# Order of feedback: the bolt seats, the latch sounds, the draught drops, then Kath speaks.
+	focus.set_completed()
+	_play_effect(DOOR_LATCH_SOUND)
 	_try_record_door_window()
+	_queue_line("D03", 0.4)
+	focus_autoreturn = AUTORETURN_SECONDS
 
 
 func _fix_window_catch() -> void:
@@ -437,6 +533,7 @@ func _fix_window_catch() -> void:
 		return
 	state.flags["hall_window_fixed"] = true
 	_refresh_world_latches()
+	_update_wind()
 	window_rattle_audio.stop()
 	_finish_focus_action(CLICK_SOUND, &"", "The frame is quiet. Both the door and window are secure." if _door_is_latched() else "The frame is quiet now. The wind outside hasn't stopped.")
 	_try_record_door_window()
@@ -496,7 +593,47 @@ func _refresh_world_latches(animate: bool = true) -> void:
 	window_catch_world.set_secured(_window_is_fixed(), animate)
 
 
+func _queue_line(line_id: String, delay: float) -> void:
+	pending_line_id = line_id
+	pending_line_delay = delay
+
+
+## The draught is loudest with both fixtures loose and never quite goes away.
+func _update_wind(animate: bool = true) -> void:
+	var target := WIND_DB - (4.0 if _door_is_latched() else 0.0) - (7.0 if _window_is_fixed() else 0.0)
+	if animate:
+		create_tween().tween_property(wind_audio, "volume_db", target, 0.6)
+	else:
+		wind_audio.volume_db = target
+
+
+## The room-scale bolt follows the player's hand, with a faint scrape as it travels.
+func _on_focus_gesture_progress(value: float) -> void:
+	if focus_subject == &"door" and focus_part == 0:
+		door_bolt_world.set_preview(value)
+	state.flags["hint_slide_seen"] = true
+	var stage := floori(value * 5.0)
+	if stage != slide_tick_stage:
+		slide_tick_stage = stage
+		if value < 1.0:
+			# The scrape rises a little as the bolt nears its keeper.
+			slide_audio.pitch_scale = 0.62 + 0.24 * value
+			slide_audio.play()
+
+
+## The unlatched door knocks in its frame when a gust leans on it.
+func _on_focus_rattled(strength: float) -> void:
+	door_knock_audio.volume_db = -27.0 + 10.0 * clampf(strength, 0.0, 1.0)
+	door_knock_audio.play()
+
+
+func _on_focus_broke_free() -> void:
+	slide_audio.pitch_scale = 0.56
+	slide_audio.play()
+
+
 func _on_focus_dismissed() -> void:
+	kath.stop_reaching()
 	clock_winding_held = false
 	focus_subject = &""
 	_set_mode(&"roam")

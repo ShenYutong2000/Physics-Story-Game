@@ -11,6 +11,11 @@ extends SceneTree
 
 const HALL_SCENE: PackedScene = preload("res://scenes/library_hall.tscn")
 const REVIEW_SIZES := [Vector2i(1672, 941), Vector2i(1280, 720)]
+## A close-up is usable this long after it opens, and gone this long after Esc.
+const FOCUS_IN := 0.62
+const FOCUS_OUT := 0.5
+## Holding a key this long carries a hands-on slide all the way home.
+const SLIDE_HOLD := 1.0
 
 var state: Node
 var capture_dir := ""
@@ -72,6 +77,33 @@ func _tap(code: int) -> void:
 	await process_frame
 
 
+## Hold a key on a room for a while, as a player would on a hands-on part.
+func _hold_on(room: Node, code: int, seconds: float) -> void:
+	room._unhandled_input(_key(code))
+	await create_timer(seconds).timeout
+	room._unhandled_input(_release(code))
+
+
+func _mouse_button(position: Vector2, pressed: bool, button: int = MOUSE_BUTTON_LEFT) -> InputEventMouseButton:
+	var event := InputEventMouseButton.new()
+	event.button_index = button
+	event.pressed = pressed
+	event.position = position
+	return event
+
+
+## Press, drag in a few steps and release on a room.
+func _drag_on(room: Node, from: Vector2, to: Vector2, release: bool = true) -> void:
+	room._unhandled_input(_mouse_button(from, true))
+	for step in range(1, 7):
+		var motion := InputEventMouseMotion.new()
+		motion.position = from.lerp(to, step / 6.0)
+		room._unhandled_input(motion)
+		await process_frame
+	if release:
+		room._unhandled_input(_mouse_button(to, false))
+
+
 func _open_scene(scene: PackedScene) -> Node:
 	var instance := scene.instantiate()
 	root.add_child(instance)
@@ -90,6 +122,11 @@ func _new_hall() -> Node2D:
 ## Render the current frame at both supported window sizes. Saves PNGs only
 ## when a capture folder was given; otherwise it just exercises both layouts.
 func _capture(label: String) -> bool:
+	# A minimised window renders nothing, so its captures would come back blank.
+	if not capture_dir.is_empty() and DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MINIMIZED:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		for _frame in 3:
+			await process_frame
 	for resolution: Vector2i in REVIEW_SIZES:
 		root.size = resolution
 		for _frame in 5:

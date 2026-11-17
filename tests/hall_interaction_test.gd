@@ -19,16 +19,14 @@ func _run() -> void:
 	var ui: CanvasLayer = hall.get_node("HallUI")
 	var wick: Node2D = hall.get_node("Wick")
 
-	if hall.mode != &"dialogue" or kath.controls_enabled or not ui.dialogue.visible:
-		_fail("Opening dialogue did not lock movement.")
+	if hall.mode != &"roam" or not kath.controls_enabled or ui.dialogue.visible or ui.caption_panel.visible:
+		_fail("Kath could not move at once on entering the hall.")
 		return
-	if ui.dialogue_text.text != "A storm is building. I'll secure the door and high window, wind the clock, check the keys, then file the round book.":
-		_fail("Opening dialogue text was cleared by the scene-change settings refresh.")
+	await create_timer(1.2).timeout
+	if hall.mode != &"roam" or not kath.controls_enabled or not ui.caption_panel.visible or ui.caption_text.text != "Evening again. The light leaves the hall so quietly.":
+		_fail("Kath's first thought did not arrive as a caption that leaves her free to move.")
 		return
-	await _tap_key(KEY_ENTER)
-	if hall.mode != &"roam" or not kath.controls_enabled:
-		_fail("The physical Enter binding did not close the opening dialogue.")
-		return
+	ui.hide_caption()
 	if InputMap.action_get_events("interact").is_empty() or InputMap.action_get_events("toggle_journal").is_empty():
 		_fail("Week 2 input actions are missing.")
 		return
@@ -89,7 +87,7 @@ func _run() -> void:
 		_fail("The early emergency page was not recorded once.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._unhandled_input(_key(KEY_J))
 	if hall.mode != &"journal" or not ui.journal_entries.text.contains("Emergency page"):
 		_fail("The first note did not appear in the journal.")
@@ -98,7 +96,7 @@ func _run() -> void:
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
 	hall._unhandled_input(_key(KEY_RIGHT))
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if state.notes.size() != 1:
 		_fail("Repeating the red-tab inspection duplicated its note.")
 		return
@@ -109,7 +107,7 @@ func _run() -> void:
 	if not wick.flying or wick.reaction_time <= 0.0:
 		_fail("Wick did not react to the clock.")
 		return
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_E))
 	hall._process(0.55)
 	var released_e := _key(KEY_E)
@@ -119,14 +117,14 @@ func _run() -> void:
 		_fail("Releasing E early did not preserve partial winding without recording the clock.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_E))
 	hall._process(0.5)
 	hall._unhandled_input(released_e)
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._advance_dialogue()
 	if state.notes.size() != 2 or state.notes[1]["id"] != &"clock-housing":
 		_fail("The completed clock winding was not appended in discovery order.")
@@ -137,23 +135,22 @@ func _run() -> void:
 	if hall.mode != &"focus" or not hall.focus.is_open():
 		_fail("The archive door did not open its playable close-up.")
 		return
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._secure_door_bolt()
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
-	if hall.mode != &"dialogue":
-		_fail("Completing and leaving the door close-up did not restore Kath's response.")
+	await create_timer(FOCUS_OUT).timeout
+	if hall.mode != &"roam" or ui.caption_text.text != "That should hold. The wind loves finding little gaps.":
+		_fail("Completing and leaving the door close-up did not leave Kath free with her line.")
 		return
-	hall._advance_dialogue()
 	if state.notes.size() != 2 or hall.mode != &"roam":
 		_fail("The door alone should not complete the combined door-and-window check.")
 		return
 	kath.position.x = 476.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._fix_window_catch()
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._advance_dialogue()
 	if state.notes.size() != 3 or state.notes[2]["id"] != &"archive-door" \
 		or hall.completion_played or hall.mode != &"roam":
@@ -161,10 +158,10 @@ func _run() -> void:
 		return
 	kath.position.x = 1370.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._sort_duty_key()
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._advance_dialogue()
 	if state.notes.size() != 4 or state.notes[3]["id"] != &"duty-keys" or hall.completion_played:
 		_fail("Sorting the duty keys did not leave the stamp as the final action.")
@@ -174,7 +171,7 @@ func _run() -> void:
 	hall._unhandled_input(_key(KEY_E))
 	await create_timer(1.2).timeout
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if state.notes.size() != 5 or state.notes[4]["id"] != &"evening-round-filed" \
 		or not hall.completion_played or hall.mode != &"dialogue":
 		_fail("Filing the completed round did not trigger the final line once.")
@@ -182,12 +179,12 @@ func _run() -> void:
 	hall._advance_dialogue()
 	kath.position.x = 967.0
 	hall._inspect(hall.nearest_hotspot(kath.position.x))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if not hall.focus.completed:
 		_fail("The wound clock did not reopen in its completed state.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if state.notes.size() != 5 or hall.mode != &"roam":
 		_fail("Repeating the final inspection replayed completion or duplicated notes (mode=%s, notes=%d)." % [hall.mode, state.notes.size()])
 		return

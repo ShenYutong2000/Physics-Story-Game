@@ -16,7 +16,7 @@ func _run() -> void:
 	if hall.mode != &"focus" or not hall.focus.is_open() or hall.kath.controls_enabled:
 		_fail("E at the clock did not open the close-up and stop Kath.")
 		return
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if hall.focus.selected_action() != &"wind_clock" or hall.ui.journal.visible or hall.ui.pause_menu.visible:
 		_fail("The clock focus did not expose its exclusive winding action.")
 		return
@@ -33,12 +33,12 @@ func _run() -> void:
 	if not await _capture("interactive-clock-partial"):
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode != &"roam" or state.has_note(&"clock-housing"):
 		_fail("Closing a partly wound clock marked the check complete.")
 		return
 	await _tap(KEY_E)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if absf(hall.clock_winding_progress - held_progress) > 0.04 or hall.focus.hold_fill.size.x <= 0.0:
 		_fail("Reopening the clock lost partial progress.")
 		return
@@ -53,7 +53,7 @@ func _run() -> void:
 	if not await _capture("interactive-clock-after"):
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode != &"dialogue":
 		_fail("Kath's clock response did not appear after the operation.")
 		return
@@ -72,12 +72,12 @@ func _run() -> void:
 		return
 	hall.kath.position.x = 967.0
 	await _tap(KEY_E)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if not hall.focus.completed or hall.focus.selected_action() != &"":
 		_fail("The revisited clock no longer appears wound.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	print("HALL_CLOCK_SMOKE_OK: physical hold, partial resume, completed image, room pendulum, tick, scene revisit")
 	hall.queue_free()
 	await process_frame

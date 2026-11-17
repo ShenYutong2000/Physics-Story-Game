@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/library_hall.gd" id="0_hall"]
 [ext_resource type="Texture2D" path="res://prologue-asset-pack-v1/hall-closeups-v2/archive-prestorm-city.png" id="1_far"]
@@ -19,9 +19,18 @@
 [ext_resource type="Script" path="res://scripts/hall_catalogue_card_world.gd" id="16_catalogue"]
 [ext_resource type="Script" path="res://scripts/hall_optional_detail_world.gd" id="17_optional_detail"]
 [ext_resource type="Script" path="res://scripts/archive_rain.gd" id="18_rain"]
+[ext_resource type="Script" path="res://scripts/focus_camera.gd" id="19_camera"]
 
 [node name="LibraryHall" type="Node2D"]
 script = ExtResource("0_hall")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(836, 470.5)
+limit_left = 0
+limit_top = 0
+limit_right = 1672
+limit_bottom = 941
+script = ExtResource("19_camera")
 
 [node name="Far" type="Sprite2D" parent="."]
 z_index = -20

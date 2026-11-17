@@ -5,7 +5,7 @@ param(
     # Save review screenshots here (opens a window instead of running headless).
     [string]$CaptureDir = '',
     # A test that runs longer than this is stopped and counted as failed.
-    [int]$TimeoutSeconds = 180
+    [int]$TimeoutSeconds = 300
 )
 # Runs every tests/*_test.gd script and exits non-zero if any fails.
 

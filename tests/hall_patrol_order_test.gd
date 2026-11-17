@@ -85,9 +85,9 @@ func _check_modal_interruptions(hall: Node2D, state: Node) -> bool:
 		_fail("Esc did not return from the journal to exploration.")
 		return false
 	hall._inspect(hall.high_window)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode != &"roam" or state.flags.get("hall_window_fixed", false):
 		_fail("Esc on an untouched window changed the fixture state.")
 		return false
@@ -98,16 +98,19 @@ func _do_fixtures(hall: Node2D, state: Node, door_first: bool) -> bool:
 	var parts := [hall.archive_door, hall.high_window] if door_first else [hall.high_window, hall.archive_door]
 	for part in parts:
 		hall._inspect(part)
-		await create_timer(0.3).timeout
+		await create_timer(FOCUS_IN).timeout
 		if hall.mode != &"focus" or hall.ui.journal.visible or hall.ui.pause_menu.visible:
 			_fail("Door/window close-up overlapped another modal.")
 			return false
-		hall._unhandled_input(_key(KEY_E))
+		if part == hall.archive_door:
+			await _hold_on(hall, KEY_E, SLIDE_HOLD)
+		else:
+			hall._unhandled_input(_key(KEY_E))
 		if part == parts[0] and state.has_note(&"archive-door"):
 			_fail("The combined fixture check was recorded after only one latch.")
 			return false
 		hall._unhandled_input(_key(KEY_ESCAPE))
-		await create_timer(0.22).timeout
+		await create_timer(FOCUS_OUT).timeout
 		if hall.mode == &"dialogue":
 			hall._unhandled_input(_key(KEY_ENTER))
 	if not state.has_note(&"archive-door") or not hall.door_bolt_world.secured or not hall.window_catch_world.secured:
@@ -118,16 +121,16 @@ func _do_fixtures(hall: Node2D, state: Node, door_first: bool) -> bool:
 
 func _do_clock(hall: Node2D, state: Node) -> bool:
 	hall._inspect(hall.get_node("OldClock"))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	Input.parse_input_event(_key(KEY_E))
 	await create_timer(1.1).timeout
 	Input.parse_input_event(_release(KEY_E))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if not state.has_note(&"clock-housing") or not hall.clock_motion.wound:
 		_fail("Holding E did not wind the clock.")
 		return false
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode == &"dialogue":
 		hall._unhandled_input(_key(KEY_ENTER))
 	return true
@@ -135,14 +138,14 @@ func _do_clock(hall: Node2D, state: Node) -> bool:
 
 func _do_keys(hall: Node2D, state: Node) -> bool:
 	hall._inspect(hall.get_node("DutyKeys"))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_E))
 	await create_timer(0.55).timeout
 	if not state.has_note(&"duty-keys") or not hall.key_rack_world.east_key_sorted:
 		_fail("E did not move the east-service key in both views.")
 		return false
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode == &"dialogue":
 		hall._unhandled_input(_key(KEY_ENTER))
 	return true
@@ -150,7 +153,7 @@ func _do_keys(hall: Node2D, state: Node) -> bool:
 
 func _file_round(hall: Node2D, state: Node) -> bool:
 	hall._inspect(hall.get_node("MaintenanceSheet"))
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if hall.mode != &"round_book" or not hall.round_book.tasks.all(func(done: bool) -> bool: return done):
 		_fail("The completed checklist did not show three live checks.")
 		return false
@@ -160,7 +163,7 @@ func _file_round(hall: Node2D, state: Node) -> bool:
 		_fail("The completed round did not file after stamping.")
 		return false
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode == &"dialogue":
 		hall._unhandled_input(_key(KEY_ENTER))
 	return true
@@ -170,13 +173,13 @@ func _check_revisit(hall: Node2D, state: Node) -> bool:
 	var note_count: int = state.notes.size()
 	for part in [hall.high_window, hall.get_node("OldClock"), hall.get_node("DutyKeys")]:
 		hall._inspect(part)
-		await create_timer(0.3).timeout
+		await create_timer(FOCUS_IN).timeout
 		if not hall.focus.completed:
 			_fail("A completed prop reopened in its initial state.")
 			return false
 		hall._unhandled_input(_key(KEY_E))
 		hall._unhandled_input(_key(KEY_ESCAPE))
-		await create_timer(0.22).timeout
+		await create_timer(FOCUS_OUT).timeout
 		if hall.mode == &"dialogue":
 			hall._unhandled_input(_key(KEY_ENTER))
 	if state.notes.size() != note_count:

@@ -6,19 +6,26 @@ enum Kind { DOOR, WINDOW }
 @export var kind := Kind.DOOR
 
 var secured := false
+## While the player moves the part by hand in the close-up, the room copy follows.
+var preview := 0.0
 var progress := 0.0
 var flutter_phase := 0.0
 
 
 func _process(delta: float) -> void:
-	progress = move_toward(progress, 1.0 if secured else 0.0, delta * 4.0)
+	progress = move_toward(progress, 1.0 if secured else preview, delta * 4.0)
 	if kind == Kind.WINDOW and not secured:
 		flutter_phase += delta * 6.2
 	queue_redraw()
 
 
+func set_preview(value: float) -> void:
+	preview = clampf(value, 0.0, 1.0)
+
+
 func set_secured(value: bool, animate: bool = true) -> void:
 	secured = value
+	preview = 0.0
 	if not animate:
 		progress = 1.0 if value else 0.0
 	queue_redraw()

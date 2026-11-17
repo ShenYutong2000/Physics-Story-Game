@@ -1,0 +1,43 @@
+﻿dialogue_id,section,speaker,english_text,origin
+D00,01,Kath,I'd better find tonight's page before I begin.,REWRITTEN_S01_v1_3
+D02b,01,Kath,"There you are, tucked between yesterday's pages.",REWRITTEN_S01_v1_3
+D01,01,Kath,Evening again. The light leaves the hall so quietly.,REWRITTEN_S01_v1_3
+D02,01,Kath,Three small things to set right before the rain.,REWRITTEN_S01_v1_3
+D03,01,Kath,That should hold. The wind loves finding little gaps.,REWRITTEN_S01_v1_3
+D04,01,Kath,The sky is restless tonight. This window can rest.,REWRITTEN_S01_v1_3
+D05,01,Kath,"One more turn, and the old clock keeps its steady song.",REWRITTEN_S01_v1_3
+D06,01,Kath,"Third hook, as always. Even the little clink sounds familiar.",REWRITTEN_S01_v1_3
+D07,01,Kath,"Three small marks, and another evening folded away.",REWRITTEN_S01_v1_3
+D08,02,Kath,A little higher than yesterday. Still below red.,SOURCE
+D09,02,Kath,"I'll draw where it is, not where I expected it to be.",SOURCE
+D10,02,Kath,A route to the Observatory Castle.,PROPOSED
+D11,02,Kath,That sound... is it coming from upstairs?,PROPOSED
+D12,03,Kath,"Oh, no. The books.",PROPOSED
+D13,03,Kath,Why is it still hanging there?,SOURCE
+D14,03,Kath,It seems faster near the floor. Why?,SOURCE
+D15,03,Kath,"The roof is slanted, but the drop falls almost straight down.",SOURCE
+D16,03,Kath,It fell down. What sent those little drops up?,SOURCE
+D17,03,Kath,That one fell sooner.,PROPOSED
+D18,03,Kath,Wait... I want to see that again.,PROPOSED
+D19,03,Kath,I can draw what happened. I still need to find out why.,SOURCE
+D20,03,Kath,I wrote this. I know I did.,SOURCE
+D21,03,Kath,Why would I keep a wrong mark?,SOURCE
+D22,03,Kath,I drew what I saw tonight. The questions can stay beside it.,SOURCE
+D23,04,Kath,The torn edge fits. I took this page out of my own notebook.,SOURCE
+D24,04,Kath,I was due back at the castle. I don't remember what I meant to check.,SOURCE
+D25,04,Kath,I'll leave these notes here. Tomorrow I may notice something I missed.,SOURCE
+D26,05,Kath,That alarm is from the machine room. The needle was below red last night.,SOURCE
+D27,05,Kath,I have a mark to compare it with.,SOURCE
+D28,05,Kath,It was below the red line yesterday. Now it's over.,PROPOSED
+D29,05,Kath,Two and four. The needle fell... and now it's climbing again.,SOURCE
+D30,05,Kath,The Archive drive is stopped.,SOURCE (节选)
+D31,05,Kath,The upper lift must stay out of use.,PROPOSED
+D32,05,Kath,The fixed tower is still upright... but the wing isn't.,PROPOSED
+D33,05,Kath,I'll record what I saw. Someone at the castle may know what to check there.,SOURCE
+D34,06,Kath,The fixed tower is upright. The wing isn't.,SOURCE
+D35,06,Kath,One hanging cable tells me where it falls here. I still need to see what happened inside.,SOURCE
+D36,06,Kath,I came for an answer. I'll start with what I can check.,SOURCE
+O01,01,Kath,Warm inside... yet the glass carries the evening chill.,OPTIONAL_S01_v1_3
+O02,01,Kath,The pendulum comes back. The hands keep moving on.,OPTIONAL_S01_v1_3
+O03,01,Kath,The brass is worn smooth. Whose hands held it before mine?,OPTIONAL_S01_v1_3
+D00_EXIT,01,Kath,The rounds aren't filed yet. One thing at a time.,CONDITIONAL_S01_v1_3

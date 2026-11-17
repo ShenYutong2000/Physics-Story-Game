@@ -65,6 +65,12 @@ var chapter1_end: Control
 var pause_menu: Control
 var pause_save_error: Label
 var hint_deadline: int = 0
+## Kath's passing thoughts: shown above every close-up, never blocking input.
+var caption_layer: CanvasLayer
+var caption_panel: Panel
+var caption_text: Label
+var caption_started := 0
+var caption_deadline := 0
 var objective_id := ""
 var objective_idle_seconds := 0.0
 var objective_reminder_shown := false
@@ -544,8 +550,33 @@ func _ready() -> void:
 	_label(chapter1_panel, Rect2(120, 438, 840, 38), "ENTER / ESC  RETURN TO THE CASTLE", 21, GOLD).horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chapter1_end.visible = false
 
+	caption_layer = CanvasLayer.new()
+	caption_layer.name = "CaptionLayer"
+	caption_layer.layer = 40
+	add_child(caption_layer)
+	caption_panel = Panel.new()
+	caption_panel.name = "Caption"
+	caption_panel.size = Vector2(980, 112)
+	caption_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var caption_style := StyleBoxFlat.new()
+	caption_style.bg_color = Color(0.035, 0.05, 0.11, 0.84)
+	caption_style.border_color = Color(GOLD, 0.4)
+	caption_style.set_border_width_all(1)
+	caption_style.set_corner_radius_all(14)
+	caption_panel.add_theme_stylebox_override("panel", caption_style)
+	caption_layer.add_child(caption_panel)
+	caption_text = _label(caption_panel, Rect2(30, 8, 920, 96), "", 27, CREAM)
+	caption_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption_panel.visible = false
+
 
 func _process(delta: float) -> void:
+	if caption_panel.visible:
+		var now := Time.get_ticks_msec()
+		if now >= caption_deadline:
+			caption_panel.visible = false
+		else:
+			caption_panel.modulate.a = minf(clampf((now - caption_started) / 250.0, 0.0, 1.0), clampf((caption_deadline - now) / 400.0, 0.0, 1.0))
 	if hint.visible and Time.get_ticks_msec() >= hint_deadline:
 		hint.visible = false
 	if guide_bubble.visible and Time.get_ticks_msec() >= guide_deadline:
@@ -736,8 +767,38 @@ func show_hint(message: String, seconds: float = 4.0) -> void:
 	hint.visible = true
 
 
+## A short line from Kath that fades by itself. It never takes control away,
+## so it can follow an action inside a close-up or a step in the room.
+func show_caption(line: String, seconds: float = -1.0) -> void:
+	if line.is_empty():
+		return
+	caption_text.text = line
+	var duration := seconds if seconds > 0.0 else clampf(1.8 + line.split(" ", false).size() * 0.32, 3.0, 7.0)
+	var scene := get_parent()
+	var in_close_up: bool = scene != null and scene.get("mode") != &"roam"
+	# A framed detail keeps its own two lines of text at the bottom; a full-screen
+	# close shot and the open room leave the bottom of the screen to Kath.
+	var close_shot: Node = scene.get_node_or_null("HallPropFocus") if scene != null else null
+	var above_detail_text: bool = in_close_up and not (close_shot != null and close_shot.shot)
+	# The bar is only as tall as its text.
+	var text_height: float = maxi(1, caption_text.get_line_count()) * caption_text.get_line_height() + 6.0
+	caption_text.size.y = text_height
+	caption_text.position.y = 12.0
+	caption_panel.size.y = text_height + 24.0
+	caption_panel.position = Vector2(346.0, (806.0 if above_detail_text else 916.0) - caption_panel.size.y)
+	caption_started = Time.get_ticks_msec()
+	caption_deadline = caption_started + int(duration * 1000.0)
+	caption_panel.modulate.a = 0.0
+	caption_panel.visible = true
+
+
+func hide_caption() -> void:
+	caption_panel.visible = false
+
+
 func show_dialogue(line: String, speaker_position: Vector2, beside_high_speaker: bool = false) -> void:
 	hide_modals()
+	hide_caption()
 	dialogue_text.text = line
 	var body_height := maxi(122, dialogue_text.get_line_count() * dialogue_text.get_line_height() + 12)
 	dialogue_text.size.y = body_height
@@ -1075,6 +1136,7 @@ func scroll_journal(direction: int) -> void:
 
 func show_pause() -> void:
 	hide_modals()
+	hide_caption()
 	pause_save_error.visible = false
 	pause_menu.visible = true
 	hide_prompt()

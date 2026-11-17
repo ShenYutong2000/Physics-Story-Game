@@ -19,7 +19,7 @@ func _run() -> void:
 	]:
 		hall.kath.position.x = item.x
 		await _tap(KEY_E)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		if hall.mode != &"focus" or hall.focus.selected_action() != item.action or hall.kath.controls_enabled:
 			_fail("Optional focus unavailable: " + item.capture)
 			return
@@ -30,7 +30,7 @@ func _run() -> void:
 			_fail("Cancel recorded optional action: " + item.capture)
 			return
 		await _tap(KEY_E)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		await _tap(KEY_E)
 		await create_timer(0.55).timeout
 		if not state.flags.get(item.flag, false) or not state.has_note(item.note) or not hall.focus.completed:
@@ -46,7 +46,7 @@ func _run() -> void:
 			return
 		await _dismiss(hall)
 		await _tap(KEY_E)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		if not hall.focus.completed or hall.focus.selected_action() != &"":
 			_fail("Reopening changed completed optional state: " + item.capture)
 			return
@@ -67,17 +67,17 @@ func _run() -> void:
 	]:
 		hall.kath.position.x = detail.x
 		await _tap(KEY_E)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		if hall.focus_subject != detail.subject or hall.focus_part != 0 or hall.focus.selected_action() != detail.action:
 			_fail("The main prop focus no longer opens correctly.")
 			return
 		await _tap(KEY_RIGHT)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		if hall.focus_part != 1 or not hall.focus.completed:
 			_fail("Right arrow did not reveal the optional detail.")
 			return
 		await _tap(KEY_LEFT)
-		await create_timer(0.28).timeout
+		await create_timer(FOCUS_IN).timeout
 		if hall.focus_part != 0 or hall.focus.selected_action() != detail.action:
 			_fail("Left arrow did not return to the main control.")
 			return
@@ -90,7 +90,7 @@ func _run() -> void:
 		return
 	hall.kath.position.x = 216.0
 	await _tap(KEY_E)
-	await create_timer(0.28).timeout
+	await create_timer(FOCUS_IN).timeout
 	if not hall.focus.completed or hall.focus.inscription_label.text != "GRAND\nARCHIVE":
 		_fail("Returning to the hall hid the cleaned nameplate.")
 		return
@@ -103,7 +103,7 @@ func _run() -> void:
 		return
 	hall.kath.position.x = 216.0
 	await _tap(KEY_E)
-	await create_timer(0.28).timeout
+	await create_timer(FOCUS_IN).timeout
 	if hall.mode != &"focus" or hall.focus_part != 1:
 		_fail("The optional plaque became inaccessible after the machine-room exit opened.")
 		return
@@ -113,6 +113,6 @@ func _run() -> void:
 
 func _dismiss(hall: Node2D) -> void:
 	await _tap(KEY_ESCAPE)
-	await create_timer(0.22).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if hall.mode == &"dialogue":
 		hall._close_dialogue(false)

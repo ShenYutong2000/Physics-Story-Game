@@ -13,18 +13,18 @@ func _run() -> void:
 		return
 	# Canceling the window close-up makes no change.
 	hall._inspect(hall.high_window)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	if bool(state.flags.get("hall_window_fixed", false)) or state.has_note(&"archive-door"):
 		_fail("Esc recorded an untouched window.")
 		return
 	# Fix the window first. The door/window item remains empty in the journal.
 	hall._inspect(hall.high_window)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	hall._unhandled_input(_key(KEY_E))
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._unhandled_input(_key(KEY_ENTER))
 	if not bool(state.flags.get("hall_window_fixed", false)) or state.has_note(&"archive-door") \
 		or not hall.window_catch_world.secured or hall.door_bolt_world.secured or state.hall_checks_complete():
@@ -43,20 +43,20 @@ func _run() -> void:
 		_fail("The window state was lost when returning to the hall.")
 		return
 	hall._inspect(hall.high_window)
-	await create_timer(0.3).timeout
+	await create_timer(FOCUS_IN).timeout
 	if not hall.focus.completed or hall.focus.selected_action() != &"":
 		_fail("The revisited window no longer looks fixed.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._inspect(hall.archive_door)
-	await create_timer(0.3).timeout
-	hall._unhandled_input(_key(KEY_E))
+	await create_timer(FOCUS_IN).timeout
+	await _hold_on(hall, KEY_E, SLIDE_HOLD)
 	if not state.has_note(&"archive-door") or state.notes.size() != 1 or not hall.door_bolt_world.secured:
 		_fail("Fastening the second latch did not record exactly one combined check.")
 		return
 	hall._unhandled_input(_key(KEY_ESCAPE))
-	await create_timer(0.2).timeout
+	await create_timer(FOCUS_OUT).timeout
 	hall._unhandled_input(_key(KEY_ENTER))
 	if hall.mode != &"roam":
 		_fail("The final response did not return control to Kath.")
